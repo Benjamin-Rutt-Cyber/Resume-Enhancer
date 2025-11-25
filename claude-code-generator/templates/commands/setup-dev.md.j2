@@ -1,0 +1,220 @@
+# Setup Development Environment
+
+Initialize the complete development environment for {{ project_name }}.
+
+## Prerequisites
+
+{% if backend_framework and 'python' in backend_framework %}
+- Python 3.10 or higher
+- pip package manager
+{% elif backend_framework and 'node' in backend_framework %}
+- Node.js 18 or higher
+- npm or yarn package manager
+{% endif %}
+- Git
+{% if database == 'postgresql' %}
+- PostgreSQL 14 or higher
+{% elif database == 'mysql' %}
+- MySQL 8 or higher
+{% endif %}
+
+## Setup Steps
+
+### 1. Clone Repository (if needed)
+
+```bash
+git clone https://github.com/yourusername/{{ project_slug }}.git
+cd {{ project_slug }}
+```
+
+### 2. Backend Setup
+
+{% if backend_framework and 'python' in backend_framework %}
+```bash
+# Create virtual environment
+cd backend
+python -m venv .venv
+
+# Activate virtual environment
+# On Windows:
+.venv\Scripts\activate
+# On Unix/macOS:
+source .venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Copy environment file
+cp .env.example .env
+# Edit .env with your configuration
+```
+{% elif backend_framework and 'node' in backend_framework %}
+```bash
+cd backend
+npm install
+
+# Copy environment file
+cp .env.example .env
+# Edit .env with your configuration
+```
+{% endif %}
+
+{% if frontend_framework %}
+### 3. Frontend Setup
+
+```bash
+cd ../frontend
+npm install
+
+# Copy environment file
+cp .env.example .env
+# Edit .env with your API URL
+```
+{% endif %}
+
+### {% if frontend_framework %}4{% else %}3{% endif %}. Database Setup
+
+{% if database == 'postgresql' %}
+```bash
+# Create database
+createdb {{ project_slug }}
+
+# Run migrations
+cd backend
+{% if backend_framework and 'python' in backend_framework %}
+alembic upgrade head
+{% elif backend_framework and 'node' in backend_framework %}
+npm run migrate
+{% endif %}
+
+# Optional: Seed database with test data
+{% if backend_framework and 'python' in backend_framework %}
+python -m app.seeds.seed_data
+{% elif backend_framework and 'node' in backend_framework %}
+npm run seed
+{% endif %}
+```
+{% endif %}
+
+### {% if frontend_framework %}5{% else %}4{% endif %}. Verify Installation
+
+{% if backend_framework and 'python' in backend_framework %}
+```bash
+# Run tests
+pytest
+
+# Start development server
+uvicorn app.main:app --reload
+```
+{% elif backend_framework and 'node' in backend_framework %}
+```bash
+# Run tests
+npm test
+
+# Start development server
+npm run dev
+```
+{% endif %}
+
+{% if frontend_framework %}
+```bash
+# In another terminal, start frontend
+cd frontend
+npm start
+```
+{% endif %}
+
+### {% if frontend_framework %}6{% else %}5{% endif %}. Access Application
+
+{% if frontend_framework %}
+- Frontend: http://localhost:3000
+{% endif %}
+- Backend API: http://localhost:8000
+- API Documentation: http://localhost:8000/docs
+
+## Environment Variables
+
+Required environment variables for {{ project_name }}:
+
+### Backend (.env)
+```bash
+# Database
+DATABASE_URL={{ database }}://user:password@localhost/{{ project_slug }}
+
+# Security
+SECRET_KEY=your-secret-key-here
+
+# API
+{% if frontend_framework %}
+FRONTEND_URL=http://localhost:3000
+{% endif %}
+API_PREFIX=/api/v1
+
+{% if has_auth %}
+# Authentication
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+{% endif %}
+
+{% if 'redis' in features %}
+# Redis
+REDIS_URL=redis://localhost:6379
+{% endif %}
+```
+
+{% if frontend_framework %}
+### Frontend (.env)
+```bash
+REACT_APP_API_URL=http://localhost:8000
+{% if has_auth %}
+REACT_APP_API_PREFIX=/api/v1
+{% endif %}
+```
+{% endif %}
+
+## Troubleshooting
+
+### Database Connection Error
+- Verify database is running
+- Check DATABASE_URL in .env
+- Ensure database exists
+
+### Port Already in Use
+- Change port in command: `--port 8001`
+- Or kill process using the port
+
+### Module Not Found
+{% if backend_framework and 'python' in backend_framework %}
+- Ensure virtual environment is activated
+- Run `pip install -r requirements.txt` again
+{% elif backend_framework and 'node' in backend_framework %}
+- Delete node_modules and run `npm install` again
+- Clear npm cache: `npm cache clean --force`
+{% endif %}
+
+## Next Steps
+
+- Run `/run-tests` to execute test suite
+- Run `/run-server` to start development server
+- Read docs/ARCHITECTURE.md for system overview
+- See docs/API.md for API documentation
+
+## Common Development Commands
+
+```bash
+# Run tests
+/run-tests
+
+# Start server
+/run-server
+
+# Run database migrations
+/db-migrate
+
+# Format code
+/format-code
+
+# Lint code
+/lint-code
+```
+
+Your development environment for {{ project_name }} is now ready!

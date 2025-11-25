@@ -1,0 +1,449 @@
+# Template Registry
+# This file indexes all available templates for the Claude Code Generator
+
+version: "2.0.0"
+last_updated: "2025-11-18"
+
+# Agent Templates (Library-based, copy as-is)
+agents:
+  - name: api-development-agent
+    file: agents/library/api-development-agent.md
+    type: library
+    category: development
+    selection_conditions:
+      project_types: [saas-web-app, api-service, mobile-app]
+      required_any: {}  # Always applicable for these project types
+      required_all: {}
+    priority: high
+    description: RESTful API development and backend logic (1,710 lines, framework-agnostic)
+
+  - name: frontend-react-agent
+    file: agents/library/frontend-react-agent.md
+    type: library
+    category: development
+    selection_conditions:
+      project_types: [saas-web-app]
+      required_any:
+        frontend_framework: [react, react-typescript, next-js]
+      required_all: {}
+    priority: high
+    description: React/Next.js frontend development (1,534 lines)
+
+  - name: database-postgres-agent
+    file: agents/library/database-postgres-agent.md
+    type: library
+    category: development
+    selection_conditions:
+      project_types: [saas-web-app, api-service, mobile-app, data-science]
+      required_any:
+        database: [postgresql, postgres]
+      required_all: {}
+    priority: high
+    description: PostgreSQL database design and optimization (1,823 lines)
+
+  - name: testing-agent
+    file: agents/library/testing-agent.md
+    type: library
+    category: quality
+    selection_conditions:
+      project_types: [saas-web-app, api-service, mobile-app, hardware-iot, data-science]
+      required_any: {}  # Always applicable
+      required_all: {}
+    priority: high
+    description: Unit, integration, and E2E testing (1,115 lines, all frameworks)
+
+  - name: deployment-agent
+    file: agents/library/deployment-agent.md
+    type: library
+    category: operations
+    selection_conditions:
+      project_types: [saas-web-app, api-service, mobile-app, hardware-iot, data-science]
+      required_any: {}  # Always applicable
+      required_all: {}
+    priority: high
+    description: CI/CD, containerization, and deployment (1,158 lines, all platforms)
+
+  - name: security-agent
+    file: agents/library/security-agent.md
+    type: library
+    category: security
+    selection_conditions:
+      project_types: [saas-web-app, api-service, mobile-app]
+      required_any: {}  # Always applicable for web/mobile
+      required_all: {}
+    priority: high
+    description: Security implementation and vulnerability prevention (1,402 lines)
+
+  - name: documentation-agent
+    file: agents/library/documentation-agent.md
+    type: library
+    category: documentation
+    selection_conditions:
+      project_types: [saas-web-app, api-service, mobile-app, hardware-iot, data-science]
+      required_any: {}  # Always applicable
+      required_all: {}
+    priority: medium
+    description: Technical documentation and API docs (1,626 lines)
+
+  - name: embedded-iot-agent
+    file: agents/library/embedded-iot-agent.md
+    type: library
+    category: development
+    selection_conditions:
+      project_types: [hardware-iot]
+      required_any: {}  # Always applicable for IoT
+      required_all: {}
+    priority: high
+    description: Embedded systems and IoT firmware development (1,687 lines)
+
+  - name: mobile-react-native-agent
+    file: agents/library/mobile-react-native-agent.md
+    type: library
+    category: development
+    selection_conditions:
+      project_types: [mobile-app]
+      required_any:
+        frontend_framework: [react-native]
+      required_all: {}
+    priority: high
+    description: React Native mobile development (1,858 lines)
+
+  - name: data-science-agent
+    file: agents/library/data-science-agent.md
+    type: library
+    category: development
+    selection_conditions:
+      project_types: [data-science]
+      required_any: {}  # Always applicable for data science
+      required_all: {}
+    priority: high
+    description: Machine learning and data analysis (1,607 lines)
+
+# Skill Templates (Library-based, copy as-is)
+skills:
+  - name: python-fastapi
+    file: skills/library/python-fastapi/SKILL.md
+    category: backend
+    selection_conditions:
+      project_types: [saas-web-app, api-service, mobile-app, data-science]
+      required_any:
+        backend: [python-fastapi, fastapi]
+      required_all: {}
+    priority: high
+    description: FastAPI web framework patterns and best practices (816 lines)
+
+  - name: node-express
+    file: skills/library/node-express/SKILL.md
+    category: backend
+    selection_conditions:
+      project_types: [saas-web-app, api-service, mobile-app]
+      required_any:
+        backend: [node-express, express, nodejs]
+      required_all: {}
+    priority: high
+    description: Node.js Express framework development (1,155 lines)
+
+  - name: django
+    file: skills/library/django/SKILL.md
+    category: backend
+    selection_conditions:
+      project_types: [saas-web-app, api-service, data-science]
+      required_any:
+        backend: [django]
+      required_all: {}
+    priority: high
+    description: Django web framework and Django REST Framework (1,086 lines)
+
+  - name: react-typescript
+    file: skills/library/react-typescript/SKILL.md
+    category: frontend
+    selection_conditions:
+      project_types: [saas-web-app]
+      required_any:
+        frontend_framework: [react, react-typescript, next-js]
+      required_all: {}
+    priority: high
+    description: React with TypeScript development (849 lines)
+
+  - name: vue-typescript
+    file: skills/library/vue-typescript/SKILL.md
+    category: frontend
+    selection_conditions:
+      project_types: [saas-web-app]
+      required_any:
+        frontend_framework: [vue, vue-typescript]
+      required_all: {}
+    priority: high
+    description: Vue 3 with TypeScript and Composition API (1,059 lines)
+
+  - name: nextjs
+    file: skills/library/nextjs/SKILL.md
+    category: frontend
+    selection_conditions:
+      project_types: [saas-web-app]
+      required_any:
+        frontend_framework: [nextjs, next-js, next.js]
+      required_all: {}
+    priority: high
+    description: Next.js 14+ with App Router, Server Components, and modern patterns (947 lines)
+
+  - name: nuxt
+    file: skills/library/nuxt/SKILL.md
+    category: frontend
+    selection_conditions:
+      project_types: [saas-web-app]
+      required_any:
+        frontend_framework: [nuxt, nuxtjs, nuxt3, nuxt.js]
+      required_all: {}
+    priority: high
+    description: Nuxt 3 with auto-imports, server routes, and data fetching (856 lines)
+
+  - name: svelte
+    file: skills/library/svelte/SKILL.md
+    category: frontend
+    selection_conditions:
+      project_types: [saas-web-app]
+      required_any:
+        frontend_framework: [svelte, sveltekit]
+      required_all: {}
+    priority: high
+    description: Svelte and SvelteKit with reactive declarations and form actions (816 lines)
+
+  - name: angular
+    file: skills/library/angular/SKILL.md
+    category: frontend
+    selection_conditions:
+      project_types: [saas-web-app]
+      required_any:
+        frontend_framework: [angular]
+      required_all: {}
+    priority: high
+    description: Angular with components, services, routing, and RxJS (917 lines)
+
+  - name: mobile-react-native
+    file: skills/library/mobile-react-native/SKILL.md
+    category: mobile
+    selection_conditions:
+      project_types: [mobile-app]
+      required_any:
+        frontend_framework: [react-native]
+      required_all: {}
+    priority: high
+    description: React Native mobile development with TypeScript (1,055 lines)
+
+  - name: postgresql
+    file: skills/library/postgresql/SKILL.md
+    category: database
+    selection_conditions:
+      project_types: [saas-web-app, api-service, mobile-app, data-science]
+      required_any:
+        database: [postgresql, postgres]
+      required_all: {}
+    priority: high
+    description: PostgreSQL database management and optimization (758 lines)
+
+  - name: authentication
+    file: skills/library/authentication/SKILL.md
+    category: security
+    selection_conditions:
+      project_types: [saas-web-app, api-service, mobile-app]
+      required_any: {}  # Always include when auth feature is enabled
+      required_all: {}
+    priority: high
+    description: JWT, OAuth2, and authentication patterns (752 lines)
+
+  - name: rest-api-design
+    file: skills/library/rest-api-design/SKILL.md
+    category: api
+    selection_conditions:
+      project_types: [saas-web-app, api-service, mobile-app]
+      required_any: {}  # Always applicable for API-based projects
+      required_all: {}
+    priority: medium
+    description: RESTful API design principles and best practices (802 lines)
+
+  - name: docker-deployment
+    file: skills/library/docker-deployment/SKILL.md
+    category: operations
+    selection_conditions:
+      project_types: [saas-web-app, api-service, mobile-app, data-science]
+      required_any:
+        deployment: [docker, kubernetes]
+      required_all: {}
+    priority: medium
+    description: Docker containerization and deployment (1,156 lines)
+
+# Command Templates
+commands:
+  - name: setup-dev
+    file: commands/setup-dev.md.j2
+    category: development
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+      - hardware-iot
+      - data-science
+    description: Initialize development environment
+
+  - name: run-server
+    file: commands/run-server.md.j2
+    category: development
+    project_types:
+      - saas-web-app
+      - api-service
+    description: Start development server
+
+  - name: run-tests
+    file: commands/run-tests.md.j2
+    category: quality
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+      - hardware-iot
+      - data-science
+    description: Execute test suite
+
+  - name: deploy
+    file: commands/deploy.md.j2
+    category: operations
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+    description: Deploy to production
+
+  - name: db-migrate
+    file: commands/db-migrate.md.j2
+    category: database
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+    description: Run database migrations
+
+  - name: flash-firmware
+    file: commands/flash-firmware.md.j2
+    category: hardware
+    project_types:
+      - hardware-iot
+    description: Flash firmware to device
+
+# Documentation Templates
+docs:
+  - name: ARCHITECTURE
+    file: docs/ARCHITECTURE.md.j2
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+      - hardware-iot
+      - data-science
+    description: System architecture documentation
+
+  - name: API
+    file: docs/API.md.j2
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+    description: API endpoint documentation
+
+  - name: SETUP
+    file: docs/SETUP.md.j2
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+      - hardware-iot
+      - data-science
+    description: Setup and installation guide
+
+  - name: DEPLOYMENT
+    file: docs/DEPLOYMENT.md.j2
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+    description: Deployment guide
+
+  - name: TESTING
+    file: docs/TESTING.md.j2
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+      - hardware-iot
+      - data-science
+    description: Testing guide
+
+  - name: HARDWARE
+    file: docs/HARDWARE.md.j2
+    project_types:
+      - hardware-iot
+    description: Hardware specifications and setup
+
+  # Main README files (library-based, one per project type)
+  - name: README-saas-web-app
+    file: docs/library/README-saas-web-app.md
+    type: library
+    category: documentation
+    selection_conditions:
+      project_types: [saas-web-app]
+      required_any: {}
+      required_all: {}
+    priority: high
+    description: Comprehensive README for SaaS web applications
+
+  - name: README-api-service
+    file: docs/library/README-api-service.md
+    type: library
+    category: documentation
+    selection_conditions:
+      project_types: [api-service]
+      required_any: {}
+      required_all: {}
+    priority: high
+    description: Comprehensive README for API service projects
+
+  - name: README-mobile-app
+    file: docs/library/README-mobile-app.md
+    type: library
+    category: documentation
+    selection_conditions:
+      project_types: [mobile-app]
+      required_any: {}
+      required_all: {}
+    priority: high
+    description: Comprehensive README for mobile applications
+
+  - name: README-hardware-iot
+    file: docs/library/README-hardware-iot.md
+    type: library
+    category: documentation
+    selection_conditions:
+      project_types: [hardware-iot]
+      required_any: {}
+      required_all: {}
+    priority: high
+    description: Comprehensive README for hardware/IoT projects
+
+  - name: README-data-science
+    file: docs/library/README-data-science.md
+    type: library
+    category: documentation
+    selection_conditions:
+      project_types: [data-science]
+      required_any: {}
+      required_all: {}
+    priority: high
+    description: Comprehensive README for data science/ML projects
+
+# Statistics
+stats:
+  total_agents: 10
+  total_skills: 10
+  total_commands: 6
+  total_docs: 11
+  total_project_types: 5

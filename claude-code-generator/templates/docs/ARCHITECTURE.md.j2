@@ -1,0 +1,565 @@
+# Architecture Overview
+
+System architecture and design decisions for {{ project_name }}.
+
+## System Overview
+
+{{ description }}
+
+### Technology Stack
+
+{% if backend_framework %}**Backend:** {{ backend_framework }}{% endif %}
+{% if frontend_framework %}**Frontend:** {{ frontend_framework }}{% endif %}
+{% if database %}**Database:** {{ database }}{% endif %}
+{% if project_type == 'mobile-app' %}**Mobile:** Cross-platform{% endif %}
+{% if project_type == 'hardware-iot' %}**Platform:** Embedded/IoT{% endif %}
+
+## Architecture Diagram
+
+```
+{% if project_type == 'saas-web-app' %}
+┌──────────────┐         ┌──────────────┐         ┌──────────────┐
+│   Frontend   │ ◄─────► │   Backend    │ ◄─────► │   Database   │
+│   (React)    │  HTTP   │   (FastAPI)  │   SQL   │ (PostgreSQL) │
+└──────────────┘         └──────────────┘         └──────────────┘
+       │                        │
+       │                        ▼
+       │                  ┌──────────────┐
+       │                  │    Cache     │
+       │                  │    (Redis)   │
+       │                  └──────────────┘
+       │
+       ▼
+┌──────────────┐
+│     CDN      │
+│  (Static)    │
+└──────────────┘
+{% elif project_type == 'api-service' %}
+┌──────────────┐         ┌──────────────┐         ┌──────────────┐
+│   Clients    │ ◄─────► │   API Server │ ◄─────► │   Database   │
+│ (Any/Mobile) │  REST   │   (FastAPI)  │   SQL   │ (PostgreSQL) │
+└──────────────┘         └──────────────┘         └──────────────┘
+                                │
+                                ▼
+                         ┌──────────────┐
+                         │    Cache     │
+                         │    (Redis)   │
+                         └──────────────┘
+{% elif project_type == 'mobile-app' %}
+┌──────────────┐         ┌──────────────┐         ┌──────────────┐
+│  Mobile App  │ ◄─────► │   Backend    │ ◄─────► │   Database   │
+│(React Native)│  HTTP   │   (FastAPI)  │   SQL   │ (PostgreSQL) │
+└──────────────┘         └──────────────┘         └──────────────┘
+       │
+       ▼
+┌──────────────┐
+│Local Storage │
+│  (AsyncStor) │
+└──────────────┘
+{% elif project_type == 'hardware-iot' %}
+┌──────────────┐         ┌──────────────┐         ┌──────────────┐
+│   Sensors    │ ──────► │  IoT Device  │ ──────► │Cloud/Backend │
+│  (Hardware)  │  GPIO   │(MicroPython) │  MQTT   │   (Server)   │
+└──────────────┘         └──────────────┘         └──────────────┘
+                                │
+                                ▼
+                         ┌──────────────┐
+                         │Local Storage │
+                         │   (Flash)    │
+                         └──────────────┘
+{% elif project_type == 'data-science' %}
+┌──────────────┐         ┌──────────────┐         ┌──────────────┐
+│     Data     │ ──────► │   Pipeline   │ ──────► │   Models     │
+│   Sources    │ Extract │  (Transform) │ Train   │   (Joblib)   │
+└──────────────┘         └──────────────┘         └──────────────┘
+                                │
+                                ▼
+                         ┌──────────────┐
+                         │  API Server  │
+                         │  (Serving)   │
+                         └──────────────┘
+{% endif %}
+```
+
+## Components
+
+{% if backend_framework %}
+### Backend Service
+
+**Purpose:** Business logic, API endpoints, data processing
+
+**Tech:** {{ backend_framework }}
+
+**Key Responsibilities:**
+- Handle HTTP requests
+- Business logic execution
+- Database operations
+- Authentication/authorization
+- External API integration
+
+**Structure:**
+```
+backend/
+├── app/
+│   ├── api/          # API endpoints
+│   ├── core/         # Configuration
+│   ├── models/       # Database models
+│   ├── services/     # Business logic
+│   └── utils/        # Helpers
+├── tests/            # Test suite
+└── requirements.txt  # Dependencies
+```
+{% endif %}
+
+{% if frontend_framework %}
+### Frontend Application
+
+**Purpose:** User interface, client-side logic
+
+**Tech:** {{ frontend_framework }}
+
+**Key Responsibilities:**
+- Render UI components
+- Handle user interactions
+- Manage client state
+- API communication
+- Routing
+
+**Structure:**
+```
+frontend/
+├── src/
+│   ├── components/   # Reusable UI
+│   ├── pages/        # Route pages
+│   ├── services/     # API clients
+│   ├── store/        # State management
+│   └── utils/        # Helpers
+├── public/           # Static assets
+└── package.json      # Dependencies
+```
+{% endif %}
+
+{% if database %}
+### Database
+
+**Purpose:** Data persistence and retrieval
+
+**Tech:** {{ database }}
+
+**Key Features:**
+- ACID transactions
+- Relational data model
+- Query optimization
+- Backup/recovery
+
+**Schema Organization:**
+```
+{{ project_slug }}_db/
+├── users             # User accounts
+├── sessions          # Auth sessions
+{% if project_type == 'saas-web-app' %}
+├── subscriptions     # SaaS subscriptions
+├── organizations     # Multi-tenancy
+{% elif project_type == 'data-science' %}
+├── datasets          # Training data metadata
+├── models            # Model versions
+{% endif %}
+└── audit_logs        # Activity tracking
+```
+{% endif %}
+
+## Design Patterns
+
+### Layered Architecture
+
+```
+┌────────────────────────────────────┐
+│        Presentation Layer          │  ← API endpoints, UI
+├────────────────────────────────────┤
+│        Business Logic Layer        │  ← Services, workflows
+├────────────────────────────────────┤
+│        Data Access Layer           │  ← Repositories, ORM
+├────────────────────────────────────┤
+│        Database Layer              │  ← PostgreSQL, Redis
+└────────────────────────────────────┘
+```
+
+**Benefits:**
+- Separation of concerns
+- Easier testing
+- Maintainable code
+- Clear responsibilities
+
+### Design Principles
+
+1. **Dependency Injection**
+   - Services receive dependencies via constructors
+   - Easier mocking and testing
+   - Flexible configuration
+
+2. **Repository Pattern**
+   - Abstract database operations
+   - Swap implementations easily
+   - Clean business logic
+
+3. **Service Layer**
+   - Encapsulate business logic
+   - Reusable across endpoints
+   - Transaction boundaries
+
+{% if backend_framework %}
+## API Design
+
+### RESTful Principles
+
+```
+GET    /api/v1/users       # List users
+GET    /api/v1/users/{id}  # Get user
+POST   /api/v1/users       # Create user
+PUT    /api/v1/users/{id}  # Update user
+DELETE /api/v1/users/{id}  # Delete user
+```
+
+### Request/Response Flow
+
+```
+Client Request
+    │
+    ▼
+┌─────────────┐
+│ Middleware  │  ← Auth, CORS, logging
+└─────────────┘
+    │
+    ▼
+┌─────────────┐
+│  Routing    │  ← Match endpoint
+└─────────────┘
+    │
+    ▼
+┌─────────────┐
+│ Validation  │  ← Check input
+└─────────────┘
+    │
+    ▼
+┌─────────────┐
+│  Service    │  ← Business logic
+└─────────────┘
+    │
+    ▼
+┌─────────────┐
+│ Repository  │  ← Database
+└─────────────┘
+    │
+    ▼
+Response
+```
+{% endif %}
+
+## Data Flow
+
+{% if project_type == 'saas-web-app' or project_type == 'api-service' %}
+### Request Lifecycle
+
+1. **Client sends request**
+   - HTTP request to API endpoint
+   - Includes auth token (if required)
+
+2. **Middleware processing**
+   - Authentication check
+   - Rate limiting
+   - CORS validation
+   - Request logging
+
+3. **Endpoint handler**
+   - Parse request data
+   - Validate input
+   - Call service layer
+
+4. **Business logic**
+   - Execute workflow
+   - Database operations
+   - External API calls
+
+5. **Response**
+   - Format data
+   - Apply transformations
+   - Return JSON response
+{% elif project_type == 'data-science' %}
+### Data Pipeline
+
+1. **Data Ingestion**
+   - Load from sources (CSV, DB, API)
+   - Initial validation
+   - Store raw data
+
+2. **Data Processing**
+   - Clean data
+   - Feature engineering
+   - Transform formats
+
+3. **Model Training**
+   - Split train/test
+   - Train model
+   - Evaluate metrics
+   - Save model
+
+4. **Model Serving**
+   - Load trained model
+   - API endpoint for predictions
+   - Response formatting
+{% elif project_type == 'hardware-iot' %}
+### IoT Data Flow
+
+1. **Sensor Reading**
+   - Read sensor data via GPIO
+   - Process/filter data
+   - Format for transmission
+
+2. **Data Transmission**
+   - Connect to WiFi/Network
+   - Publish via MQTT/HTTP
+   - Handle retries
+
+3. **Cloud Processing**
+   - Receive data
+   - Store in database
+   - Trigger actions
+
+4. **Device Commands**
+   - Receive commands
+   - Execute on device
+   - Confirm execution
+{% endif %}
+
+## Security
+
+### Authentication
+
+{% if 'authentication' in features %}
+**Method:** JWT (JSON Web Tokens)
+
+**Flow:**
+```
+1. User logs in with credentials
+2. Server validates and issues JWT
+3. Client stores JWT (localStorage/cookie)
+4. Client includes JWT in requests
+5. Server validates JWT on each request
+```
+
+**Token Structure:**
+```json
+{
+  "user_id": "123",
+  "email": "user@example.com",
+  "exp": 1637251200,
+  "iat": 1637247600
+}
+```
+{% else %}
+No authentication implemented.
+{% endif %}
+
+### Authorization
+
+**Approach:** Role-Based Access Control (RBAC)
+
+**Roles:**
+- `admin` - Full system access
+- `user` - Standard user access
+- `guest` - Read-only access
+
+### Data Protection
+
+- **In Transit:** TLS/HTTPS encryption
+- **At Rest:** Database encryption
+- **Passwords:** Bcrypt hashing
+- **Sensitive Data:** Environment variables
+
+## Performance
+
+### Caching Strategy
+
+```
+┌──────────┐
+│  Request │
+└────┬─────┘
+     │
+     ▼
+┌─────────────┐
+│ Check Cache │ ← Redis
+└─────┬───────┘
+      │
+   Hit│  │Miss
+      ▼  ▼
+   Return┌──────────┐
+         │ Database │
+         └────┬─────┘
+              │
+              ▼
+         ┌─────────┐
+         │  Cache  │
+         └─────────┘
+```
+
+**Cache TTLs:**
+- User data: 5 minutes
+- Static content: 1 hour
+- Configuration: 1 day
+
+### Database Optimization
+
+- **Indexing:** Key columns indexed
+- **Connection Pooling:** Reuse connections
+- **Query Optimization:** Use EXPLAIN
+- **Read Replicas:** Scale reads
+
+### API Performance
+
+- **Response Time:** < 200ms (p95)
+- **Throughput:** 1000 req/s
+- **Rate Limiting:** 1000 req/hour/user
+
+## Scalability
+
+### Horizontal Scaling
+
+```
+           Load Balancer
+               │
+    ┌──────────┼──────────┐
+    │          │          │
+    ▼          ▼          ▼
+ Server 1  Server 2  Server 3
+    │          │          │
+    └──────────┼──────────┘
+               ▼
+           Database
+```
+
+**Strategies:**
+- Stateless services
+- Session storage in Redis
+- Database read replicas
+- CDN for static assets
+
+### Vertical Scaling
+
+- Increase server resources
+- Optimize code performance
+- Database tuning
+- Caching improvements
+
+## Monitoring
+
+### Metrics
+
+- **Application:** Response times, error rates
+- **System:** CPU, memory, disk usage
+- **Database:** Query times, connections
+- **Business:** User signups, revenue
+
+### Logging
+
+**Levels:**
+- **DEBUG:** Development details
+- **INFO:** General information
+- **WARN:** Warnings, not errors
+- **ERROR:** Application errors
+
+**Log Format:**
+```
+[2025-11-18 12:00:00] [INFO] [api.users] User created: id=123
+[2025-11-18 12:00:01] [ERROR] [api.payments] Payment failed: card_declined
+```
+
+### Alerting
+
+- **Critical:** Page immediately (500 errors)
+- **High:** Alert within 15 min (elevated errors)
+- **Medium:** Daily summary (warnings)
+- **Low:** Weekly report (trends)
+
+## Deployment
+
+### Environments
+
+1. **Development** - Local development
+2. **Staging** - Pre-production testing
+3. **Production** - Live system
+
+### CI/CD Pipeline
+
+```
+Code Push
+    │
+    ▼
+┌─────────────┐
+│  Run Tests  │
+└─────────────┘
+    │
+    ▼
+┌─────────────┐
+│    Build    │
+└─────────────┘
+    │
+    ▼
+┌─────────────┐
+│   Deploy    │
+└─────────────┘
+```
+
+### Deployment Strategy
+
+**Blue-Green Deployment:**
+- Maintain two identical environments
+- Deploy to inactive (green)
+- Switch traffic to green
+- Keep blue as rollback
+
+## Decision Log
+
+### Why {{ backend_framework }}?
+{% if backend_framework and 'fastapi' in backend_framework %}
+- Async support for high performance
+- Automatic API documentation
+- Type hints for better code quality
+- Modern Python framework
+{% elif backend_framework and 'django' in backend_framework %}
+- Batteries-included framework
+- Robust ORM
+- Admin interface
+- Mature ecosystem
+{% endif %}
+
+### Why {{ database }}?
+{% if database == 'postgresql' %}
+- ACID compliance
+- Advanced features (JSON, full-text search)
+- Strong community support
+- Excellent performance
+{% endif %}
+
+### Why {{ frontend_framework }}?
+{% if frontend_framework and 'react' in frontend_framework %}
+- Component-based architecture
+- Large ecosystem
+- Strong community
+- Excellent performance
+{% endif %}
+
+## Future Considerations
+
+- Microservices architecture
+- Event-driven design
+- GraphQL API
+- Real-time features (WebSocket)
+- Mobile apps (native)
+- Internationalization (i18n)
+
+## Resources
+
+- API Documentation: `docs/API.md`
+- Testing Strategy: `docs/TESTING.md`
+- Deployment Guide: `docs/DEPLOYMENT.md`
+- Code repository: GitHub/GitLab

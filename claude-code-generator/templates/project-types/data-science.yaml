@@ -1,0 +1,322 @@
+# Data Science Project Type
+
+name: data-science
+display_name: Data Science / ML Project
+description: Machine learning, data analysis, and model deployment project
+
+# Default agents for this project type
+agents:
+  - data-science-agent
+  - ml-agent
+  - data-engineering-agent
+  - visualization-agent
+  - testing-agent
+  - deployment-agent
+  - documentation-agent
+
+# Default skills for this project type
+skills:
+  - python-fastapi
+  - postgresql
+  - docker-deployment
+  # NOTE: Data science specific skills (to be created):
+  # - pandas-numpy
+  # - scikit-learn
+  # - tensorflow-pytorch
+  # - data-visualization
+  # - feature-engineering
+  # - jupyter-notebooks
+
+# Default commands for this project type
+commands:
+  - setup-dev
+  - run-tests
+  - run-notebook
+  - db-migrate
+  - deploy
+  # TODO: Add more data science commands when templates are created
+  # - download-data
+  # - train-model
+  # - evaluate-model
+  # - visualize-results
+  # - deploy-model
+
+# Documentation to generate
+docs:
+  - MODEL
+  - DATA
+  - EXPERIMENTS
+  - DEPLOYMENT
+  - SETUP
+
+# Tech stack options
+tech_stack_options:
+  language:
+    - name: python
+      display_name: Python
+      description: Standard for data science
+      recommended: true
+    - name: r
+      display_name: R
+      description: Statistical computing
+
+  ml_framework:
+    - name: scikit-learn
+      display_name: Scikit-learn
+      description: Traditional ML algorithms
+      recommended: true
+    - name: tensorflow
+      display_name: TensorFlow
+      description: Deep learning framework
+    - name: pytorch
+      display_name: PyTorch
+      description: Deep learning with Python
+    - name: xgboost
+      display_name: XGBoost
+      description: Gradient boosting
+
+  data_processing:
+    - name: pandas
+      display_name: Pandas
+      description: Data manipulation
+      recommended: true
+    - name: polars
+      display_name: Polars
+      description: Fast DataFrame library
+    - name: dask
+      display_name: Dask
+      description: Parallel computing
+    - name: spark
+      display_name: Apache Spark
+      description: Big data processing
+
+  visualization:
+    - name: matplotlib
+      display_name: Matplotlib
+      description: Standard plotting library
+      recommended: true
+    - name: seaborn
+      display_name: Seaborn
+      description: Statistical visualization
+    - name: plotly
+      display_name: Plotly
+      description: Interactive plots
+    - name: streamlit
+      display_name: Streamlit
+      description: Data apps
+
+  deployment:
+    - name: fastapi
+      display_name: FastAPI
+      description: API for model serving
+      recommended: true
+    - name: flask
+      display_name: Flask
+      description: Lightweight web framework
+    - name: mlflow
+      display_name: MLflow
+      description: ML lifecycle platform
+    - name: docker
+      display_name: Docker
+      description: Containerization
+
+# Feature options
+features:
+  - name: data_pipeline
+    display_name: Data Pipeline
+    description: ETL and data preprocessing
+    default: true
+    adds_skills:
+      - data-pipeline
+
+  - name: feature_engineering
+    display_name: Feature Engineering
+    description: Advanced feature creation
+    default: true
+    adds_skills:
+      - feature-engineering
+
+  - name: hyperparameter_tuning
+    display_name: Hyperparameter Tuning
+    description: Grid search, Bayesian optimization
+    default: true
+    adds_skills:
+      - hyperparameter-tuning
+
+  - name: model_versioning
+    display_name: Model Versioning
+    description: MLflow model tracking
+    default: true
+    adds_skills:
+      - model-versioning
+
+  - name: deep_learning
+    display_name: Deep Learning
+    description: Neural networks with TensorFlow/PyTorch
+    default: false
+    adds_skills:
+      - deep-learning
+    adds_agents:
+      - deep-learning-agent
+
+  - name: nlp
+    display_name: NLP
+    description: Natural language processing
+    default: false
+    adds_skills:
+      - nlp
+    adds_agents:
+      - nlp-agent
+
+  - name: computer_vision
+    display_name: Computer Vision
+    description: Image processing and recognition
+    default: false
+    adds_skills:
+      - computer-vision
+    adds_agents:
+      - cv-agent
+
+  - name: time_series
+    display_name: Time Series
+    description: Time series analysis and forecasting
+    default: false
+    adds_skills:
+      - time-series
+
+  - name: api_deployment
+    display_name: API Deployment
+    description: REST API for model predictions
+    default: true
+    adds_skills:
+      - model-deployment
+
+  - name: monitoring
+    display_name: Model Monitoring
+    description: Monitor model performance in production
+    default: true
+    adds_skills:
+      - model-monitoring
+
+# Boilerplate code
+boilerplate:
+  - project-structure
+  - data-pipeline
+  - model-training
+  - evaluation-metrics
+  - api-server
+
+# Recommended plugins for this project type
+recommended_plugins:
+  # High priority - essential for data science
+  - name: jupyter-assistant
+    reason: Jupyter notebook development helper
+    priority: high
+    conditions:
+      language: [python]
+
+  - name: black
+    reason: Python code formatting
+    priority: high
+    conditions:
+      language: [python]
+
+  - name: pytest-runner
+    reason: Python testing framework integration
+    priority: high
+    conditions:
+      language: [python]
+
+  - name: pandas-helper
+    reason: Pandas data manipulation assistant
+    priority: high
+    conditions:
+      data_processing: [pandas, polars]
+
+  - name: ml-model-helper
+    reason: Machine learning model development assistant
+    priority: high
+    conditions:
+      ml_framework: [scikit-learn, tensorflow, pytorch]
+
+  - name: github-actions
+    reason: CI/CD workflow for model training and deployment
+    priority: high
+
+  # Medium priority - very helpful
+  - name: github-copilot
+    reason: AI-powered code completion for data science
+    priority: medium
+
+  - name: pylint
+    reason: Python code analysis and linting
+    priority: medium
+    conditions:
+      language: [python]
+
+  - name: fastapi-helper
+    reason: FastAPI framework for model API deployment
+    priority: medium
+    conditions:
+      deployment: [fastapi]
+
+  - name: docker-manager
+    reason: Docker container management for model deployment
+    priority: medium
+    conditions:
+      deployment: [docker]
+
+  - name: test-generator
+    reason: AI-powered test case generation
+    priority: medium
+
+  - name: snyk-security
+    reason: Vulnerability scanning for ML dependencies
+    priority: medium
+
+  - name: swagger-editor
+    reason: API documentation for model endpoints
+    priority: low
+    conditions:
+      features: [api_deployment]
+
+  - name: sql-formatter
+    reason: SQL query formatting for data extraction
+    priority: low
+
+  # Low priority - nice to have
+  - name: git-assistant
+    reason: Advanced Git workflow for experiment tracking
+    priority: low
+
+  - name: sugar
+    reason: Enhanced Claude Code experience
+    priority: low
+
+# Environment variables
+environment_variables:
+  - DATA_PATH
+  - MODEL_PATH
+  - MLFLOW_TRACKING_URI
+  - API_KEY
+  - DATABASE_URL
+
+# Project structure
+directory_structure:
+  - data/
+  - data/raw/
+  - data/processed/
+  - data/external/
+  - notebooks/
+  - src/
+  - src/data/
+  - src/features/
+  - src/models/
+  - src/visualization/
+  - models/
+  - reports/
+  - reports/figures/
+  - tests/
+  - .claude/
+  - .github/workflows/
+  - docs/

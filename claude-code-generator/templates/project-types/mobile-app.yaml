@@ -1,0 +1,310 @@
+# Mobile App Project Type
+
+name: mobile-app
+display_name: Mobile Application
+description: Cross-platform or native mobile app with backend integration
+
+# Default agents for this project type
+agents:
+  - mobile-agent
+  - backend-agent
+  - ui-ux-agent
+  - testing-agent
+  - deployment-agent
+  - documentation-agent
+
+# Default skills for this project type
+skills:
+  - mobile-react-native
+  - python-fastapi
+  - postgresql
+  - docker-deployment
+  - authentication
+  - rest-api-design
+  # NOTE: Additional framework-specific skills available:
+  # - node-express (if backend: node-express)
+  # - django (if backend: django)
+
+# Default commands for this project type
+commands:
+  - setup-dev
+  - run-tests
+  - db-migrate
+  - run-server
+  - deploy
+  # TODO: Add mobile-specific commands when templates are created
+  # - run-ios
+  # - run-android
+  # - build-release
+  # - deploy-testflight
+  # - deploy-play-store
+
+# Documentation to generate
+docs:
+  - MOBILE
+  - API
+  - SETUP
+  - DEPLOYMENT
+  - TESTING
+  - DESIGN
+
+# Tech stack options
+tech_stack_options:
+  framework:
+    - name: react-native
+      display_name: React Native
+      description: Cross-platform with JavaScript/TypeScript
+      recommended: true
+    - name: flutter
+      display_name: Flutter
+      description: Cross-platform with Dart
+    - name: swift-kotlin
+      display_name: Swift + Kotlin
+      description: Native iOS and Android
+    - name: ionic
+      display_name: Ionic
+      description: Web-based mobile apps
+
+  backend:
+    - name: python-fastapi
+      display_name: Python FastAPI
+      description: Fast Python API
+      recommended: true
+    - name: node-express
+      display_name: Node.js Express
+      description: JavaScript backend
+    - name: django
+      display_name: Django
+      description: Full-featured Python framework
+    - name: firebase
+      display_name: Firebase
+      description: Google's backend-as-a-service
+    - name: supabase
+      display_name: Supabase
+      description: Open-source Firebase alternative
+
+  database:
+    - name: postgresql
+      display_name: PostgreSQL
+      description: Relational database
+      recommended: true
+    - name: mongodb
+      display_name: MongoDB
+      description: NoSQL database
+    - name: sqlite
+      display_name: SQLite (local)
+      description: Local device storage
+
+  state_management:
+    - name: redux
+      display_name: Redux
+      description: Predictable state container
+    - name: mobx
+      display_name: MobX
+      description: Simple, scalable state
+      recommended: true
+    - name: context-api
+      display_name: Context API
+      description: Built-in React state
+
+# Feature options
+features:
+  - name: authentication
+    display_name: User Authentication
+    description: Social login, email/password auth
+    default: true
+    adds_skills:
+      - mobile-authentication
+
+  - name: push_notifications
+    display_name: Push Notifications
+    description: Firebase Cloud Messaging
+    default: true
+    adds_skills:
+      - push-notifications
+
+  - name: offline_mode
+    display_name: Offline Mode
+    description: Local storage and sync
+    default: true
+    adds_skills:
+      - offline-sync
+
+  - name: camera
+    display_name: Camera Integration
+    description: Photo/video capture
+    default: false
+    adds_skills:
+      - camera-integration
+
+  - name: geolocation
+    display_name: Geolocation
+    description: GPS and maps integration
+    default: false
+    adds_skills:
+      - geolocation
+
+  - name: payments
+    display_name: In-App Payments
+    description: Stripe/Apple Pay/Google Pay
+    default: false
+    adds_skills:
+      - mobile-payments
+
+  - name: analytics
+    display_name: Analytics
+    description: Firebase Analytics
+    default: true
+    adds_skills:
+      - mobile-analytics
+
+  - name: social_sharing
+    display_name: Social Sharing
+    description: Share to social media
+    default: false
+    adds_skills:
+      - social-integration
+
+  - name: biometrics
+    display_name: Biometric Auth
+    description: Face ID/Touch ID
+    default: false
+    adds_skills:
+      - biometric-auth
+
+# Boilerplate code
+boilerplate:
+  - mobile-structure
+  - navigation-setup
+  - api-client
+  - authentication-flow
+  - ui-components
+
+# Recommended plugins for this project type
+recommended_plugins:
+  # High priority - essential for mobile development
+  - name: react-devtools
+    reason: React Native component development and debugging
+    priority: high
+    conditions:
+      framework: [react-native]
+
+  - name: prettier
+    reason: Code formatting for JavaScript/TypeScript
+    priority: high
+    conditions:
+      framework: [react-native, ionic]
+
+  - name: eslint
+    reason: JavaScript/TypeScript linting
+    priority: high
+    conditions:
+      framework: [react-native, ionic]
+
+  - name: jest-runner
+    reason: JavaScript testing framework for mobile apps
+    priority: high
+    conditions:
+      framework: [react-native, ionic]
+
+  - name: black
+    reason: Python code formatting for backend
+    priority: high
+    conditions:
+      backend: [python-fastapi]
+
+  - name: github-actions
+    reason: CI/CD workflow management for mobile builds
+    priority: high
+
+  - name: snyk-security
+    reason: Vulnerability scanning for dependencies
+    priority: high
+
+  # Medium priority - very helpful for mobile development
+  - name: github-copilot
+    reason: AI-powered code completion and suggestions
+    priority: medium
+
+  - name: stripe-integration
+    reason: In-app payment integration helper
+    priority: high
+    conditions:
+      features: [payments]
+
+  - name: fastapi-helper
+    reason: FastAPI backend development assistant
+    priority: medium
+    conditions:
+      backend: [python-fastapi]
+
+  - name: pytest-runner
+    reason: Python testing framework for backend
+    priority: medium
+    conditions:
+      backend: [python-fastapi, django]
+
+  - name: docker-manager
+    reason: Docker container management for backend services
+    priority: medium
+
+  - name: test-generator
+    reason: AI-powered test case generation for mobile
+    priority: medium
+
+  - name: swagger-editor
+    reason: API documentation for backend integration
+    priority: medium
+
+  - name: sql-formatter
+    reason: SQL query formatting
+    priority: low
+    conditions:
+      database: [postgresql, mysql]
+
+  - name: mongodb-compass
+    reason: MongoDB database management
+    priority: medium
+    conditions:
+      database: [mongodb]
+
+  - name: auth0-integration
+    reason: Authentication integration helper
+    priority: medium
+    conditions:
+      features: [authentication]
+
+  # Low priority - nice to have
+  - name: git-assistant
+    reason: Advanced Git workflow assistance
+    priority: low
+
+  - name: sugar
+    reason: Enhanced Claude Code experience
+    priority: low
+
+# Environment variables
+environment_variables:
+  - API_URL
+  - API_KEY
+  - FIREBASE_CONFIG
+  - GOOGLE_MAPS_KEY
+  - STRIPE_KEY
+
+# Project structure
+directory_structure:
+  - mobile/
+  - mobile/src/
+  - mobile/src/components/
+  - mobile/src/screens/
+  - mobile/src/navigation/
+  - mobile/src/services/
+  - mobile/src/hooks/
+  - mobile/src/utils/
+  - mobile/src/assets/
+  - mobile/__tests__/
+  - backend/
+  - backend/app/
+  - .claude/
+  - .github/workflows/
+  - docs/

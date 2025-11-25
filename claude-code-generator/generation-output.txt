@@ -1,0 +1,18 @@
++--------------------------------------+
+| Claude Code Generator                |
+| Creating your project environment... |
++--------------------------------------+
+Warning: ANTHROPIC_API_KEY not found. Using keyword-based detection.
+
+[OK] Project analyzed successfully!
+      Project Configuration      
++-------------------------------+
+| Project Name | TaskFlow       |
+| Project Slug | taskflow       |
+| Project Type | saas-web-app   |
+| Backend      | python-fastapi |
+| Database     | postgresql     |
++-------------------------------+
+
+Generate project with this configuration? [Y/n]: Error: Directory test-saas-app already exists. Use overwrite=True to overwrite.
+Use --overwrite to overwrite existing files.

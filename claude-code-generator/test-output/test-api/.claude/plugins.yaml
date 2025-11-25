@@ -1,0 +1,111 @@
+project_type: api-service
+project_name: Test API Service
+generated_by: claude-code-generator
+recommended_plugins:
+  high_priority:
+  - name: black
+    reason: Python code formatting for consistent style
+    priority: high
+    marketplace_id: black
+    install_command: /plugin install black
+    category: formatting
+  - name: pytest-runner
+    reason: Python testing framework integration
+    priority: high
+    marketplace_id: pytest-runner
+    install_command: /plugin install pytest-runner
+    category: testing
+  - name: fastapi-helper
+    reason: FastAPI framework development assistant
+    priority: high
+    marketplace_id: fastapi-helper
+    install_command: /plugin install fastapi-helper
+    category: development
+  - name: swagger-editor
+    reason: OpenAPI/Swagger API documentation editor
+    priority: high
+    marketplace_id: swagger-editor
+    install_command: /plugin install swagger-editor
+    category: documentation
+  - name: docker-manager
+    reason: Docker container management for deployment
+    priority: high
+    marketplace_id: docker-manager
+    install_command: /plugin install docker-manager
+    category: deployment
+  - name: github-actions
+    reason: CI/CD workflow management
+    priority: high
+    marketplace_id: github-actions
+    install_command: /plugin install github-actions
+    category: deployment
+  - name: snyk-security
+    reason: Vulnerability scanning and dependency checking
+    priority: high
+    marketplace_id: snyk-security
+    install_command: /plugin install snyk-security
+    category: security
+  - name: sql-formatter
+    reason: SQL query formatting and optimization
+    priority: high
+    marketplace_id: sql-formatter
+    install_command: /plugin install sql-formatter
+    category: database
+  medium_priority:
+  - name: github-copilot
+    reason: AI-powered code completion and suggestions
+    priority: medium
+    marketplace_id: github-copilot
+    install_command: /plugin install github-copilot
+    category: development
+  - name: pylint
+    reason: Python code analysis and linting
+    priority: medium
+    marketplace_id: pylint
+    install_command: /plugin install pylint
+    category: formatting
+  - name: prisma-studio
+    reason: Database management and visualization
+    priority: medium
+    marketplace_id: prisma-studio
+    install_command: /plugin install prisma-studio
+    category: database
+  - name: kubernetes-helper
+    reason: Kubernetes manifest generation and management
+    priority: medium
+    marketplace_id: kubernetes-helper
+    install_command: /plugin install kubernetes-helper
+    category: deployment
+  - name: aws-deployer
+    reason: AWS deployment and infrastructure management
+    priority: medium
+    marketplace_id: aws-deployer
+    install_command: /plugin install aws-deployer
+    category: deployment
+  - name: terraform-assistant
+    reason: Infrastructure as Code with Terraform
+    priority: medium
+    marketplace_id: terraform-assistant
+    install_command: /plugin install terraform-assistant
+    category: deployment
+  - name: test-generator
+    reason: AI-powered test case generation
+    priority: medium
+    marketplace_id: test-generator
+    install_command: /plugin install test-generator
+    category: testing
+  low_priority:
+  - name: git-assistant
+    reason: Advanced Git workflow assistance
+    priority: low
+    marketplace_id: git-assistant
+    install_command: /plugin install git-assistant
+    category: productivity
+  - name: sugar
+    reason: Enhanced Claude Code experience
+    priority: low
+    marketplace_id: sugar
+    install_command: /plugin install sugar
+    category: productivity
+installed_plugins: []
+notes: Install recommended plugins using the install_command for each plugin.

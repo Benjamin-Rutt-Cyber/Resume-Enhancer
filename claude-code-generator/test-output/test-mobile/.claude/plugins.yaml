@@ -1,0 +1,105 @@
+project_type: mobile-app
+project_name: Test Mobile App
+generated_by: claude-code-generator
+recommended_plugins:
+  high_priority:
+  - name: react-devtools
+    reason: React Native component development and debugging
+    priority: high
+    marketplace_id: react-devtools
+    install_command: /plugin install react-devtools
+    category: development
+  - name: prettier
+    reason: Code formatting for JavaScript/TypeScript
+    priority: high
+    marketplace_id: prettier
+    install_command: /plugin install prettier
+    category: formatting
+  - name: eslint
+    reason: JavaScript/TypeScript linting
+    priority: high
+    marketplace_id: eslint
+    install_command: /plugin install eslint
+    category: formatting
+  - name: jest-runner
+    reason: JavaScript testing framework for mobile apps
+    priority: high
+    marketplace_id: jest-runner
+    install_command: /plugin install jest-runner
+    category: testing
+  - name: black
+    reason: Python code formatting for backend
+    priority: high
+    marketplace_id: black
+    install_command: /plugin install black
+    category: formatting
+  - name: github-actions
+    reason: CI/CD workflow management for mobile builds
+    priority: high
+    marketplace_id: github-actions
+    install_command: /plugin install github-actions
+    category: deployment
+  - name: snyk-security
+    reason: Vulnerability scanning for dependencies
+    priority: high
+    marketplace_id: snyk-security
+    install_command: /plugin install snyk-security
+    category: security
+  medium_priority:
+  - name: github-copilot
+    reason: AI-powered code completion and suggestions
+    priority: medium
+    marketplace_id: github-copilot
+    install_command: /plugin install github-copilot
+    category: development
+  - name: fastapi-helper
+    reason: FastAPI backend development assistant
+    priority: medium
+    marketplace_id: fastapi-helper
+    install_command: /plugin install fastapi-helper
+    category: development
+  - name: pytest-runner
+    reason: Python testing framework for backend
+    priority: medium
+    marketplace_id: pytest-runner
+    install_command: /plugin install pytest-runner
+    category: testing
+  - name: docker-manager
+    reason: Docker container management for backend services
+    priority: medium
+    marketplace_id: docker-manager
+    install_command: /plugin install docker-manager
+    category: deployment
+  - name: test-generator
+    reason: AI-powered test case generation for mobile
+    priority: medium
+    marketplace_id: test-generator
+    install_command: /plugin install test-generator
+    category: testing
+  - name: swagger-editor
+    reason: API documentation for backend integration
+    priority: medium
+    marketplace_id: swagger-editor
+    install_command: /plugin install swagger-editor
+    category: documentation
+  low_priority:
+  - name: sql-formatter
+    reason: SQL query formatting
+    priority: low
+    marketplace_id: sql-formatter
+    install_command: /plugin install sql-formatter
+    category: database
+  - name: git-assistant
+    reason: Advanced Git workflow assistance
+    priority: low
+    marketplace_id: git-assistant
+    install_command: /plugin install git-assistant
+    category: productivity
+  - name: sugar
+    reason: Enhanced Claude Code experience
+    priority: low
+    marketplace_id: sugar
+    install_command: /plugin install sugar
+    category: productivity
+installed_plugins: []
+notes: Install recommended plugins using the install_command for each plugin.

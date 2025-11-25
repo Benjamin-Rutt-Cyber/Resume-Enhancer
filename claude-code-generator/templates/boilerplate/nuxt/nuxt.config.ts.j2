@@ -1,0 +1,28 @@
+// https://nuxt.com/docs/api/configuration/nuxt-config
+export default defineNuxtConfig({
+  devtools: { enabled: true },
+
+  modules: [
+    '@nuxtjs/tailwindcss'{% if has_authentication %},
+    'nuxt-auth-utils'{% endif %}
+  ],
+
+  runtimeConfig: {
+    public: {
+      apiBase: process.env.API_BASE_URL || 'http://localhost:{{ api_port }}/api'
+    }
+  },
+
+  app: {
+    head: {
+      title: '{{ project_name }}',
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'description', content: '{{ project_description }}' }
+      ]
+    }
+  },
+
+  compatibilityDate: '2024-01-01'
+})

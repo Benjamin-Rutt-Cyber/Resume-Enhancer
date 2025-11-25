@@ -1,0 +1,621 @@
+# Database Migrations
+
+Manage database schema changes for {{ project_name }} safely and consistently.
+
+{% if not database %}
+**Note:** This project doesn't use a database. This command is not applicable.
+{% else %}
+
+## Quick Migration Commands
+
+{% if backend_framework and 'python' in backend_framework and 'fastapi' in backend_framework %}
+### Using Alembic (FastAPI)
+
+```bash
+cd backend
+
+# Create a new migration
+alembic revision --autogenerate -m "description of changes"
+
+# Review the generated migration file in alembic/versions/
+
+# Apply migrations
+alembic upgrade head
+
+# Rollback one migration
+alembic downgrade -1
+
+# View migration history
+alembic history
+
+# View current migration version
+alembic current
+```
+
+{% elif backend_framework and 'django' in backend_framework %}
+### Using Django Migrations
+
+```bash
+cd backend
+
+# Create migrations for model changes
+python manage.py makemigrations
+
+# Create migration with description
+python manage.py makemigrations --name "add_user_profile"
+
+# View SQL that will be executed
+python manage.py sqlmigrate app_name 0001
+
+# Apply migrations
+python manage.py migrate
+
+# Rollback to specific migration
+python manage.py migrate app_name 0001
+
+# List all migrations
+python manage.py showmigrations
+```
+
+{% elif backend_framework and 'node' in backend_framework %}
+### Using Sequelize/TypeORM (Node.js)
+
+```bash
+cd backend
+
+# Create a new migration
+npx sequelize-cli migration:generate --name description-of-changes
+# OR for TypeORM:
+npm run typeorm migration:generate -- -n DescriptionOfChanges
+
+# Run migrations
+npx sequelize-cli db:migrate
+# OR for TypeORM:
+npm run typeorm migration:run
+
+# Rollback last migration
+npx sequelize-cli db:migrate:undo
+# OR for TypeORM:
+npm run typeorm migration:revert
+
+# View migration status
+npx sequelize-cli db:migrate:status
+```
+
+{% endif %}
+
+## Complete Migration Workflow
+
+### 1. Create Migration
+
+When you change your database models:
+
+{% if backend_framework and 'python' in backend_framework and 'fastapi' in backend_framework %}
+```bash
+cd backend
+
+# Auto-generate migration from model changes
+alembic revision --autogenerate -m "add users table"
+
+# Or create empty migration for manual SQL
+alembic revision -m "custom data migration"
+```
+
+**Generated file:** `backend/alembic/versions/xxxx_add_users_table.py`
+
+```python
+"""add users table
+
+Revision ID: xxxx
+Revises: yyyy
+Create Date: 2025-11-18
+
+"""
+from alembic import op
+import sqlalchemy as sa
+
+def upgrade():
+    op.create_table(
+        'users',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('email', sa.String(), nullable=False),
+        sa.Column('created_at', sa.DateTime(), nullable=False),
+        sa.PrimaryKeyConstraint('id')
+    )
+
+def downgrade():
+    op.drop_table('users')
+```
+
+{% elif backend_framework and 'django' in backend_framework %}
+```bash
+cd backend
+
+# Generate migrations
+python manage.py makemigrations
+
+# Create empty migration for custom operations
+python manage.py makemigrations --empty app_name
+```
+
+**Generated file:** `backend/app_name/migrations/0001_initial.py`
+
+```python
+from django.db import migrations, models
+
+class Migration(migrations.Migration):
+    initial = True
+
+    dependencies = []
+
+    operations = [
+        migrations.CreateModel(
+            name='User',
+            fields=[
+                ('id', models.AutoField(primary_key=True)),
+                ('email', models.EmailField(unique=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+            ],
+        ),
+    ]
+```
+
+{% elif backend_framework and 'node' in backend_framework %}
+```bash
+cd backend
+
+# Generate migration
+npx sequelize-cli migration:generate --name add-users-table
+```
+
+**Generated file:** `backend/migrations/xxxxx-add-users-table.js`
+
+```javascript
+module.exports = {
+  up: async (queryInterface, Sequelize) => {
+    await queryInterface.createTable('Users', {
+      id: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+      },
+      email: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true
+      },
+      createdAt: {
+        type: Sequelize.DATE,
+        allowNull: false
+      }
+    });
+  },
+
+  down: async (queryInterface, Sequelize) => {
+    await queryInterface.dropTable('Users');
+  }
+};
+```
+
+{% endif %}
+
+### 2. Review Migration
+
+**Always review generated migrations before applying!**
+
+```bash
+# Check what SQL will be executed
+{% if backend_framework and 'python' in backend_framework and 'fastapi' in backend_framework %}
+# View in the migration file: backend/alembic/versions/xxxx_*.py
+
+{% elif backend_framework and 'django' in backend_framework %}
+python manage.py sqlmigrate app_name 0001
+
+{% elif backend_framework and 'node' in backend_framework %}
+# Review the migration file: backend/migrations/xxxx-*.js
+
+{% endif %}
+
+# Test migration on development database first!
+```
+
+### 3. Apply Migration
+
+{% if database == 'postgresql' %}
+```bash
+# Backup database first (recommended for production)
+pg_dump {{ project_slug }} > backup_$(date +%Y%m%d_%H%M%S).sql
+
+{% elif database == 'mysql' %}
+```bash
+# Backup database first (recommended for production)
+mysqldump {{ project_slug }} > backup_$(date +%Y%m%d_%H%M%S).sql
+
+{% endif %}
+# Apply migration
+{% if backend_framework and 'python' in backend_framework and 'fastapi' in backend_framework %}
+cd backend
+alembic upgrade head
+
+{% elif backend_framework and 'django' in backend_framework %}
+cd backend
+python manage.py migrate
+
+{% elif backend_framework and 'node' in backend_framework %}
+cd backend
+npx sequelize-cli db:migrate
+
+{% endif %}
+```
+
+### 4. Verify Migration
+
+```bash
+# Check database schema
+{% if database == 'postgresql' %}
+psql {{ project_slug }} -c "\dt"  # List tables
+psql {{ project_slug }} -c "\d users"  # Describe table
+
+{% elif database == 'mysql' %}
+mysql -e "USE {{ project_slug }}; SHOW TABLES;"
+mysql -e "USE {{ project_slug }}; DESCRIBE users;"
+
+{% elif database == 'sqlite' %}
+sqlite3 {{ project_slug }}.db ".tables"
+sqlite3 {{ project_slug }}.db ".schema users"
+
+{% endif %}
+
+# Verify migration was recorded
+{% if backend_framework and 'python' in backend_framework and 'fastapi' in backend_framework %}
+alembic current
+
+{% elif backend_framework and 'django' in backend_framework %}
+python manage.py showmigrations
+
+{% elif backend_framework and 'node' in backend_framework %}
+npx sequelize-cli db:migrate:status
+
+{% endif %}
+```
+
+## Common Migration Operations
+
+### Add Column
+
+{% if backend_framework and 'python' in backend_framework and 'fastapi' in backend_framework %}
+```python
+# In migration file
+def upgrade():
+    op.add_column('users', sa.Column('phone', sa.String(), nullable=True))
+
+def downgrade():
+    op.drop_column('users', 'phone')
+```
+
+{% elif backend_framework and 'django' in backend_framework %}
+```python
+# Update model first, then:
+python manage.py makemigrations
+# Django auto-generates the column addition
+```
+
+{% elif backend_framework and 'node' in backend_framework %}
+```javascript
+up: async (queryInterface, Sequelize) => {
+  await queryInterface.addColumn('Users', 'phone', {
+    type: Sequelize.STRING,
+    allowNull: true
+  });
+}
+```
+
+{% endif %}
+
+### Rename Column
+
+{% if backend_framework and 'python' in backend_framework and 'fastapi' in backend_framework %}
+```python
+def upgrade():
+    op.alter_column('users', 'old_name', new_column_name='new_name')
+
+def downgrade():
+    op.alter_column('users', 'new_name', new_column_name='old_name')
+```
+
+{% elif backend_framework and 'django' in backend_framework %}
+```python
+# In migration file
+operations = [
+    migrations.RenameField(
+        model_name='user',
+        old_name='old_name',
+        new_name='new_name',
+    ),
+]
+```
+
+{% elif backend_framework and 'node' in backend_framework %}
+```javascript
+up: async (queryInterface) => {
+  await queryInterface.renameColumn('Users', 'old_name', 'new_name');
+}
+```
+
+{% endif %}
+
+### Add Index
+
+{% if backend_framework and 'python' in backend_framework and 'fastapi' in backend_framework %}
+```python
+def upgrade():
+    op.create_index('ix_users_email', 'users', ['email'], unique=True)
+
+def downgrade():
+    op.drop_index('ix_users_email')
+```
+
+{% elif backend_framework and 'django' in backend_framework %}
+```python
+# In model, add:
+class Meta:
+    indexes = [
+        models.Index(fields=['email']),
+    ]
+# Then run: python manage.py makemigrations
+```
+
+{% elif backend_framework and 'node' in backend_framework %}
+```javascript
+up: async (queryInterface) => {
+  await queryInterface.addIndex('Users', ['email'], {
+    unique: true,
+    name: 'users_email_idx'
+  });
+}
+```
+
+{% endif %}
+
+### Data Migration
+
+{% if backend_framework and 'python' in backend_framework and 'fastapi' in backend_framework %}
+```python
+# Create empty migration: alembic revision -m "migrate user data"
+
+from alembic import op
+from sqlalchemy import orm
+
+def upgrade():
+    # Get database session
+    bind = op.get_bind()
+    session = orm.Session(bind=bind)
+
+    # Update data
+    session.execute("UPDATE users SET status = 'active' WHERE status IS NULL")
+    session.commit()
+
+def downgrade():
+    # Reverse data changes if possible
+    pass
+```
+
+{% elif backend_framework and 'django' in backend_framework %}
+```python
+# Create migration: python manage.py makemigrations --empty app_name
+
+from django.db import migrations
+
+def migrate_data(apps, schema_editor):
+    User = apps.get_model('app_name', 'User')
+    User.objects.filter(status__isnull=True).update(status='active')
+
+class Migration(migrations.Migration):
+    operations = [
+        migrations.RunPython(migrate_data, reverse_code=migrations.RunPython.noop),
+    ]
+```
+
+{% elif backend_framework and 'node' in backend_framework %}
+```javascript
+up: async (queryInterface) => {
+  await queryInterface.sequelize.query(
+    "UPDATE Users SET status = 'active' WHERE status IS NULL"
+  );
+}
+```
+
+{% endif %}
+
+## Migration Best Practices
+
+### 1. Always Backup Before Migrating
+
+```bash
+{% if database == 'postgresql' %}
+# Backup PostgreSQL
+pg_dump {{ project_slug }} > backup_$(date +%Y%m%d_%H%M%S).sql
+
+# Restore if needed
+psql {{ project_slug }} < backup_TIMESTAMP.sql
+
+{% elif database == 'mysql' %}
+# Backup MySQL
+mysqldump {{ project_slug }} > backup_$(date +%Y%m%d_%H%M%S).sql
+
+# Restore if needed
+mysql {{ project_slug }} < backup_TIMESTAMP.sql
+
+{% elif database == 'sqlite' %}
+# Backup SQLite
+cp {{ project_slug }}.db {{ project_slug }}.db.backup_$(date +%Y%m%d_%H%M%S)
+
+# Restore if needed
+cp {{ project_slug }}.db.backup_TIMESTAMP {{ project_slug }}.db
+
+{% endif %}
+```
+
+### 2. Test Migrations Locally First
+
+```bash
+# 1. Apply migration on development database
+{% if backend_framework and 'python' in backend_framework and 'fastapi' in backend_framework %}
+alembic upgrade head
+
+{% elif backend_framework and 'django' in backend_framework %}
+python manage.py migrate
+
+{% elif backend_framework and 'node' in backend_framework %}
+npx sequelize-cli db:migrate
+
+{% endif %}
+
+# 2. Test application works
+/run-tests
+
+# 3. Rollback to test downgrade
+{% if backend_framework and 'python' in backend_framework and 'fastapi' in backend_framework %}
+alembic downgrade -1
+
+{% elif backend_framework and 'django' in backend_framework %}
+python manage.py migrate app_name previous_migration
+
+{% elif backend_framework and 'node' in backend_framework %}
+npx sequelize-cli db:migrate:undo
+
+{% endif %}
+
+# 4. Re-apply to test upgrade again
+{% if backend_framework and 'python' in backend_framework and 'fastapi' in backend_framework %}
+alembic upgrade head
+{% elif backend_framework and 'django' in backend_framework %}
+python manage.py migrate
+{% elif backend_framework and 'node' in backend_framework %}
+npx sequelize-cli db:migrate
+{% endif %}
+```
+
+### 3. Make Migrations Reversible
+
+Always implement the `downgrade`/`down` function:
+
+```python
+# ❌ BAD
+def downgrade():
+    pass  # Can't rollback!
+
+# ✅ GOOD
+def downgrade():
+    op.drop_table('users')  # Properly reverses upgrade
+```
+
+### 4. Avoid Destructive Migrations in Production
+
+```python
+# ❌ DANGEROUS - loses data
+def upgrade():
+    op.drop_column('users', 'old_data')
+
+# ✅ SAFER - deprecate gradually
+def upgrade():
+    # Step 1: Add new column (deploy this first)
+    op.add_column('users', sa.Column('new_data', sa.String()))
+
+    # Step 2: Migrate data (separate migration, deploy later)
+    # op.execute("UPDATE users SET new_data = old_data")
+
+    # Step 3: Drop old column (final migration, deploy last)
+    # op.drop_column('users', 'old_data')
+```
+
+## Troubleshooting
+
+### Migration Conflicts
+
+```bash
+{% if backend_framework and 'python' in backend_framework and 'fastapi' in backend_framework %}
+# If multiple developers created migrations
+alembic history
+# Merge migrations or adjust revision IDs
+
+{% elif backend_framework and 'django' in backend_framework %}
+# Django detects conflicts automatically
+python manage.py makemigrations --merge
+
+{% elif backend_framework and 'node' in backend_framework %}
+# Manually adjust migration timestamps or order
+
+{% endif %}
+```
+
+### Migration Fails Midway
+
+```bash
+{% if backend_framework and 'python' in backend_framework and 'fastapi' in backend_framework %}
+# Mark migration as failed
+alembic stamp head-1
+
+# Fix migration file
+# Re-run
+alembic upgrade head
+
+{% elif backend_framework and 'django' in backend_framework %}
+# Django creates fake migration
+python manage.py migrate --fake app_name migration_number
+
+# Fix issues then re-run
+python manage.py migrate
+
+{% elif backend_framework and 'node' in backend_framework %}
+# Manually update SequelizeMeta table
+# Fix migration, then re-run
+npx sequelize-cli db:migrate
+
+{% endif %}
+```
+
+### Database Out of Sync
+
+```bash
+{% if backend_framework and 'python' in backend_framework and 'fastapi' in backend_framework %}
+# Compare database with models
+alembic check
+
+# Stamp database to match code
+alembic stamp head
+
+{% elif backend_framework and 'django' in backend_framework %}
+# Check for unapplied migrations
+python manage.py showmigrations
+
+# Mark migrations as applied without running
+python manage.py migrate --fake
+
+{% elif backend_framework and 'node' in backend_framework %}
+# Check migration status
+npx sequelize-cli db:migrate:status
+
+{% endif %}
+```
+
+## Production Migration Checklist
+
+- [ ] Backup database before migrating
+- [ ] Test migration on staging environment
+- [ ] Review migration SQL for performance impact
+- [ ] Schedule during low-traffic window
+- [ ] Have rollback plan ready
+- [ ] Monitor application after migration
+- [ ] Verify data integrity post-migration
+- [ ] Update documentation
+
+## Next Steps
+
+- Run `/run-tests` to verify database changes
+- Update API documentation if schema changed
+- Deploy application with new migrations
+- Monitor database performance
+
+Database migrations completed for {{ project_name }}! 📊
+{% endif %}

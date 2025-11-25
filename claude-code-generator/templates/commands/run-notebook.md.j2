@@ -1,0 +1,536 @@
+# Run Jupyter Notebook
+
+Start and manage Jupyter notebooks for {{ project_name }} data analysis and experimentation.
+
+{% if project_type != 'data-science' %}
+**Note:** This command is optimized for data science projects. Your project type is {{ project_type }}.
+{% endif %}
+
+## Quick Start
+
+### Start Notebook Server
+
+```bash
+# Start Jupyter Lab (recommended)
+cd notebooks
+jupyter lab
+
+# Or start classic Jupyter Notebook
+jupyter notebook
+
+# Start on specific port
+jupyter lab --port=8889
+
+# Start without opening browser
+jupyter lab --no-browser
+```
+
+**Access:** http://localhost:8888 (default) or the port specified
+
+### Start in Project Root
+
+```bash
+# Start from project root with access to all code
+jupyter lab
+
+# Start with specific notebook directory
+jupyter lab --notebook-dir=./notebooks
+```
+
+## Jupyter Lab vs Jupyter Notebook
+
+### Jupyter Lab (Recommended)
+Modern interface with more features:
+- Multiple notebooks in tabs
+- File browser
+- Terminal access
+- Extension system
+- Better debugging
+
+```bash
+jupyter lab
+```
+
+### Classic Jupyter Notebook
+Traditional interface:
+- Simpler UI
+- Lighter weight
+- Better for basic notebooks
+
+```bash
+jupyter notebook
+```
+
+## Common Workflows
+
+### 1. Data Exploration
+
+```bash
+# Start notebook
+jupyter lab
+
+# Create new notebook: notebooks/01_data_exploration.ipynb
+# Import libraries and load data
+```
+
+**Typical notebook structure:**
+```python
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load data
+df = pd.read_csv('../data/raw/dataset.csv')
+
+# Explore
+df.head()
+df.info()
+df.describe()
+
+# Visualize
+sns.pairplot(df)
+plt.show()
+```
+
+### 2. Model Development
+
+```bash
+# Create new notebook: notebooks/02_model_training.ipynb
+```
+
+```python
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+import joblib
+
+# Load processed data
+X = pd.read_csv('../data/processed/features.csv')
+y = pd.read_csv('../data/processed/labels.csv')
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+# Train model
+model = RandomForestClassifier()
+model.fit(X_train, y_train)
+
+# Evaluate
+score = model.score(X_test, y_test)
+print(f'Accuracy: {score:.3f}')
+
+# Save model
+joblib.dump(model, '../models/random_forest.joblib')
+```
+
+### 3. Results Visualization
+
+```bash
+# Create new notebook: notebooks/03_results_analysis.ipynb
+```
+
+```python
+import plotly.express as px
+import plotly.graph_objects as go
+
+# Interactive plots
+fig = px.scatter(df, x='feature1', y='feature2', color='label')
+fig.show()
+
+# Save plots
+fig.write_html('../reports/figures/scatter_plot.html')
+```
+
+## Notebook Organization
+
+### Recommended Structure
+
+```
+notebooks/
+├── 01_data_exploration.ipynb
+├── 02_data_cleaning.ipynb
+├── 03_feature_engineering.ipynb
+├── 04_model_training.ipynb
+├── 05_model_evaluation.ipynb
+├── 06_model_deployment.ipynb
+└── exploratory/
+    ├── experiment_1.ipynb
+    └── experiment_2.ipynb
+```
+
+### Naming Convention
+- **Numbered:** For sequential analysis steps
+- **Descriptive:** Clear indication of content
+- **Dated:** For experiments (e.g., `2025-11-18_experiment.ipynb`)
+
+## Jupyter Extensions
+
+### Install Useful Extensions
+
+```bash
+# Install JupyterLab extensions
+pip install jupyterlab-git  # Git integration
+pip install jupyterlab-lsp  # Language server (autocomplete)
+pip install jupyterlab-code-formatter  # Code formatting
+
+# Install classic notebook extensions
+pip install jupyter_contrib_nbextensions
+jupyter contrib nbextension install --user
+
+# Enable extensions
+jupyter nbextension enable codefolding/main
+jupyter nbextension enable execute_time/ExecuteTime
+```
+
+### Recommended Extensions
+- **jupyterlab-git:** Git interface in JupyterLab
+- **jupyterlab-lsp:** Better autocomplete
+- **jupyterlab-code-formatter:** Format code with Black
+- **jupyterlab-toc:** Table of contents
+- **jupyterlab-debugger:** Visual debugging
+
+## Environment Management
+
+### Use Project Virtual Environment
+
+```bash
+# Activate virtual environment first
+source .venv/bin/activate  # Unix/macOS
+.venv\Scripts\activate     # Windows
+
+# Install Jupyter in project environment
+pip install jupyterlab ipykernel
+
+# Register environment as kernel
+python -m ipykernel install --user --name={{ project_slug }} --display-name "Python ({{ project_name }})"
+
+# Start Jupyter
+jupyter lab
+```
+
+### Select Kernel in Notebook
+1. Open notebook
+2. Click kernel name (top right)
+3. Select "Python ({{ project_name }})"
+
+### List Available Kernels
+
+```bash
+jupyter kernelspec list
+```
+
+### Remove Kernel
+
+```bash
+jupyter kernelspec uninstall {{ project_slug }}
+```
+
+## Working with Data
+
+### Load Data in Notebooks
+
+```python
+# From CSV
+df = pd.read_csv('../data/raw/dataset.csv')
+
+# From database
+{% if database == 'postgresql' %}
+import psycopg2
+import pandas as pd
+
+conn = psycopg2.connect("dbname={{ project_slug }} user=postgres")
+df = pd.read_sql_query("SELECT * FROM users", conn)
+{% endif %}
+
+# From Parquet
+df = pd.read_parquet('../data/processed/dataset.parquet')
+
+# From API
+import requests
+response = requests.get('http://localhost:8000/api/data')
+df = pd.DataFrame(response.json())
+```
+
+### Save Results
+
+```python
+# Save processed data
+df.to_csv('../data/processed/cleaned_data.csv', index=False)
+df.to_parquet('../data/processed/cleaned_data.parquet')
+
+# Save figures
+plt.savefig('../reports/figures/distribution.png', dpi=300, bbox_inches='tight')
+
+# Save models
+import joblib
+joblib.dump(model, '../models/model_v1.joblib')
+```
+
+## Convert Notebooks
+
+### To Python Script
+
+```bash
+# Convert single notebook
+jupyter nbconvert --to script notebooks/01_data_exploration.ipynb
+
+# Output: notebooks/01_data_exploration.py
+
+# Convert all notebooks
+jupyter nbconvert --to script notebooks/*.ipynb
+```
+
+### To HTML/PDF
+
+```bash
+# Convert to HTML
+jupyter nbconvert --to html notebooks/01_data_exploration.ipynb
+
+# Convert to PDF (requires LaTeX)
+jupyter nbconvert --to pdf notebooks/01_data_exploration.ipynb
+
+# Convert with no code cells (just output)
+jupyter nbconvert --to html --no-input notebooks/01_data_exploration.ipynb
+```
+
+### Execute and Convert
+
+```bash
+# Execute notebook and save output
+jupyter nbconvert --to notebook --execute notebooks/01_data_exploration.ipynb
+
+# Execute and convert to HTML
+jupyter nbconvert --to html --execute notebooks/01_data_exploration.ipynb
+```
+
+## Notebook Best Practices
+
+### 1. Clear Cell Output Before Committing
+
+```bash
+# Clear all outputs
+jupyter nbconvert --clear-output --inplace notebooks/*.ipynb
+
+# Or use git filter (add to .gitattributes)
+*.ipynb filter=nbstripout
+```
+
+### 2. Keep Notebooks Modular
+
+```python
+# ❌ BAD - Everything in one cell
+# 500 lines of code...
+
+# ✅ GOOD - Logical sections
+# Cell 1: Imports
+import pandas as pd
+
+# Cell 2: Load data
+df = load_data()
+
+# Cell 3: Process
+df_clean = clean_data(df)
+
+# Cell 4: Visualize
+plot_results(df_clean)
+```
+
+### 3. Use Magic Commands
+
+```python
+# Time execution
+%time expensive_operation()
+%timeit quick_operation()
+
+# Load external code
+%load script.py
+
+# Run external script
+%run analysis.py
+
+# Debug
+%debug  # Enter debugger on exception
+
+# System commands
+!ls -la ../data
+!pip list
+
+# Matplotlib inline
+%matplotlib inline
+```
+
+### 4. Document as You Go
+
+```markdown
+# Markdown cells for documentation
+## Section: Data Loading
+
+This section loads the raw data from the CSV file and performs initial validation.
+
+**Expected output:** DataFrame with 10,000 rows and 15 columns
+```
+
+## Debugging in Notebooks
+
+### Interactive Debugging
+
+```python
+# Set breakpoint
+import pdb; pdb.set_trace()
+
+# Or use IPython debugger
+%debug  # After exception
+```
+
+### Use JupyterLab Debugger
+
+1. Enable debugger: View → Activate Debugger
+2. Set breakpoints by clicking line numbers
+3. Run cell and inspect variables
+
+### Print Debugging
+
+```python
+# Use display() instead of print()
+from IPython.display import display
+
+display(df.head())
+display(df.describe())
+```
+
+## Sharing Notebooks
+
+### Export to Standalone HTML
+
+```bash
+# With all outputs embedded
+jupyter nbconvert --to html notebooks/analysis.ipynb
+
+# Share the HTML file (no Jupyter needed to view)
+```
+
+### Use nbviewer
+
+```bash
+# Upload to GitHub
+# Share link: https://nbviewer.org/github/username/repo/blob/main/notebooks/analysis.ipynb
+```
+
+### Create Interactive Widgets
+
+```python
+from ipywidgets import interact
+import matplotlib.pyplot as plt
+
+@interact(n=(1, 100))
+def plot_sine(n=50):
+    x = np.linspace(0, 2*np.pi, n)
+    plt.plot(x, np.sin(x))
+    plt.show()
+```
+
+## Performance Tips
+
+### 1. Use %%time for Profiling
+
+```python
+%%time
+# This cell will show execution time
+result = expensive_computation()
+```
+
+### 2. Load Data Once
+
+```python
+# Cache data loading
+if 'df' not in locals():
+    print("Loading data...")
+    df = pd.read_csv('../data/large_dataset.csv')
+```
+
+### 3. Use Dask for Large Data
+
+```python
+import dask.dataframe as dd
+
+# Lazy loading
+ddf = dd.read_csv('../data/huge_dataset.csv')
+
+# Computation happens here
+result = ddf.groupby('category').mean().compute()
+```
+
+## Troubleshooting
+
+### Kernel Keeps Dying
+
+```bash
+# Increase memory limit
+jupyter lab --NotebookApp.max_buffer_size=1000000000
+
+# Check memory usage
+import psutil
+print(f"Memory: {psutil.virtual_memory().percent}%")
+```
+
+### Can't Import Local Modules
+
+```python
+# Add project root to path
+import sys
+sys.path.append('../')
+
+# Now you can import
+from src.models import train_model
+```
+
+### Notebook Server Won't Start
+
+```bash
+# Check if port is in use
+lsof -i :8888  # Unix/macOS
+netstat -ano | findstr :8888  # Windows
+
+# Start on different port
+jupyter lab --port=8889
+
+# Reset configuration
+jupyter lab --generate-config
+```
+
+## Integration with MLflow
+
+```python
+import mlflow
+import mlflow.sklearn
+
+# Start tracking
+mlflow.start_run()
+
+# Log parameters
+mlflow.log_param("n_estimators", 100)
+mlflow.log_param("max_depth", 10)
+
+# Train model
+model.fit(X_train, y_train)
+
+# Log metrics
+mlflow.log_metric("accuracy", accuracy)
+mlflow.log_metric("f1_score", f1)
+
+# Log model
+mlflow.sklearn.log_model(model, "model")
+
+mlflow.end_run()
+```
+
+## Next Steps
+
+After notebook exploration:
+- Convert insights to production code
+- Move reusable code to `src/` modules
+- Create automated pipelines
+- Deploy models with `/deploy`
+- Document findings in reports/
+
+Happy exploring in {{ project_name }}! 📊🔬

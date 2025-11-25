@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+{% if backend_framework %}
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../Dockerfile
+    container_name: {{ project_slug }}_backend
+    ports:
+      - "{{ api_port }}:{{ api_port }}"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=True
+    volumes:
+      - ./backend:/app
+    {% if database %}depends_on:
+      - {{ database }}{% endif %}
+    restart: unless-stopped
+{% endif %}
+{% if frontend_framework %}
+  frontend:
+    build:
+      context: ./frontend
+    container_name: {{ project_slug }}_frontend
+    ports:
+      - "{{ frontend_port }}:{{ frontend_port }}"
+    environment:
+      - VITE_API_URL=http://localhost:{{ api_port }}
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    restart: unless-stopped
+{% endif %}
+{% if database == 'postgresql' %}
+  postgres:
+    image: postgres:15-alpine
+    container_name: {{ project_slug }}_postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB={{ project_slug }}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+{% endif %}
+{% if database == 'mongodb' %}
+  mongodb:
+    image: mongo:7
+    container_name: {{ project_slug }}_mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
+      - MONGO_INITDB_DATABASE={{ project_slug }}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+{% endif %}
+{% if 'redis' in project_description.lower() or has_caching %}
+  redis:
+    image: redis:7-alpine
+    container_name: {{ project_slug }}_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+{% endif %}
+
+volumes:
+{% if database == 'postgresql' %}
+  postgres_data:
+{% elif database == 'mongodb' %}
+  mongo_data:
+{% endif %}
+{% if 'redis' in project_description.lower() or has_caching %}
+  redis_data:
+{% endif %}

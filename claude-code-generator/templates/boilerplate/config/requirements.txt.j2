@@ -1,0 +1,50 @@
+# {{ project_name }} - Python Dependencies
+
+{% if backend_framework in ['python-fastapi', 'fastapi'] %}
+# FastAPI Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+pydantic==2.5.0
+pydantic-settings==2.1.0
+{% elif backend_framework == 'django' %}
+# Django Framework
+django==5.0
+djangorestframework==3.14.0
+django-cors-headers==4.3.1
+{% elif backend_framework == 'flask' %}
+# Flask Framework
+flask==3.0.0
+flask-cors==4.0.0
+{% endif %}
+{% if has_authentication %}
+# Authentication
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+{% endif %}
+{% if database == 'postgresql' %}
+# PostgreSQL Database
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.23
+alembic==1.13.1
+{% elif database == 'mongodb' %}
+# MongoDB Database
+pymongo==4.6.1
+motor==3.3.2
+{% endif %}
+{% if 'redis' in project_description.lower() or has_caching %}
+# Redis Cache
+redis==5.0.1
+{% endif %}
+{% if 'email' in project_description.lower() or has_email %}
+# Email
+python-dotenv==1.0.0
+{% endif %}
+
+# Development
+pytest==7.4.3
+pytest-cov==4.1.0
+black==23.12.1
+ruff==0.1.8
+mypy==1.7.1

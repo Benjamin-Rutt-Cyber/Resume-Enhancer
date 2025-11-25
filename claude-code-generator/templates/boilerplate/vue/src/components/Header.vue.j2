@@ -1,0 +1,57 @@
+<script setup lang="ts">
+import { RouterLink } from 'vue-router'
+</script>
+
+<template>
+  <header>
+    <nav>
+      <h2>{{ project_name }}</h2>
+      <ul>
+        <li><RouterLink to="/">Home</RouterLink></li>
+        <li><RouterLink to="/about">About</RouterLink></li>
+      </ul>
+    </nav>
+  </header>
+</template>
+
+<style scoped>
+header {
+  border-bottom: 1px solid #333;
+  padding: 1rem 2rem;
+  margin-bottom: 2rem;
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+h2 {
+  margin: 0;
+}
+
+ul {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  color: #42b983;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+a.router-link-active {
+  color: #2c3e50;
+}
+</style>

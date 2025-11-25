@@ -1,0 +1,370 @@
+# SaaS Web Application Project Type
+
+name: saas-web-app
+display_name: SaaS Web Application
+description: Full-stack web application with subscription model, user management, and scalable architecture
+
+# Default agents for this project type
+agents:
+  - api-development-agent
+  - frontend-agent
+  - database-agent
+  - testing-agent
+  - deployment-agent
+  - security-agent
+  - documentation-agent
+
+# Default skills for this project type
+skills:
+  - python-fastapi
+  - react-typescript
+  - postgresql
+  - docker-deployment
+  - authentication
+  - rest-api-design
+  # NOTE: Additional skills available based on tech stack selection:
+  # - node-express (if backend: node-express)
+  # - django (if backend: django)
+  # - vue-typescript (if frontend: vue-typescript)
+
+# Default commands for this project type
+commands:
+  - setup-dev
+  - run-server
+  - run-tests
+  - db-migrate
+  - deploy
+  # TODO: Add when templates are created
+  # - lint-code
+  # - format-code
+  # - build-release
+
+# Documentation to generate
+docs: []
+  # NOTE: Temporarily disabled missing docs for testing
+  # - ARCHITECTURE
+  # - API
+  # - SETUP
+  # - CONTRIBUTING
+  # - DEPLOYMENT
+  # - TESTING
+
+# Tech stack options
+tech_stack_options:
+  backend:
+    - name: python-fastapi
+      display_name: Python FastAPI
+      description: Modern, fast Python web framework with automatic OpenAPI
+      recommended: true
+    - name: node-express
+      display_name: Node.js Express
+      description: Popular JavaScript framework for building APIs
+    - name: django
+      display_name: Django
+      description: Full-featured Python web framework with ORM and admin
+    - name: go-gin
+      display_name: Go Gin
+      description: High-performance Go web framework
+    - name: ruby-rails
+      display_name: Ruby on Rails
+      description: Full-featured Ruby web framework
+
+  frontend:
+    - name: react-typescript
+      display_name: React + TypeScript
+      description: Popular React with type safety
+      recommended: true
+    - name: nextjs
+      display_name: Next.js
+      description: React framework with SSR, Server Components, and App Router
+    - name: vue-typescript
+      display_name: Vue.js + TypeScript
+      description: Progressive framework with TypeScript
+    - name: nuxt
+      display_name: Nuxt.js
+      description: Vue framework with auto-imports, SSR, and file-based routing
+    - name: svelte
+      display_name: Svelte/SvelteKit
+      description: Compiled component framework with reactive declarations
+    - name: angular
+      display_name: Angular
+      description: Enterprise framework with dependency injection and RxJS
+
+  database:
+    - name: postgresql
+      display_name: PostgreSQL
+      description: Powerful open-source relational database
+      recommended: true
+    - name: mysql
+      display_name: MySQL
+      description: Popular open-source relational database
+    - name: mongodb
+      display_name: MongoDB
+      description: NoSQL document database
+    - name: redis
+      display_name: Redis
+      description: In-memory data store for caching
+
+  deployment:
+    - name: docker
+      display_name: Docker + Docker Compose
+      description: Container-based deployment
+      recommended: true
+    - name: kubernetes
+      display_name: Kubernetes
+      description: Container orchestration platform
+    - name: aws
+      display_name: AWS
+      description: Amazon Web Services cloud platform
+    - name: vercel
+      display_name: Vercel
+      description: Platform for frontend frameworks
+
+# Feature options
+features:
+  - name: authentication
+    display_name: User Authentication
+    description: JWT/OAuth2 authentication with user management
+    default: true
+    adds_skills:
+      - authentication
+    adds_agents: []
+
+  - name: payments
+    display_name: Payment Integration
+    description: Stripe/PayPal integration for subscriptions
+    default: false
+    adds_skills:
+      - payment-integration
+    adds_agents:
+      - payment-agent
+
+  - name: email
+    display_name: Email System
+    description: Transactional emails and notifications
+    default: true
+    adds_skills:
+      - email-integration
+    adds_agents: []
+
+  - name: websockets
+    display_name: Real-time Features
+    description: WebSocket support for real-time updates
+    default: false
+    adds_skills:
+      - websocket-integration
+    adds_agents: []
+
+  - name: file_upload
+    display_name: File Upload
+    description: S3/cloud storage for file uploads
+    default: false
+    adds_skills:
+      - file-storage
+    adds_agents: []
+
+  - name: admin_panel
+    display_name: Admin Panel
+    description: Admin dashboard for management
+    default: true
+    adds_agents:
+      - admin-panel-agent
+    adds_skills: []
+
+  - name: analytics
+    display_name: Analytics
+    description: User analytics and tracking
+    default: false
+    adds_skills:
+      - analytics-integration
+    adds_agents: []
+
+  - name: multi_tenancy
+    display_name: Multi-Tenancy
+    description: Support for multiple organizations
+    default: false
+    adds_skills:
+      - multi-tenancy
+    adds_agents: []
+
+# Boilerplate code to generate
+boilerplate:
+  - backend-structure
+  - frontend-structure
+  - docker-compose
+  - github-actions
+  - database-schema
+  - api-routes
+
+# Recommended plugins for this project type
+recommended_plugins:
+  # High priority - essential tools
+  - name: prettier
+    reason: Code formatting for JavaScript/TypeScript frontend code
+    priority: high
+    conditions:
+      frontend: [react-typescript, vue-typescript, nextjs, nuxt, svelte, angular]
+
+  - name: eslint
+    reason: JavaScript/TypeScript linting for code quality
+    priority: high
+    conditions:
+      frontend: [react-typescript, vue-typescript, nextjs, nuxt, svelte, angular]
+
+  - name: black
+    reason: Python code formatting for backend
+    priority: high
+    conditions:
+      backend: [python-fastapi, django, flask]
+
+  - name: pytest-runner
+    reason: Python testing framework integration
+    priority: high
+    conditions:
+      backend: [python-fastapi, django, flask]
+
+  - name: jest-runner
+    reason: JavaScript/TypeScript testing framework
+    priority: high
+    conditions:
+      frontend: [react-typescript, vue-typescript, nextjs, nuxt, svelte, angular]
+
+  - name: docker-manager
+    reason: Docker container management for deployment
+    priority: high
+    conditions:
+      deployment: [docker, kubernetes]
+
+  - name: github-actions
+    reason: CI/CD workflow management
+    priority: high
+
+  - name: snyk-security
+    reason: Vulnerability scanning and dependency checking
+    priority: high
+
+  # Medium priority - very helpful
+  - name: github-copilot
+    reason: AI-powered code completion and suggestions
+    priority: medium
+
+  - name: pylint
+    reason: Python code analysis and linting
+    priority: medium
+    conditions:
+      backend: [python-fastapi, django, flask]
+
+  - name: react-devtools
+    reason: React component development and debugging
+    priority: medium
+    conditions:
+      frontend: [react-typescript, nextjs]
+
+  - name: vue-devtools
+    reason: Vue.js development tools
+    priority: medium
+    conditions:
+      frontend: [vue-typescript, nuxt]
+
+  - name: svelte-devtools
+    reason: Svelte development tools and debugging
+    priority: medium
+    conditions:
+      frontend: [svelte]
+
+  - name: angular-devtools
+    reason: Angular development tools and debugging
+    priority: medium
+    conditions:
+      frontend: [angular]
+
+  - name: fastapi-helper
+    reason: FastAPI framework development assistant
+    priority: medium
+    conditions:
+      backend: [python-fastapi]
+
+  - name: django-helper
+    reason: Django framework development assistant
+    priority: medium
+    conditions:
+      backend: [django]
+
+  - name: swagger-editor
+    reason: OpenAPI/Swagger documentation editor
+    priority: medium
+
+  - name: sql-formatter
+    reason: SQL query formatting and optimization
+    priority: medium
+    conditions:
+      database: [postgresql, mysql]
+
+  - name: mongodb-compass
+    reason: MongoDB database management
+    priority: medium
+    conditions:
+      database: [mongodb]
+
+  - name: stripe-integration
+    reason: Stripe payment integration helper
+    priority: high
+    conditions:
+      features: [payments]
+
+  - name: auth0-integration
+    reason: Auth0 authentication integration helper
+    priority: medium
+    conditions:
+      features: [authentication]
+
+  - name: aws-deployer
+    reason: AWS deployment and infrastructure management
+    priority: medium
+    conditions:
+      deployment: [aws]
+
+  - name: kubernetes-helper
+    reason: Kubernetes manifest generation and management
+    priority: medium
+    conditions:
+      deployment: [kubernetes]
+
+  # Low priority - nice to have
+  - name: git-assistant
+    reason: Advanced Git workflow assistance
+    priority: low
+
+  - name: sugar
+    reason: Enhanced Claude Code experience with quality of life features
+    priority: low
+
+# Default environment variables
+environment_variables:
+  - DATABASE_URL
+  - SECRET_KEY
+  - API_KEY
+  - FRONTEND_URL
+  - BACKEND_URL
+  - REDIS_URL
+
+# Project structure
+directory_structure:
+  - backend/
+  - backend/app/
+  - backend/app/api/
+  - backend/app/core/
+  - backend/app/models/
+  - backend/app/schemas/
+  - backend/tests/
+  - frontend/
+  - frontend/src/
+  - frontend/src/components/
+  - frontend/src/pages/
+  - frontend/src/hooks/
+  - frontend/src/utils/
+  - frontend/public/
+  - .claude/
+  - .github/workflows/
+  - docker/
+  - docs/

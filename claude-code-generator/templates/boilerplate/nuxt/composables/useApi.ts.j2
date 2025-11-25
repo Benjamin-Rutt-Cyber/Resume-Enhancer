@@ -1,0 +1,26 @@
+export const useApi = () => {
+  const config = useRuntimeConfig()
+  const baseURL = config.public.apiBase
+
+  const apiFetch = $fetch.create({
+    baseURL,
+    onRequest({ options }) {
+      // Add auth token if available
+      const token = useCookie('auth_token')
+      if (token.value) {
+        options.headers = {
+          ...options.headers,
+          Authorization: `Bearer ${token.value}`
+        }
+      }
+    },
+    onResponseError({ response }) {
+      // Handle errors globally
+      console.error('API Error:', response.status, response.statusText)
+    }
+  })
+
+  return {
+    apiFetch
+  }
+}

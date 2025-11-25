@@ -1,0 +1,528 @@
+# API Documentation
+
+Complete API reference for {{ project_name }}.
+
+{% if not backend_framework %}
+**Note:** This project doesn't have a backend API.
+{% else %}
+
+## Base URL
+
+**Development:** `http://localhost:8000`
+**Staging:** `https://staging-api.{{ project_slug }}.com`
+**Production:** `https://api.{{ project_slug }}.com`
+
+## Authentication
+
+{% if 'authentication' in features %}
+### JWT Token Authentication
+
+All authenticated endpoints require a Bearer token in the Authorization header.
+
+```http
+Authorization: Bearer <your_jwt_token>
+```
+
+### Login
+
+**Endpoint:** `POST /api/v1/auth/login`
+
+```http
+POST /api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "securepassword"
+}
+```
+
+**Response:**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh_token": "dGhpc2lzYXJlZnJlc2h0b2tlbg...",
+  "token_type": "bearer",
+  "expires_in": 3600
+}
+```
+
+### Register
+
+**Endpoint:** `POST /api/v1/auth/register`
+
+```http
+POST /api/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "newuser@example.com",
+  "password": "securepassword",
+  "name": "John Doe"
+}
+```
+
+**Response:** `201 Created`
+```json
+{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "email": "newuser@example.com",
+  "name": "John Doe",
+  "created_at": "2025-11-18T12:00:00Z"
+}
+```
+
+### Refresh Token
+
+**Endpoint:** `POST /api/v1/auth/refresh`
+
+```http
+POST /api/v1/auth/refresh
+Content-Type: application/json
+
+{
+  "refresh_token": "dGhpc2lzYXJlZnJlc2h0b2tlbg..."
+}
+```
+
+{% else %}
+No authentication required for this project.
+{% endif %}
+
+## API Endpoints
+
+### Health Check
+
+Check API status and version.
+
+**Endpoint:** `GET /health`
+
+```http
+GET /health
+```
+
+**Response:** `200 OK`
+```json
+{
+  "status": "healthy",
+  "version": "1.0.0",
+  "timestamp": "2025-11-18T12:00:00Z"
+}
+```
+
+{% if database %}
+### Users
+
+#### List Users
+
+**Endpoint:** `GET /api/v1/users`
+
+```http
+GET /api/v1/users?page=1&limit=10
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+- `page` (integer, optional): Page number (default: 1)
+- `limit` (integer, optional): Items per page (default: 10, max: 100)
+- `search` (string, optional): Search by name or email
+- `sort` (string, optional): Sort by field (e.g., `created_at`, `-name` for descending)
+
+**Response:** `200 OK`
+```json
+{
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "email": "user@example.com",
+      "name": "John Doe",
+      "created_at": "2025-11-18T12:00:00Z",
+      "updated_at": "2025-11-18T12:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 100,
+    "pages": 10
+  }
+}
+```
+
+#### Get User
+
+**Endpoint:** `GET /api/v1/users/{id}`
+
+```http
+GET /api/v1/users/123e4567-e89b-12d3-a456-426614174000
+Authorization: Bearer <token>
+```
+
+**Response:** `200 OK`
+```json
+{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "email": "user@example.com",
+  "name": "John Doe",
+  "bio": "Software developer",
+  "avatar_url": "https://example.com/avatar.jpg",
+  "created_at": "2025-11-18T12:00:00Z",
+  "updated_at": "2025-11-18T12:00:00Z"
+}
+```
+
+#### Create User
+
+**Endpoint:** `POST /api/v1/users`
+
+```http
+POST /api/v1/users
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "email": "newuser@example.com",
+  "name": "Jane Smith",
+  "password": "securepassword"
+}
+```
+
+**Response:** `201 Created`
+```json
+{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "email": "newuser@example.com",
+  "name": "Jane Smith",
+  "created_at": "2025-11-18T12:00:00Z"
+}
+```
+
+#### Update User
+
+**Endpoint:** `PUT /api/v1/users/{id}`
+
+```http
+PUT /api/v1/users/123e4567-e89b-12d3-a456-426614174000
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "name": "Jane Doe",
+  "bio": "Full-stack developer"
+}
+```
+
+**Response:** `200 OK`
+
+#### Delete User
+
+**Endpoint:** `DELETE /api/v1/users/{id}`
+
+```http
+DELETE /api/v1/users/123e4567-e89b-12d3-a456-426614174000
+Authorization: Bearer <token>
+```
+
+**Response:** `204 No Content`
+
+{% endif %}
+
+## Response Format
+
+### Success Response
+
+All successful responses follow this format:
+
+```json
+{
+  "data": { /* response data */ },
+  "message": "Operation successful",
+  "timestamp": "2025-11-18T12:00:00Z"
+}
+```
+
+For list endpoints:
+```json
+{
+  "data": [ /* array of items */ ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 100,
+    "pages": 10
+  }
+}
+```
+
+### Error Response
+
+All error responses follow this format:
+
+```json
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable error message",
+    "details": { /* additional error context */ }
+  },
+  "timestamp": "2025-11-18T12:00:00Z"
+}
+```
+
+## Status Codes
+
+| Code | Meaning | Usage |
+|------|---------|-------|
+| 200 | OK | Successful GET, PUT, PATCH |
+| 201 | Created | Successful POST |
+| 204 | No Content | Successful DELETE |
+| 400 | Bad Request | Invalid request data |
+| 401 | Unauthorized | Missing or invalid authentication |
+| 403 | Forbidden | Authenticated but not authorized |
+| 404 | Not Found | Resource doesn't exist |
+| 409 | Conflict | Duplicate resource |
+| 422 | Unprocessable Entity | Validation error |
+| 429 | Too Many Requests | Rate limit exceeded |
+| 500 | Internal Server Error | Server error |
+| 503 | Service Unavailable | Temporary unavailability |
+
+## Error Codes
+
+| Code | HTTP Status | Description |
+|------|-------------|-------------|
+| `VALIDATION_ERROR` | 422 | Request validation failed |
+| `UNAUTHORIZED` | 401 | Invalid or missing token |
+| `FORBIDDEN` | 403 | Insufficient permissions |
+| `NOT_FOUND` | 404 | Resource not found |
+| `DUPLICATE` | 409 | Resource already exists |
+| `RATE_LIMIT` | 429 | Too many requests |
+| `INTERNAL_ERROR` | 500 | Server error |
+
+## Rate Limiting
+
+API requests are rate limited to prevent abuse.
+
+**Limits:**
+- **Authenticated:** 1000 requests per hour
+- **Unauthenticated:** 100 requests per hour
+
+**Headers:**
+```http
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1637251200
+```
+
+**Rate Limit Exceeded Response:** `429 Too Many Requests`
+```json
+{
+  "error": {
+    "code": "RATE_LIMIT",
+    "message": "Rate limit exceeded. Try again in 3600 seconds."
+  }
+}
+```
+
+## Pagination
+
+List endpoints support pagination via query parameters.
+
+**Parameters:**
+- `page`: Page number (1-indexed)
+- `limit`: Items per page (max: 100)
+
+**Response:**
+```json
+{
+  "data": [...],
+  "pagination": {
+    "page": 2,
+    "limit": 10,
+    "total": 95,
+    "pages": 10,
+    "has_next": true,
+    "has_prev": true
+  },
+  "links": {
+    "first": "/api/v1/resource?page=1&limit=10",
+    "prev": "/api/v1/resource?page=1&limit=10",
+    "next": "/api/v1/resource?page=3&limit=10",
+    "last": "/api/v1/resource?page=10&limit=10"
+  }
+}
+```
+
+## Filtering & Sorting
+
+### Filtering
+
+Use query parameters to filter results:
+
+```http
+GET /api/v1/users?status=active&role=admin
+```
+
+### Sorting
+
+Sort by field with optional `-` prefix for descending:
+
+```http
+GET /api/v1/users?sort=-created_at,name
+```
+
+### Search
+
+Full-text search across relevant fields:
+
+```http
+GET /api/v1/users?search=john
+```
+
+## Versioning
+
+The API is versioned via URL path:
+
+- **v1:** `/api/v1/...` (current)
+- **v2:** `/api/v2/...` (future)
+
+**Deprecation:** Old versions supported for 6 months after new version release.
+
+## CORS
+
+Cross-Origin Resource Sharing (CORS) is enabled for:
+
+**Development:**
+- `http://localhost:3000`
+- `http://localhost:8080`
+
+**Production:**
+- `https://{{ project_slug }}.com`
+- `https://www.{{ project_slug }}.com`
+
+## WebSocket API
+
+{% if 'websocket' in features %}
+**Endpoint:** `ws://localhost:8000/ws`
+
+### Connection
+
+```javascript
+const ws = new WebSocket('ws://localhost:8000/ws');
+
+ws.onopen = () => {
+  console.log('Connected');
+
+  // Authenticate
+  ws.send(JSON.stringify({
+    type: 'auth',
+    token: 'your_jwt_token'
+  }));
+};
+
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  console.log('Received:', data);
+};
+```
+
+### Message Format
+
+```json
+{
+  "type": "event_type",
+  "data": { /* event data */ },
+  "timestamp": "2025-11-18T12:00:00Z"
+}
+```
+
+{% endif %}
+
+## Example Requests
+
+### cURL
+
+```bash
+# Login
+curl -X POST http://localhost:8000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"password"}'
+
+# Get users
+curl http://localhost:8000/api/v1/users \
+  -H "Authorization: Bearer <token>"
+
+# Create user
+curl -X POST http://localhost:8000/api/v1/users \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"new@example.com","name":"New User","password":"pass123"}'
+```
+
+### JavaScript (fetch)
+
+```javascript
+// Login
+const response = await fetch('http://localhost:8000/api/v1/auth/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    email: 'user@example.com',
+    password: 'password'
+  })
+});
+const { access_token } = await response.json();
+
+// Get users
+const users = await fetch('http://localhost:8000/api/v1/users', {
+  headers: { 'Authorization': `Bearer ${access_token}` }
+}).then(r => r.json());
+```
+
+### Python (requests)
+
+```python
+import requests
+
+# Login
+response = requests.post(
+    'http://localhost:8000/api/v1/auth/login',
+    json={'email': 'user@example.com', 'password': 'password'}
+)
+token = response.json()['access_token']
+
+# Get users
+headers = {'Authorization': f'Bearer {token}'}
+users = requests.get(
+    'http://localhost:8000/api/v1/users',
+    headers=headers
+).json()
+```
+
+## Interactive API Documentation
+
+**Swagger UI:** http://localhost:8000/docs
+**ReDoc:** http://localhost:8000/redoc
+**OpenAPI JSON:** http://localhost:8000/openapi.json
+
+## SDK & Client Libraries
+
+Coming soon:
+- Python SDK
+- JavaScript/TypeScript SDK
+- Mobile SDKs (iOS, Android)
+
+## Changelog
+
+### v1.0.0 (2025-11-18)
+- Initial API release
+- User management endpoints
+- JWT authentication
+- Rate limiting
+
+## Support
+
+- **Issues:** https://github.com/{{ project_slug }}/issues
+- **Email:** api@{{ project_slug }}.com
+- **Slack:** #api-support
+
+{% endif %}

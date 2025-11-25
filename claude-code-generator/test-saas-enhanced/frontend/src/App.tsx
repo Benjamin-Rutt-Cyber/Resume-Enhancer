@@ -1,0 +1,33 @@
+import { useState } from 'react'
+import Header from './components/Header'
+import './App.css'
+
+function App() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <>
+      <Header />
+      <div className="container">
+        <h1>Enhanced Test SaaS</h1>
+        <p>A complete SaaS application with authentication, payments, and real-time features for task management</p>
+
+        <div className="card">
+          <button onClick={() => setCount((count) => count + 1)}>
+            count is {count}
+          </button>
+          <p>
+            Edit <code>src/App.tsx</code> and save to test HMR
+          </p>
+        </div>
+
+        <div className="info">
+          <h2>Get Started</h2>
+          <p>Check out the <code>.claude/</code> directory for development guides and agents.</p>
+        </div>
+      </div>
+    </>
+  )
+}
+
+export default App

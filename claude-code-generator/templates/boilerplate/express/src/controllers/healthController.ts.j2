@@ -1,0 +1,10 @@
+import { Request, Response } from 'express';
+
+export const getHealth = async (req: Request, res: Response): Promise<void> => {
+  res.status(200).json({
+    status: 'ok',
+    service: '{{ project_name }}',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  });
+};

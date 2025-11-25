@@ -1,0 +1,177 @@
+{% raw %}<script lang="ts">
+	let healthData: any = null;
+	let healthError: string | null = null;
+	let loading = false;
+
+	async function checkHealth() {
+		loading = true;
+		healthData = null;
+		healthError = null;
+
+		try {
+			const response = await fetch('/api/health');
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			healthData = await response.json();
+		} catch (error: any) {
+			healthError = error.message || 'Unknown error';
+		} finally {
+			loading = false;
+		}
+	}
+</script>
+
+<svelte:head>
+	<title>{% endraw %}{{ project_name }}{% raw %}</title>
+</svelte:head>
+
+<div class="container">
+	<div class="hero">
+		<h1>Welcome to {% endraw %}{{ project_name }}{% raw %}</h1>
+		<p class="description">{% endraw %}{{ project_description }}{% raw %}</p>
+	</div>
+
+	<div class="card">
+		<h2>Getting Started</h2>
+		<p>
+			This is a SvelteKit application. Edit this page in
+			<code>src/routes/+page.svelte</code>
+		</p>
+
+		<div class="health-check">
+			<h3>Health Check</h3>
+			<button on:click={checkHealth} disabled={loading}>
+				{loading ? 'Checking...' : 'Test API Connection'}
+			</button>
+
+			{#if healthData}
+				<div class="success">
+					<p>✓ API is healthy!</p>
+					<pre>{JSON.stringify(healthData, null, 2)}</pre>
+				</div>
+			{/if}
+
+			{#if healthError}
+				<div class="error">
+					<p>✗ API connection failed</p>
+					<p class="error-message">{healthError}</p>
+				</div>
+			{/if}
+		</div>
+	</div>
+</div>
+
+<style>
+	.container {
+		width: 100%;
+	}
+
+	.hero {
+		text-align: center;
+		margin-bottom: 3rem;
+	}
+
+	h1 {
+		font-size: 3rem;
+		font-weight: 700;
+		margin-bottom: 1rem;
+		color: #ff3e00;
+	}
+
+	.description {
+		font-size: 1.25rem;
+		color: #666;
+	}
+
+	.card {
+		background: white;
+		border-radius: 8px;
+		padding: 2rem;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	}
+
+	h2 {
+		margin-bottom: 1rem;
+	}
+
+	code {
+		background: #f4f4f4;
+		padding: 0.25rem 0.5rem;
+		border-radius: 4px;
+		font-family: monospace;
+	}
+
+	.health-check {
+		margin-top: 2rem;
+	}
+
+	h3 {
+		margin-bottom: 1rem;
+	}
+
+	button {
+		background: #ff3e00;
+		color: white;
+		border: none;
+		padding: 0.75rem 1.5rem;
+		border-radius: 4px;
+		font-size: 1rem;
+		cursor: pointer;
+		transition: background 0.2s;
+	}
+
+	button:hover:not(:disabled) {
+		background: #e63900;
+	}
+
+	button:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+
+	.success {
+		margin-top: 1rem;
+		padding: 1rem;
+		background: #d4edda;
+		border: 1px solid #c3e6cb;
+		border-radius: 4px;
+		color: #155724;
+	}
+
+	.error {
+		margin-top: 1rem;
+		padding: 1rem;
+		background: #f8d7da;
+		border: 1px solid #f5c6cb;
+		border-radius: 4px;
+		color: #721c24;
+	}
+
+	.error-message {
+		margin-top: 0.5rem;
+		font-size: 0.875rem;
+	}
+
+	pre {
+		margin-top: 0.5rem;
+		font-size: 0.875rem;
+		overflow-x: auto;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		.card {
+			background: #2a2a2a;
+			color: #f0f0f0;
+		}
+
+		.description {
+			color: #ccc;
+		}
+
+		code {
+			background: #3a3a3a;
+		}
+	}
+</style>
+{% endraw %}

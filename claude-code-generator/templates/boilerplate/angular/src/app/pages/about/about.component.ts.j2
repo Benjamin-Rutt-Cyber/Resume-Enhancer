@@ -1,0 +1,73 @@
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-about',
+  standalone: true,
+  imports: [],
+  template: `
+    <div class="container">
+      <h1>About {{ project_name }}</h1>
+
+      <div class="card">
+        <p class="description">{{ project_description }}</p>
+
+        <h2>Tech Stack</h2>
+        <ul>
+          <li>Angular 17 - Platform for building web applications</li>
+          <li>TypeScript - Type-safe JavaScript</li>
+          <li>RxJS - Reactive programming library</li>
+          <li>Standalone Components - Modern Angular architecture</li>
+        </ul>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: #dd0031;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .description {
+      font-size: 1.125rem;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    h2 {
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    li:last-child {
+      border-bottom: none;
+    }
+  `]
+})
+export class AboutComponent {
+  project_name = '{{ project_name }}';
+  project_description = '{{ project_description }}';
+}

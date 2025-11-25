@@ -1,0 +1,99 @@
+project_type: hardware-iot
+project_name: IoT Test
+generated_by: claude-code-generator
+recommended_plugins:
+  high_priority:
+  - name: raspberry-pi-helper
+    reason: Raspberry Pi development assistant
+    priority: high
+    marketplace_id: raspberry-pi-helper
+    install_command: /plugin install raspberry-pi-helper
+    category: development
+  - name: mqtt-helper
+    reason: MQTT protocol integration for IoT
+    priority: high
+    marketplace_id: mqtt-helper
+    install_command: /plugin install mqtt-helper
+    category: development
+  - name: github-actions
+    reason: CI/CD workflow for firmware builds and deployment
+    priority: high
+    marketplace_id: github-actions
+    install_command: /plugin install github-actions
+    category: deployment
+  - name: black
+    reason: Python code formatting for MicroPython/CircuitPython
+    priority: high
+    marketplace_id: black
+    install_command: /plugin install black
+    category: formatting
+  medium_priority:
+  - name: github-copilot
+    reason: AI-powered code completion for firmware development
+    priority: medium
+    marketplace_id: github-copilot
+    install_command: /plugin install github-copilot
+    category: development
+  - name: docker-manager
+    reason: Docker container management for backend services
+    priority: medium
+    marketplace_id: docker-manager
+    install_command: /plugin install docker-manager
+    category: deployment
+  - name: pytest-runner
+    reason: Python testing framework for firmware tests
+    priority: medium
+    marketplace_id: pytest-runner
+    install_command: /plugin install pytest-runner
+    category: testing
+  - name: fastapi-helper
+    reason: FastAPI framework for custom backend
+    priority: medium
+    marketplace_id: fastapi-helper
+    install_command: /plugin install fastapi-helper
+    category: development
+  - name: test-generator
+    reason: AI-powered test case generation for hardware
+    priority: medium
+    marketplace_id: test-generator
+    install_command: /plugin install test-generator
+    category: testing
+  - name: aws-deployer
+    reason: AWS IoT deployment and management
+    priority: medium
+    marketplace_id: aws-deployer
+    install_command: /plugin install aws-deployer
+    category: deployment
+  - name: snyk-security
+    reason: Vulnerability scanning for firmware dependencies
+    priority: medium
+    marketplace_id: snyk-security
+    install_command: /plugin install snyk-security
+    category: security
+  low_priority:
+  - name: swagger-editor
+    reason: API documentation for IoT backend
+    priority: low
+    marketplace_id: swagger-editor
+    install_command: /plugin install swagger-editor
+    category: documentation
+  - name: sql-formatter
+    reason: SQL query formatting for data storage
+    priority: low
+    marketplace_id: sql-formatter
+    install_command: /plugin install sql-formatter
+    category: database
+  - name: git-assistant
+    reason: Advanced Git workflow for version control
+    priority: low
+    marketplace_id: git-assistant
+    install_command: /plugin install git-assistant
+    category: productivity
+  - name: sugar
+    reason: Enhanced Claude Code experience
+    priority: low
+    marketplace_id: sugar
+    install_command: /plugin install sugar
+    category: productivity
+installed_plugins: []
+notes: Install recommended plugins using the install_command for each plugin.

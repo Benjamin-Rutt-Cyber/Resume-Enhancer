@@ -1,0 +1,419 @@
+# Flash Firmware
+
+Upload firmware to {{ project_name }} hardware device.
+
+{% if project_type != 'hardware-iot' %}
+**Note:** This command is designed for hardware/IoT projects. Your project type is {{ project_type }}.
+{% endif %}
+
+## Quick Flash Commands
+
+### Raspberry Pi Pico/Pico W
+
+```bash
+# Flash MicroPython firmware
+# 1. Hold BOOTSEL button while connecting USB
+# 2. Device appears as mass storage device (RPI-RP2)
+
+# Download latest MicroPython
+wget https://micropython.org/download/rp2-pico-w/rp2-pico-w-latest.uf2
+
+# Flash firmware (drag & drop or copy)
+cp rp2-pico-w-latest.uf2 /Volumes/RPI-RP2/  # macOS
+cp rp2-pico-w-latest.uf2 /media/RPI-RP2/     # Linux
+# Or drag file to RPI-RP2 drive on Windows
+
+# Device will reboot automatically
+```
+
+### ESP32/ESP8266
+
+```bash
+# Install esptool
+pip install esptool
+
+# Erase flash (recommended before first flash)
+esptool.py --port /dev/ttyUSB0 erase_flash
+
+# Flash MicroPython/CircuitPython
+esptool.py --chip esp32 --port /dev/ttyUSB0 write_flash -z 0x1000 esp32-firmware.bin
+
+# On Windows, port is usually COM3, COM4, etc.
+esptool.py --chip esp32 --port COM3 write_flash -z 0x1000 esp32-firmware.bin
+
+# Flash your application code
+ampy --port /dev/ttyUSB0 put firmware/main.py
+```
+
+### Arduino Boards
+
+```bash
+# Using Arduino CLI
+arduino-cli compile --fqbn arduino:avr:uno firmware/
+arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:uno firmware/
+
+# Using avrdude directly
+avrdude -c arduino -p atmega328p -P /dev/ttyACM0 -b 115200 -U flash:w:firmware.hex
+```
+
+## Detailed Flashing Instructions
+
+### 1. Prepare Device
+
+```bash
+# Check device is connected
+{% if platform == 'pico-w' or platform == 'esp32' %}
+# List USB devices
+ls /dev/tty*  # Unix/macOS
+# Look for /dev/ttyUSB0, /dev/ttyACM0, etc.
+
+# On Windows, check Device Manager for COM port
+{% endif %}
+
+# Verify device connection
+{% if platform == 'esp32' %}
+esptool.py --port /dev/ttyUSB0 chip_id
+{% elif platform == 'arduino' %}
+arduino-cli board list
+{% endif %}
+```
+
+### 2. Download/Build Firmware
+
+```bash
+{% if platform == 'pico-w' %}
+# For Raspberry Pi Pico W with MicroPython
+cd firmware
+wget https://micropython.org/download/rp2-pico-w/rp2-pico-w-latest.uf2
+
+{% elif platform == 'esp32' %}
+# For ESP32 with MicroPython
+wget https://micropython.org/download/esp32/esp32-latest.bin
+
+# Or build custom firmware
+cd firmware
+idf.py build
+
+{% elif platform == 'arduino' %}
+# Compile Arduino sketch
+arduino-cli compile --fqbn arduino:avr:uno firmware/
+
+{% endif %}
+```
+
+### 3. Flash Firmware
+
+{% if platform == 'pico-w' %}
+#### Raspberry Pi Pico W
+
+```bash
+# Method 1: BOOTSEL mode (easiest)
+# 1. Disconnect Pico from USB
+# 2. Hold BOOTSEL button
+# 3. Connect USB while holding button
+# 4. Release button
+# 5. Pico appears as mass storage (RPI-RP2)
+# 6. Copy UF2 file
+
+cp rp2-pico-w-latest.uf2 /Volumes/RPI-RP2/
+
+# Method 2: Using picotool
+sudo apt install picotool
+picotool load firmware.uf2
+picotool reboot
+```
+
+{% elif platform == 'esp32' %}
+#### ESP32
+
+```bash
+# Erase existing flash first (optional but recommended)
+esptool.py --port /dev/ttyUSB0 erase_flash
+
+# Flash MicroPython firmware
+esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 460800 write_flash -z 0x1000 esp32-latest.bin
+
+# For ESP32-S2/S3/C3, adjust chip parameter:
+esptool.py --chip esp32s3 --port /dev/ttyUSB0 write_flash -z 0x1000 firmware.bin
+
+# Verify flash
+esptool.py --port /dev/ttyUSB0 verify_flash 0x1000 esp32-latest.bin
+```
+
+{% elif platform == 'arduino' %}
+#### Arduino
+
+```bash
+# Flash compiled sketch
+arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:uno firmware/
+
+# Specify board and port explicitly
+arduino-cli upload \
+  --port /dev/ttyACM0 \
+  --fqbn arduino:avr:mega:cpu=atmega2560 \
+  firmware/
+
+# Flash with verbose output
+arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:uno firmware/ --verbose
+```
+
+{% endif %}
+
+### 4. Upload Application Code
+
+After flashing firmware, upload your application:
+
+{% if platform == 'pico-w' or platform == 'esp32' %}
+```bash
+# Using ampy (Adafruit MicroPython tool)
+pip install adafruit-ampy
+
+# Upload single file
+ampy --port /dev/ttyUSB0 put firmware/main.py
+
+# Upload entire directory
+ampy --port /dev/ttyUSB0 put firmware/lib
+
+# List files on device
+ampy --port /dev/ttyUSB0 ls
+
+# Using rshell (alternative)
+pip install rshell
+rshell --port /dev/ttyUSB0
+# In rshell:
+# > cp firmware/* /pyboard/
+# > repl  # Enter REPL to test
+```
+
+{% elif platform == 'arduino' %}
+```bash
+# Arduino sketches are self-contained
+# No separate upload step needed after flash
+```
+
+{% endif %}
+
+## Advanced Flashing
+
+### Over-the-Air (OTA) Updates
+
+{% if platform == 'esp32' %}
+```python
+# Enable OTA in your firmware
+import network
+import espota
+
+# Configure WiFi
+wlan = network.WLAN(network.STA_IF)
+wlan.active(True)
+wlan.connect('SSID', 'password')
+
+# Start OTA server
+espota.start()
+
+# From computer, upload new firmware
+curl -F "file=@new_firmware.bin" http://device_ip/update
+```
+
+{% elif platform == 'pico-w' %}
+```python
+# Implement custom OTA for Pico W
+# Download firmware over WiFi and write to flash
+import urequests as requests
+import machine
+
+def ota_update(url):
+    response = requests.get(url)
+    with open('new_firmware.uf2', 'wb') as f:
+        f.write(response.content)
+    machine.reset()
+```
+
+{% endif %}
+
+### Batch Flashing Multiple Devices
+
+```bash
+# Flash multiple devices in sequence
+for port in /dev/ttyUSB*; do
+    echo "Flashing device on $port..."
+    {% if platform == 'esp32' %}
+    esptool.py --port $port write_flash -z 0x1000 firmware.bin
+    {% elif platform == 'arduino' %}
+    arduino-cli upload -p $port --fqbn arduino:avr:uno firmware/
+    {% endif %}
+done
+```
+
+### Custom Bootloader
+
+```bash
+{% if platform == 'esp32' %}
+# Flash custom bootloader (advanced)
+esptool.py --port /dev/ttyUSB0 write_flash \
+    0x1000 bootloader.bin \
+    0x8000 partition-table.bin \
+    0x10000 app.bin
+
+{% elif platform == 'arduino' %}
+# Burn bootloader (if needed)
+avrdude -c usbasp -p atmega328p -U flash:w:bootloader.hex
+
+{% endif %}
+```
+
+## Firmware Verification
+
+### Verify Flash Success
+
+```bash
+{% if platform == 'esp32' %}
+# Verify flashed firmware
+esptool.py --port /dev/ttyUSB0 verify_flash 0x1000 firmware.bin
+
+# Read flash
+esptool.py --port /dev/ttyUSB0 read_flash 0x0 0x400000 flash_dump.bin
+
+{% elif platform == 'pico-w' %}
+# Connect via serial and check
+screen /dev/ttyUSB0 115200
+# Press Ctrl+C to enter REPL
+# Type: import sys; print(sys.implementation)
+
+{% elif platform == 'arduino' %}
+# Upload works = flash successful
+# Monitor serial output to verify
+arduino-cli monitor -p /dev/ttyACM0
+
+{% endif %}
+```
+
+### Test Device
+
+```bash
+# Open serial monitor
+/monitor-serial
+
+# Check device responds
+# Should see boot messages and application output
+```
+
+## Troubleshooting
+
+### Device Not Detected
+
+```bash
+{% if platform == 'esp32' %}
+# Check USB-to-Serial drivers installed
+# For CP2102: https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers
+# For CH340: http://www.wch-ic.com/downloads/CH341SER_ZIP.html
+
+# Check device permissions (Linux)
+sudo usermod -a -G dialout $USER
+# Logout and login again
+
+{% elif platform == 'pico-w' %}
+# Try different USB cable (some are power-only)
+# Hold BOOTSEL button longer
+# Try different USB port
+
+{% elif platform == 'arduino' %}
+# Install FTDI drivers if needed
+# Check board selection matches physical board
+
+{% endif %}
+
+# List all serial devices
+ls -l /dev/tty*
+```
+
+### Flash Fails
+
+```bash
+{% if platform == 'esp32' %}
+# Lower baud rate
+esptool.py --port /dev/ttyUSB0 --baud 115200 write_flash -z 0x1000 firmware.bin
+
+# Try holding BOOT button during flash
+# Some ESP32 boards require manual boot mode
+
+# Erase flash completely first
+esptool.py --port /dev/ttyUSB0 erase_flash
+
+{% elif platform == 'pico-w' %}
+# Reset device and retry
+# Check USB cable quality
+# Try different computer/port
+
+{% elif platform == 'arduino' %}
+# Check board is in bootloader mode
+# Press reset button twice quickly (some boards)
+
+# Verify bootloader is present
+avrdude -c usbasp -p atmega328p -U flash:r:current.hex:i
+
+{% endif %}
+```
+
+### Wrong Firmware Version
+
+```bash
+# Check current firmware version
+/monitor-serial
+# Look for version in boot messages
+
+# Flash correct firmware for your board
+{% if platform == 'esp32' %}
+# ESP32: esp32-xxxxx.bin
+# ESP32-S2: esp32s2-xxxxx.bin
+# ESP32-S3: esp32s3-xxxxx.bin
+# ESP32-C3: esp32c3-xxxxx.bin
+
+{% elif platform == 'pico-w' %}
+# Pico W: rp2-pico-w-xxxxx.uf2
+# Pico (no WiFi): rp2-pico-xxxxx.uf2
+
+{% endif %}
+```
+
+### Device Bricked
+
+```bash
+{% if platform == 'esp32' %}
+# ESP32 is difficult to brick, can usually recover
+# 1. Erase flash completely
+esptool.py --port /dev/ttyUSB0 erase_flash
+
+# 2. Reflash bootloader and firmware
+esptool.py --port /dev/ttyUSB0 write_flash -z 0x1000 firmware.bin
+
+{% elif platform == 'pico-w' %}
+# Pico cannot be bricked via software
+# Can always enter BOOTSEL mode and reflash
+
+{% elif platform == 'arduino' %}
+# Reflash bootloader using ISP programmer
+avrdude -c usbasp -p atmega328p -U flash:w:bootloader.hex
+
+{% endif %}
+```
+
+## Safety Checklist
+
+- [ ] Correct firmware file for device model
+- [ ] Backup important data/config if applicable
+- [ ] Device fully charged or on stable power
+- [ ] Using quality USB cable (not charge-only)
+- [ ] Correct COM port/device selected
+- [ ] Bootloader present (if needed)
+
+## Next Steps
+
+After successful flash:
+- Run `/monitor-serial` to see output
+- Test basic functionality
+- Upload application code
+- Configure WiFi/network (if applicable)
+- Test sensors/peripherals
+
+Firmware flashed successfully for {{ project_name }}! ⚡

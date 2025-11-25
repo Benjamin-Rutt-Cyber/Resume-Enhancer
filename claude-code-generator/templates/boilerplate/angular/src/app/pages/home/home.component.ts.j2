@@ -1,0 +1,156 @@
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+{% if has_authentication %}import { HttpClient } from '@angular/common/http';
+{% endif %}
+@Component({
+  selector: 'app-home',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <div class="container">
+      <div class="hero">
+        <h1>Welcome to {{ project_name }}</h1>
+        <p class="description">{{ project_description }}</p>
+      </div>
+
+      <div class="card">
+        <h2>Getting Started</h2>
+        <p>
+          This is an Angular application. Edit this page in
+          <code>src/app/pages/home/home.component.ts</code>
+        </p>
+
+        <div class="health-check">
+          <h3>Health Check</h3>
+          <button (click)="checkHealth()" [disabled]="loading">
+            {% raw %}{{ loading ? 'Checking...' : 'Test API Connection' }}{% endraw %}
+          </button>
+
+          <div *ngIf="healthData" class="success">
+            <p>✓ API is healthy!</p>
+            <pre>{% raw %}{{ healthData | json }}{% endraw %}</pre>
+          </div>
+
+          <div *ngIf="healthError" class="error">
+            <p>✗ API connection failed</p>
+            <p class="error-message">{% raw %}{{ healthError }}{% endraw %}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    .hero {
+      text-align: center;
+      margin: 3rem 0;
+    }
+
+    h1 {
+      font-size: 3rem;
+      color: #dd0031;
+      margin-bottom: 1rem;
+    }
+
+    .description {
+      font-size: 1.25rem;
+      color: #666;
+    }
+
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+
+    code {
+      background: #f4f4f4;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+
+    .health-check {
+      margin-top: 2rem;
+    }
+
+    button {
+      background: #dd0031;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover:not(:disabled) {
+      background: #c20029;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .success {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      border-radius: 4px;
+      color: #155724;
+    }
+
+    .error {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      border-radius: 4px;
+      color: #721c24;
+    }
+
+    pre {
+      margin-top: 0.5rem;
+      font-size: 0.875rem;
+      overflow-x: auto;
+    }
+  `]
+})
+export class HomeComponent {
+  loading = false;
+  healthData: any = null;
+  healthError: string | null = null;
+{% if has_authentication %}
+  constructor(private http: HttpClient) {}
+{% endif %}
+  async checkHealth() {
+    this.loading = true;
+    this.healthData = null;
+    this.healthError = null;
+
+    try {
+      {% if has_authentication %}this.healthData = await fetch('/api/health').then(res => {
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return res.json();
+      });{% else %}const response = await fetch('/api/health');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      this.healthData = await response.json();{% endif %}
+    } catch (error: any) {
+      this.healthError = error.message || 'Unknown error';
+    } finally {
+      this.loading = false;
+    }
+  }
+}

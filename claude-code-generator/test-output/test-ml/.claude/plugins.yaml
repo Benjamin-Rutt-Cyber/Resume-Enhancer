@@ -1,0 +1,99 @@
+project_type: data-science
+project_name: Test ML Project
+generated_by: claude-code-generator
+recommended_plugins:
+  high_priority:
+  - name: jupyter-assistant
+    reason: Jupyter notebook development helper
+    priority: high
+    marketplace_id: jupyter-assistant
+    install_command: /plugin install jupyter-assistant
+    category: development
+  - name: black
+    reason: Python code formatting
+    priority: high
+    marketplace_id: black
+    install_command: /plugin install black
+    category: formatting
+  - name: pytest-runner
+    reason: Python testing framework integration
+    priority: high
+    marketplace_id: pytest-runner
+    install_command: /plugin install pytest-runner
+    category: testing
+  - name: pandas-helper
+    reason: Pandas data manipulation assistant
+    priority: high
+    marketplace_id: pandas-helper
+    install_command: /plugin install pandas-helper
+    category: development
+  - name: ml-model-helper
+    reason: Machine learning model development assistant
+    priority: high
+    marketplace_id: ml-model-helper
+    install_command: /plugin install ml-model-helper
+    category: development
+  - name: github-actions
+    reason: CI/CD workflow for model training and deployment
+    priority: high
+    marketplace_id: github-actions
+    install_command: /plugin install github-actions
+    category: deployment
+  medium_priority:
+  - name: github-copilot
+    reason: AI-powered code completion for data science
+    priority: medium
+    marketplace_id: github-copilot
+    install_command: /plugin install github-copilot
+    category: development
+  - name: pylint
+    reason: Python code analysis and linting
+    priority: medium
+    marketplace_id: pylint
+    install_command: /plugin install pylint
+    category: formatting
+  - name: fastapi-helper
+    reason: FastAPI framework for model API deployment
+    priority: medium
+    marketplace_id: fastapi-helper
+    install_command: /plugin install fastapi-helper
+    category: development
+  - name: docker-manager
+    reason: Docker container management for model deployment
+    priority: medium
+    marketplace_id: docker-manager
+    install_command: /plugin install docker-manager
+    category: deployment
+  - name: test-generator
+    reason: AI-powered test case generation
+    priority: medium
+    marketplace_id: test-generator
+    install_command: /plugin install test-generator
+    category: testing
+  - name: snyk-security
+    reason: Vulnerability scanning for ML dependencies
+    priority: medium
+    marketplace_id: snyk-security
+    install_command: /plugin install snyk-security
+    category: security
+  low_priority:
+  - name: sql-formatter
+    reason: SQL query formatting for data extraction
+    priority: low
+    marketplace_id: sql-formatter
+    install_command: /plugin install sql-formatter
+    category: database
+  - name: git-assistant
+    reason: Advanced Git workflow for experiment tracking
+    priority: low
+    marketplace_id: git-assistant
+    install_command: /plugin install git-assistant
+    category: productivity
+  - name: sugar
+    reason: Enhanced Claude Code experience
+    priority: low
+    marketplace_id: sugar
+    install_command: /plugin install sugar
+    category: productivity
+installed_plugins: []
+notes: Install recommended plugins using the install_command for each plugin.

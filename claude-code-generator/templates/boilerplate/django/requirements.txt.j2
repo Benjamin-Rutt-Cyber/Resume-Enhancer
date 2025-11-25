@@ -1,0 +1,22 @@
+# Core Django
+Django>=4.2,<5.0
+djangorestframework>=3.14.0
+django-cors-headers>=4.3.0
+python-decouple>=3.8
+{% if has_database %}
+# Database
+psycopg2-binary>=2.9.9
+{% endif %}{% if has_authentication %}
+# Authentication
+djangorestframework-simplejwt>=5.3.0
+{% endif %}
+# Development
+django-debug-toolbar>=4.2.0
+{% if has_caching %}
+# Caching
+django-redis>=5.4.0
+redis>=5.0.1
+{% endif %}
+# Production
+gunicorn>=21.2.0
+whitenoise>=6.6.0

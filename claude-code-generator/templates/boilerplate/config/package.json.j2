@@ -1,0 +1,11 @@
+{
+  "name": "{{ project_slug }}-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": {% if frontend_framework in ['nextjs', 'next-js'] %}"next dev"{% elif frontend_framework in ['nuxt', 'nuxtjs'] %}"nuxt dev"{% elif frontend_framework == 'svelte' %}"vite dev"{% else %}"vite"{% endif %},
+    "build": {% if frontend_framework in ['nextjs', 'next-js'] %}"next build"{% elif frontend_framework in ['nuxt', 'nuxtjs'] %}"nuxt build"{% else %}"vite build"{% endif %},
+    "start": {% if frontend_framework in ['nextjs', 'next-js'] %}"next start"{% elif frontend_framework in ['nuxt', 'nuxtjs'] %}"nuxt start"{% else %}"vite preview"{% endif %},
+    "lint": "eslint ."
+  }
+}

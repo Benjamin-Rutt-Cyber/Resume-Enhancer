@@ -1,0 +1,13 @@
+import { Router } from 'express';
+import healthRouter from './health';
+
+const router = Router();
+
+// Health check endpoint
+router.use('/health', healthRouter);
+
+// Add more route modules here
+// router.use('/users', userRouter);
+// router.use('/auth', authRouter);
+
+export default router;

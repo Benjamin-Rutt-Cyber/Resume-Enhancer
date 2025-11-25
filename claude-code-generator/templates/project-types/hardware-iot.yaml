@@ -1,0 +1,279 @@
+# Hardware IoT Project Type
+
+name: hardware-iot
+display_name: Hardware IoT Device
+description: IoT device firmware with cloud connectivity, sensors, and remote management
+
+# Default agents for this project type
+agents:
+  - embedded-agent
+  - iot-agent
+  - hardware-agent
+  - testing-agent
+  - cloud-integration-agent
+  - documentation-agent
+
+# Default skills for this project type
+skills:
+  - micropython
+  - circuitpython
+  - mqtt-protocol
+  - hardware-design
+  - sensor-integration
+  - wireless-communication
+  - power-management
+
+# Default commands for this project type
+commands:
+  - setup-dev
+  - flash-firmware
+  - monitor-serial
+  - run-tests
+  # TODO: Add more IoT commands when templates are created
+  # - test-hardware
+  # - build-firmware
+  # - deploy-ota
+  # - run-simulator
+
+# Documentation to generate
+docs:
+  - HARDWARE
+  - FIRMWARE
+  - SETUP
+  - TESTING
+  - DEPLOYMENT
+
+# Tech stack options
+tech_stack_options:
+  platform:
+    - name: pico-w
+      display_name: Raspberry Pi Pico W
+      description: RP2040 with WiFi, MicroPython support
+      recommended: true
+    - name: esp32
+      display_name: ESP32
+      description: Popular WiFi/Bluetooth microcontroller
+    - name: arduino
+      display_name: Arduino
+      description: Arduino boards (Uno, Mega, etc.)
+    - name: raspberry-pi
+      display_name: Raspberry Pi
+      description: Linux SBC for complex IoT
+
+  language:
+    - name: micropython
+      display_name: MicroPython
+      description: Python for microcontrollers
+      recommended: true
+    - name: circuitpython
+      display_name: CircuitPython
+      description: Adafruit's Python variant
+    - name: c-cpp
+      display_name: C/C++
+      description: Native compiled code
+    - name: arduino-lang
+      display_name: Arduino Language
+      description: Arduino C++ variant
+
+  connectivity:
+    - name: mqtt
+      display_name: MQTT
+      description: Lightweight IoT messaging protocol
+      recommended: true
+    - name: http
+      display_name: HTTP/HTTPS
+      description: Standard web protocols
+    - name: bluetooth
+      display_name: Bluetooth LE
+      description: Bluetooth Low Energy
+    - name: lorawan
+      display_name: LoRaWAN
+      description: Long-range, low-power
+
+  cloud:
+    - name: aws-iot
+      display_name: AWS IoT Core
+      description: AWS IoT platform
+    - name: azure-iot
+      display_name: Azure IoT Hub
+      description: Microsoft IoT platform
+    - name: custom-backend
+      display_name: Custom Backend
+      description: Self-hosted backend
+      recommended: true
+
+# Feature options
+features:
+  - name: sensors
+    display_name: Sensor Integration
+    description: Temperature, humidity, motion sensors
+    default: true
+    adds_skills:
+      - sensor-integration
+
+  - name: display
+    display_name: Display Output
+    description: OLED/LCD display support
+    default: false
+    adds_skills:
+      - display-drivers
+
+  - name: wifi
+    display_name: WiFi Connectivity
+    description: WiFi connection and management
+    default: true
+    adds_skills:
+      - wireless-communication
+
+  - name: bluetooth
+    display_name: Bluetooth
+    description: Bluetooth LE communication
+    default: false
+    adds_skills:
+      - bluetooth-integration
+
+  - name: ota_updates
+    display_name: OTA Updates
+    description: Over-the-air firmware updates
+    default: true
+    adds_skills:
+      - ota-updates
+
+  - name: power_saving
+    display_name: Power Management
+    description: Deep sleep and power optimization
+    default: true
+    adds_skills:
+      - power-management
+
+  - name: data_logging
+    display_name: Data Logging
+    description: Local data storage
+    default: true
+    adds_skills: []
+
+  - name: web_interface
+    display_name: Web Interface
+    description: Built-in web server for config
+    default: false
+    adds_skills:
+      - embedded-web-server
+
+# Boilerplate code
+boilerplate:
+  - firmware-structure
+  - sensor-drivers
+  - mqtt-client
+  - wifi-manager
+  - config-management
+
+# Recommended plugins for this project type
+recommended_plugins:
+  # High priority - essential for IoT/Hardware development
+  - name: arduino-helper
+    reason: Arduino development and firmware assistant
+    priority: high
+    conditions:
+      platform: [arduino]
+
+  - name: raspberry-pi-helper
+    reason: Raspberry Pi development assistant
+    priority: high
+    conditions:
+      platform: [raspberry-pi, pico-w]
+
+  - name: mqtt-helper
+    reason: MQTT protocol integration for IoT
+    priority: high
+    conditions:
+      connectivity: [mqtt]
+
+  - name: github-actions
+    reason: CI/CD workflow for firmware builds and deployment
+    priority: high
+
+  - name: black
+    reason: Python code formatting for MicroPython/CircuitPython
+    priority: high
+    conditions:
+      language: [micropython, circuitpython]
+
+  # Medium priority - very helpful for IoT
+  - name: github-copilot
+    reason: AI-powered code completion for firmware development
+    priority: medium
+
+  - name: docker-manager
+    reason: Docker container management for backend services
+    priority: medium
+    conditions:
+      cloud: [custom-backend]
+
+  - name: pytest-runner
+    reason: Python testing framework for firmware tests
+    priority: medium
+    conditions:
+      language: [micropython, circuitpython]
+
+  - name: fastapi-helper
+    reason: FastAPI framework for custom backend
+    priority: medium
+    conditions:
+      cloud: [custom-backend]
+
+  - name: test-generator
+    reason: AI-powered test case generation for hardware
+    priority: medium
+
+  - name: swagger-editor
+    reason: API documentation for IoT backend
+    priority: low
+    conditions:
+      cloud: [custom-backend]
+
+  - name: aws-deployer
+    reason: AWS IoT deployment and management
+    priority: medium
+    conditions:
+      cloud: [aws-iot]
+
+  - name: sql-formatter
+    reason: SQL query formatting for data storage
+    priority: low
+
+  - name: snyk-security
+    reason: Vulnerability scanning for firmware dependencies
+    priority: medium
+
+  # Low priority - nice to have
+  - name: git-assistant
+    reason: Advanced Git workflow for version control
+    priority: low
+
+  - name: sugar
+    reason: Enhanced Claude Code experience
+    priority: low
+
+# Environment/Configuration
+configuration:
+  - WIFI_SSID
+  - WIFI_PASSWORD
+  - MQTT_BROKER
+  - MQTT_PORT
+  - DEVICE_ID
+  - UPDATE_INTERVAL
+
+# Project structure
+directory_structure:
+  - firmware/
+  - firmware/lib/
+  - firmware/drivers/
+  - firmware/config/
+  - firmware/tests/
+  - hardware/
+  - hardware/schematics/
+  - hardware/pcb/
+  - hardware/3d-models/
+  - docs/
+  - tools/
+  - .claude/

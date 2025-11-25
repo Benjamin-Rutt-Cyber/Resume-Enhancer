@@ -1,0 +1,308 @@
+# API Service Project Type
+
+name: api-service
+display_name: REST API Service
+description: Backend API service with OpenAPI documentation, authentication, and database integration
+
+# Default agents for this project type
+agents:
+  - api-development-agent
+  - database-agent
+  - testing-agent
+  - deployment-agent
+  - security-agent
+  - documentation-agent
+
+# Default skills for this project type
+skills:
+  - python-fastapi
+  - postgresql
+  - docker-deployment
+  - rest-api-design
+  - authentication
+  # NOTE: Additional framework-specific skills available:
+  # - node-express (if backend: node-express)
+  # - django (if backend: django)
+
+# Default commands for this project type
+commands:
+  - setup-dev
+  - run-server
+  - run-tests
+  - db-migrate
+  - deploy
+  # TODO: Add when templates are created
+  # - generate-api-docs
+  # - lint-code
+  # - format-code
+
+# Documentation to generate
+docs: []
+  # NOTE: Temporarily disabled missing docs for testing
+  # - ARCHITECTURE
+  # - API
+  # - SETUP
+  # - DEPLOYMENT
+  # - TESTING
+
+# Tech stack options
+tech_stack_options:
+  backend:
+    - name: python-fastapi
+      display_name: Python FastAPI
+      description: Modern, fast Python framework with automatic OpenAPI
+      recommended: true
+    - name: node-express
+      display_name: Node.js Express
+      description: Popular JavaScript framework
+    - name: django
+      display_name: Django
+      description: Full-featured Python framework with Django REST Framework
+    - name: go-gin
+      display_name: Go Gin
+      description: High-performance Go framework
+    - name: rust-actix
+      display_name: Rust Actix
+      description: Blazing fast Rust web framework
+
+  database:
+    - name: postgresql
+      display_name: PostgreSQL
+      description: Powerful relational database
+      recommended: true
+    - name: mysql
+      display_name: MySQL
+      description: Popular relational database
+    - name: mongodb
+      display_name: MongoDB
+      description: NoSQL document database
+
+  cache:
+    - name: redis
+      display_name: Redis
+      description: In-memory cache
+      recommended: true
+    - name: memcached
+      display_name: Memcached
+      description: Distributed memory cache
+
+  deployment:
+    - name: docker
+      display_name: Docker
+      description: Container-based deployment
+      recommended: true
+    - name: kubernetes
+      display_name: Kubernetes
+      description: Container orchestration
+    - name: aws-lambda
+      display_name: AWS Lambda
+      description: Serverless deployment
+
+# Feature options
+features:
+  - name: authentication
+    display_name: Authentication
+    description: JWT/API key authentication
+    default: true
+    adds_skills:
+      - authentication
+
+  - name: rate_limiting
+    display_name: Rate Limiting
+    description: API rate limiting and throttling
+    default: true
+    adds_skills:
+      - rate-limiting
+
+  - name: caching
+    display_name: Response Caching
+    description: Redis-based response caching
+    default: true
+    adds_skills: []
+
+  - name: webhooks
+    display_name: Webhooks
+    description: Webhook support for events
+    default: false
+    adds_skills:
+      - webhook-integration
+
+  - name: graphql
+    display_name: GraphQL
+    description: GraphQL API alongside REST
+    default: false
+    adds_skills:
+      - graphql
+    adds_agents:
+      - graphql-agent
+
+  - name: background_jobs
+    display_name: Background Jobs
+    description: Celery/worker for async tasks
+    default: false
+    adds_skills:
+      - background-jobs
+
+  - name: monitoring
+    display_name: Monitoring
+    description: Prometheus/Grafana monitoring
+    default: true
+    adds_skills:
+      - monitoring
+
+# Boilerplate code
+boilerplate:
+  - api-structure
+  - docker-compose
+  - github-actions
+  - database-schema
+  - api-routes
+  - middleware
+
+# Recommended plugins for this project type
+recommended_plugins:
+  # High priority - essential for API development
+  - name: black
+    reason: Python code formatting for consistent style
+    priority: high
+    conditions:
+      backend: [python-fastapi, django, flask]
+
+  - name: pytest-runner
+    reason: Python testing framework integration
+    priority: high
+    conditions:
+      backend: [python-fastapi, django, flask]
+
+  - name: fastapi-helper
+    reason: FastAPI framework development assistant
+    priority: high
+    conditions:
+      backend: [python-fastapi]
+
+  - name: swagger-editor
+    reason: OpenAPI/Swagger API documentation editor
+    priority: high
+
+  - name: docker-manager
+    reason: Docker container management for deployment
+    priority: high
+    conditions:
+      deployment: [docker, kubernetes]
+
+  - name: github-actions
+    reason: CI/CD workflow management
+    priority: high
+
+  - name: snyk-security
+    reason: Vulnerability scanning and dependency checking
+    priority: high
+
+  - name: sql-formatter
+    reason: SQL query formatting and optimization
+    priority: high
+    conditions:
+      database: [postgresql, mysql]
+
+  # Medium priority - very helpful for API development
+  - name: github-copilot
+    reason: AI-powered code completion and suggestions
+    priority: medium
+
+  - name: pylint
+    reason: Python code analysis and linting
+    priority: medium
+    conditions:
+      backend: [python-fastapi, django, flask]
+
+  - name: rustfmt
+    reason: Official Rust code formatter
+    priority: medium
+    conditions:
+      backend: [rust-actix]
+
+  - name: django-helper
+    reason: Django framework development assistant
+    priority: medium
+    conditions:
+      backend: [django]
+
+  - name: prisma-studio
+    reason: Database management and visualization
+    priority: medium
+    conditions:
+      database: [postgresql, mysql]
+
+  - name: mongodb-compass
+    reason: MongoDB database management
+    priority: medium
+    conditions:
+      database: [mongodb]
+
+  - name: auth0-integration
+    reason: Auth0 authentication integration helper
+    priority: medium
+    conditions:
+      features: [authentication]
+
+  - name: oauth-helper
+    reason: OAuth2 flow implementation assistant
+    priority: medium
+    conditions:
+      features: [authentication]
+
+  - name: kubernetes-helper
+    reason: Kubernetes manifest generation and management
+    priority: medium
+    conditions:
+      deployment: [kubernetes]
+
+  - name: aws-deployer
+    reason: AWS deployment and infrastructure management
+    priority: medium
+    conditions:
+      deployment: [aws-lambda]
+
+  - name: terraform-assistant
+    reason: Infrastructure as Code with Terraform
+    priority: medium
+
+  - name: test-generator
+    reason: AI-powered test case generation
+    priority: medium
+
+  # Low priority - nice to have
+  - name: git-assistant
+    reason: Advanced Git workflow assistance
+    priority: low
+
+  - name: sugar
+    reason: Enhanced Claude Code experience
+    priority: low
+
+# Environment variables
+environment_variables:
+  - DATABASE_URL
+  - SECRET_KEY
+  - API_KEY
+  - REDIS_URL
+  - LOG_LEVEL
+
+# Project structure
+directory_structure:
+  - app/
+  - app/api/
+  - app/api/v1/
+  - app/core/
+  - app/models/
+  - app/schemas/
+  - app/services/
+  - app/middleware/
+  - tests/
+  - tests/unit/
+  - tests/integration/
+  - .claude/
+  - .github/workflows/
+  - docker/
+  - docs/
+  - migrations/

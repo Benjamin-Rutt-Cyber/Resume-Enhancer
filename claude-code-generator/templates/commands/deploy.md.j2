@@ -1,0 +1,316 @@
+# Deploy to Production
+
+Deploy {{ project_name }} to production environment.
+
+## Pre-Deployment Checklist
+
+- [ ] All tests passing locally
+- [ ] Code reviewed and merged to main branch
+- [ ] Environment variables configured
+- [ ] Database migrations ready
+- [ ] Backup created
+- [ ] Deployment plan reviewed
+
+## Deployment Steps
+
+### 1. Pre-Deployment Verification
+
+```bash
+# Run all tests
+/run-tests
+
+# Build production artifacts
+/build-release
+
+# Verify Docker images build
+docker-compose -f docker-compose.prod.yml build
+
+# Check for security vulnerabilities
+{% if backend_framework and 'python' in backend_framework %}
+pip-audit
+{% elif backend_framework and 'node' in backend_framework %}
+npm audit
+{% endif %}
+```
+
+### 2. Backup Current Production
+
+```bash
+{% if database == 'postgresql' %}
+# Backup database
+pg_dump {{ project_slug }}_prod > backup_$(date +%Y%m%d_%H%M%S).sql
+{% elif database == 'mysql' %}
+mysqldump {{ project_slug }}_prod > backup_$(date +%Y%m%d_%H%M%S).sql
+{% endif %}
+
+# Backup environment configuration
+cp .env.production .env.production.backup
+```
+
+### 3. Deploy with Docker
+
+{% if deployment_platform == 'docker' %}
+```bash
+# Pull latest changes
+git pull origin main
+
+# Build images
+docker-compose -f docker-compose.prod.yml build
+
+# Stop current containers
+docker-compose -f docker-compose.prod.yml down
+
+# Start new containers
+docker-compose -f docker-compose.prod.yml up -d
+
+# Run migrations
+docker-compose -f docker-compose.prod.yml exec backend {% if backend_framework and 'python' in backend_framework %}alembic upgrade head{% elif backend_framework and 'node' in backend_framework %}npm run migrate{% endif %}
+
+# Verify deployment
+docker-compose -f docker-compose.prod.yml ps
+docker-compose -f docker-compose.prod.yml logs --tail=50
+```
+{% endif %}
+
+{% if deployment_platform == 'kubernetes' %}
+### 4. Deploy to Kubernetes
+
+```bash
+# Apply Kubernetes manifests
+kubectl apply -f k8s/
+
+# Run database migrations
+kubectl exec -it deployment/{{ project_slug }}-backend -- {% if backend_framework and 'python' in backend_framework %}alembic upgrade head{% endif %}
+
+# Check deployment status
+kubectl rollout status deployment/{{ project_slug }}-backend
+kubectl rollout status deployment/{{ project_slug }}-frontend
+
+# Verify pods are running
+kubectl get pods -l app={{ project_slug }}
+
+# Check logs
+kubectl logs -l app={{ project_slug }}-backend --tail=50
+```
+{% endif %}
+
+{% if deployment_platform == 'aws' %}
+### 4. Deploy to AWS
+
+```bash
+# Build and push Docker images to ECR
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.us-east-1.amazonaws.com
+
+docker build -t {{ project_slug }}-backend backend/
+docker tag {{ project_slug }}-backend:latest <account-id>.dkr.ecr.us-east-1.amazonaws.com/{{ project_slug }}-backend:latest
+docker push <account-id>.dkr.ecr.us-east-1.amazonaws.com/{{ project_slug }}-backend:latest
+
+# Update ECS service
+aws ecs update-service --cluster {{ project_slug }}-cluster --service {{ project_slug }}-backend --force-new-deployment
+
+# Monitor deployment
+aws ecs wait services-stable --cluster {{ project_slug }}-cluster --services {{ project_slug }}-backend
+```
+{% endif %}
+
+### 5. Run Database Migrations
+
+```bash
+# Production migrations should be carefully reviewed
+{% if backend_framework and 'python' in backend_framework %}
+alembic upgrade head
+{% elif backend_framework and 'node' in backend_framework %}
+npm run migrate:prod
+{% endif %}
+```
+
+### 6. Verify Deployment
+
+```bash
+# Health check
+curl https://{{ project_slug }}.com/health
+
+# API check
+curl https://{{ project_slug }}.com/api/v1/
+
+# Check metrics/monitoring
+# Access monitoring dashboard (Grafana, etc.)
+```
+
+### 7. Post-Deployment Tasks
+
+```bash
+# Monitor application logs
+{% if deployment_platform == 'docker' %}
+docker-compose -f docker-compose.prod.yml logs -f
+{% elif deployment_platform == 'kubernetes' %}
+kubectl logs -f deployment/{{ project_slug }}-backend
+{% endif %}
+
+# Monitor error rates
+# Check application metrics
+# Verify all features working
+
+# Notify team
+echo "Deployment completed successfully at $(date)"
+```
+
+## Rollback Procedure
+
+If deployment fails:
+
+```bash
+{% if deployment_platform == 'docker' %}
+# Restore previous Docker containers
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d --force-recreate
+{% elif deployment_platform == 'kubernetes' %}
+# Rollback Kubernetes deployment
+kubectl rollout undo deployment/{{ project_slug }}-backend
+kubectl rollout undo deployment/{{ project_slug }}-frontend
+{% elif deployment_platform == 'aws' %}
+# Rollback ECS service
+aws ecs update-service --cluster {{ project_slug }}-cluster --service {{ project_slug }}-backend --task-definition <previous-task-definition>
+{% endif %}
+
+# Rollback database (if needed)
+{% if backend_framework and 'python' in backend_framework %}
+alembic downgrade -1
+{% elif backend_framework and 'node' in backend_framework %}
+npm run migrate:down
+{% endif %}
+
+# Restore from backup if necessary
+{% if database == 'postgresql' %}
+psql {{ project_slug }}_prod < backup_TIMESTAMP.sql
+{% endif %}
+```
+
+## Environment Configuration
+
+Ensure production environment variables are set:
+
+```bash
+# Critical variables
+DATABASE_URL={{ database }}://user:pass@prod-db/{{ project_slug }}
+SECRET_KEY=<strong-random-secret>
+DEBUG=false
+ENVIRONMENT=production
+
+{% if has_auth %}
+# Authentication
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+REFRESH_TOKEN_EXPIRE_DAYS=7
+{% endif %}
+
+# External services
+{% if 'email' in features %}
+EMAIL_HOST=smtp.example.com
+EMAIL_PORT=587
+{% endif %}
+
+{% if 'payments' in features %}
+STRIPE_API_KEY=<production-key>
+{% endif %}
+
+# Monitoring
+SENTRY_DSN=<sentry-dsn>
+```
+
+## Monitoring After Deployment
+
+Monitor these metrics:
+
+1. **Application Health**
+   - Response times
+   - Error rates
+   - Throughput
+
+2. **System Resources**
+   - CPU usage
+   - Memory usage
+   - Disk space
+
+3. **Database Performance**
+   - Query times
+   - Connection pool
+   - Lock waits
+
+4. **User Impact**
+   - Active users
+   - Failed requests
+   - Latency
+
+## Automated Deployment (CI/CD)
+
+For automated deployments with GitHub Actions:
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run tests
+        run: |
+          {% if backend_framework and 'python' in backend_framework %}
+          pip install -r requirements.txt
+          pytest
+          {% elif backend_framework and 'node' in backend_framework %}
+          npm install
+          npm test
+          {% endif %}
+
+      - name: Build and deploy
+        run: |
+          # Deployment commands here
+```
+
+## Security Checks
+
+Before deploying:
+
+- [ ] SSL/TLS certificates valid
+- [ ] Secrets not exposed in code
+- [ ] Security headers configured
+- [ ] Rate limiting enabled
+- [ ] CORS configured properly
+- [ ] Database connections encrypted
+- [ ] Firewall rules updated
+
+## Troubleshooting
+
+### Deployment Fails
+
+1. Check logs for errors
+2. Verify environment variables
+3. Check database connectivity
+4. Verify disk space
+5. Check for port conflicts
+
+### Zero Downtime Deployment
+
+For zero downtime:
+
+1. Use rolling updates (Kubernetes)
+2. Blue-green deployment
+3. Health check endpoints configured
+4. Graceful shutdown implemented
+
+## Next Steps
+
+- Monitor application for 30 minutes
+- Check error tracking (Sentry, etc.)
+- Review performance metrics
+- Update deployment documentation
+- Notify stakeholders
+
+Deployment of {{ project_name }} completed!

@@ -1,0 +1,34 @@
+# Include package metadata
+include README.md
+include LICENSE
+include pyproject.toml
+
+# Include all templates
+recursive-include templates *.md
+recursive-include templates *.yaml
+recursive-include templates *.yml
+recursive-include templates *.j2
+recursive-include templates *.py
+recursive-include templates *.ts
+recursive-include templates *.tsx
+recursive-include templates *.js
+recursive-include templates *.jsx
+recursive-include templates *.json
+recursive-include templates *.css
+recursive-include templates *.html
+recursive-include templates *.txt
+recursive-include templates *.toml
+recursive-include templates *.env
+recursive-include templates Dockerfile*
+recursive-include templates .gitignore*
+
+# Include documentation
+recursive-include docs *.md
+
+# Exclude development files
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude *.so
+global-exclude .DS_Store
+global-exclude *.swp
+global-exclude *.swo

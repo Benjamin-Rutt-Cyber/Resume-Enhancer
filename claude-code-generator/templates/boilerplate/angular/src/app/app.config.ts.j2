@@ -1,0 +1,11 @@
+import { ApplicationConfig } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { routes } from './app.routes';
+{% if has_authentication %}import { provideHttpClient } from '@angular/common/http';
+{% endif %}
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideRouter(routes){% if has_authentication %},
+    provideHttpClient(){% endif %}
+  ]
+};

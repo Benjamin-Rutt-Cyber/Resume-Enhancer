@@ -1,0 +1,13 @@
+export default function Header() {
+  return (
+    <header className="border-b pb-4">
+      <nav className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{{ project_name }}</h1>
+        <ul className="flex gap-4">
+          <li><a href="/" className="hover:underline">Home</a></li>
+          <li><a href="/about" className="hover:underline">About</a></li>
+        </ul>
+      </nav>
+    </header>
+  )
+}

@@ -1,0 +1,831 @@
+# Plugin Registry
+# This file catalogs all Claude Code marketplace plugins that can be recommended
+# Based on project type, tech stack, and features
+
+version: "1.0.0"
+last_updated: "2025-11-16"
+
+# Plugin Categories:
+# - development: Code assistance, completion, generation
+# - formatting: Code formatting and linting
+# - testing: Test generation and execution
+# - deployment: CI/CD and infrastructure
+# - database: Database management and design
+# - security: Security scanning and authentication
+# - documentation: Doc generation and maintenance
+# - productivity: General productivity tools
+
+plugins:
+  # ============================================================================
+  # DEVELOPMENT PLUGINS
+  # ============================================================================
+
+  - name: github-copilot
+    marketplace_id: github-copilot
+    category: development
+    description: AI-powered code completion and suggestions
+    homepage: https://github.com/features/copilot
+    install_command: "/plugin install github-copilot"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+      - hardware-iot
+      - data-science
+    tech_stack:
+      - python
+      - javascript
+      - typescript
+      - java
+      - csharp
+      - go
+      - rust
+    features: []
+    priority: high
+    ai_recommendation_weight: 0.9
+
+  - name: cursor-ai
+    marketplace_id: cursor-ai
+    category: development
+    description: Advanced AI code editor integration
+    homepage: https://cursor.sh
+    install_command: "/plugin install cursor-ai"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+      - data-science
+    tech_stack:
+      - python
+      - javascript
+      - typescript
+    features: []
+    priority: medium
+    ai_recommendation_weight: 0.7
+
+  - name: tabnine
+    marketplace_id: tabnine
+    category: development
+    description: AI code completion for multiple languages
+    homepage: https://www.tabnine.com
+    install_command: "/plugin install tabnine"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+      - hardware-iot
+      - data-science
+    tech_stack:
+      - python
+      - javascript
+      - typescript
+      - java
+      - cpp
+    features: []
+    priority: medium
+    ai_recommendation_weight: 0.6
+
+  # ============================================================================
+  # FORMATTING & LINTING PLUGINS
+  # ============================================================================
+
+  - name: prettier
+    marketplace_id: prettier
+    category: formatting
+    description: Opinionated code formatter for JavaScript/TypeScript
+    homepage: https://prettier.io
+    install_command: "/plugin install prettier"
+    version: latest
+    project_types:
+      - saas-web-app
+      - mobile-app
+    tech_stack:
+      - javascript
+      - typescript
+      - react
+      - vue
+      - angular
+    features: []
+    priority: high
+    ai_recommendation_weight: 0.95
+
+  - name: eslint
+    marketplace_id: eslint
+    category: formatting
+    description: JavaScript and TypeScript linting utility
+    homepage: https://eslint.org
+    install_command: "/plugin install eslint"
+    version: latest
+    project_types:
+      - saas-web-app
+      - mobile-app
+    tech_stack:
+      - javascript
+      - typescript
+      - react
+      - vue
+      - angular
+    features: []
+    priority: high
+    ai_recommendation_weight: 0.95
+
+  - name: black
+    marketplace_id: black
+    category: formatting
+    description: Uncompromising Python code formatter
+    homepage: https://black.readthedocs.io
+    install_command: "/plugin install black"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+      - data-science
+    tech_stack:
+      - python
+      - fastapi
+      - django
+      - flask
+    features: []
+    priority: high
+    ai_recommendation_weight: 0.9
+
+  - name: pylint
+    marketplace_id: pylint
+    category: formatting
+    description: Python code analysis and linting
+    homepage: https://pylint.org
+    install_command: "/plugin install pylint"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+      - data-science
+    tech_stack:
+      - python
+      - fastapi
+      - django
+      - flask
+    features: []
+    priority: medium
+    ai_recommendation_weight: 0.8
+
+  - name: rustfmt
+    marketplace_id: rustfmt
+    category: formatting
+    description: Official Rust code formatter
+    homepage: https://github.com/rust-lang/rustfmt
+    install_command: "/plugin install rustfmt"
+    version: latest
+    project_types:
+      - api-service
+      - hardware-iot
+    tech_stack:
+      - rust
+    features: []
+    priority: high
+    ai_recommendation_weight: 0.95
+
+  # ============================================================================
+  # TESTING PLUGINS
+  # ============================================================================
+
+  - name: jest-runner
+    marketplace_id: jest-runner
+    category: testing
+    description: Jest test runner and executor
+    homepage: https://jestjs.io
+    install_command: "/plugin install jest-runner"
+    version: latest
+    project_types:
+      - saas-web-app
+      - mobile-app
+    tech_stack:
+      - javascript
+      - typescript
+      - react
+      - vue
+    features:
+      - testing
+    priority: high
+    ai_recommendation_weight: 0.85
+
+  - name: pytest-runner
+    marketplace_id: pytest-runner
+    category: testing
+    description: Pytest test framework integration
+    homepage: https://pytest.org
+    install_command: "/plugin install pytest-runner"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+      - data-science
+    tech_stack:
+      - python
+      - fastapi
+      - django
+      - flask
+    features:
+      - testing
+    priority: high
+    ai_recommendation_weight: 0.9
+
+  - name: test-generator
+    marketplace_id: test-generator
+    category: testing
+    description: AI-powered test case generation
+    homepage: https://claude.ai/plugins/test-generator
+    install_command: "/plugin install test-generator"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+    tech_stack:
+      - python
+      - javascript
+      - typescript
+    features:
+      - testing
+    priority: medium
+    ai_recommendation_weight: 0.7
+
+  # ============================================================================
+  # DATABASE PLUGINS
+  # ============================================================================
+
+  - name: prisma-studio
+    marketplace_id: prisma-studio
+    category: database
+    description: Database management and visualization for Prisma
+    homepage: https://www.prisma.io/studio
+    install_command: "/plugin install prisma-studio"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+    tech_stack:
+      - prisma
+      - postgresql
+      - mysql
+    features:
+      - database
+    priority: medium
+    ai_recommendation_weight: 0.75
+
+  - name: sql-formatter
+    marketplace_id: sql-formatter
+    category: database
+    description: SQL query formatting and optimization
+    homepage: https://github.com/sql-formatter-org/sql-formatter
+    install_command: "/plugin install sql-formatter"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+      - data-science
+    tech_stack:
+      - postgresql
+      - mysql
+      - mongodb
+      - sqlite
+    features:
+      - database
+    priority: low
+    ai_recommendation_weight: 0.5
+
+  - name: mongodb-compass
+    marketplace_id: mongodb-compass
+    category: database
+    description: MongoDB database management
+    homepage: https://www.mongodb.com/products/compass
+    install_command: "/plugin install mongodb-compass"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+    tech_stack:
+      - mongodb
+    features:
+      - database
+    priority: medium
+    ai_recommendation_weight: 0.8
+
+  # ============================================================================
+  # DEPLOYMENT & DEVOPS PLUGINS
+  # ============================================================================
+
+  - name: docker-manager
+    marketplace_id: docker-manager
+    category: deployment
+    description: Docker container management and orchestration
+    homepage: https://www.docker.com
+    install_command: "/plugin install docker-manager"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+    tech_stack:
+      - docker
+    features:
+      - deployment
+      - containerization
+    priority: high
+    ai_recommendation_weight: 0.85
+
+  - name: kubernetes-helper
+    marketplace_id: kubernetes-helper
+    category: deployment
+    description: Kubernetes manifest generation and management
+    homepage: https://kubernetes.io
+    install_command: "/plugin install kubernetes-helper"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+    tech_stack:
+      - kubernetes
+      - docker
+    features:
+      - deployment
+      - orchestration
+    priority: medium
+    ai_recommendation_weight: 0.7
+
+  - name: github-actions
+    marketplace_id: github-actions
+    category: deployment
+    description: GitHub Actions CI/CD workflow management
+    homepage: https://github.com/features/actions
+    install_command: "/plugin install github-actions"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+      - hardware-iot
+      - data-science
+    tech_stack: []
+    features:
+      - deployment
+      - ci-cd
+    priority: high
+    ai_recommendation_weight: 0.9
+
+  - name: aws-deployer
+    marketplace_id: aws-deployer
+    category: deployment
+    description: AWS deployment and infrastructure management
+    homepage: https://aws.amazon.com
+    install_command: "/plugin install aws-deployer"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+    tech_stack:
+      - aws
+    features:
+      - deployment
+      - cloud
+    priority: medium
+    ai_recommendation_weight: 0.75
+
+  - name: terraform-assistant
+    marketplace_id: terraform-assistant
+    category: deployment
+    description: Infrastructure as Code with Terraform
+    homepage: https://www.terraform.io
+    install_command: "/plugin install terraform-assistant"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+    tech_stack:
+      - terraform
+      - aws
+      - gcp
+      - azure
+    features:
+      - deployment
+      - infrastructure
+    priority: medium
+    ai_recommendation_weight: 0.7
+
+  # ============================================================================
+  # SECURITY PLUGINS
+  # ============================================================================
+
+  - name: snyk-security
+    marketplace_id: snyk-security
+    category: security
+    description: Vulnerability scanning and dependency checking
+    homepage: https://snyk.io
+    install_command: "/plugin install snyk-security"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+    tech_stack:
+      - python
+      - javascript
+      - typescript
+      - java
+    features:
+      - security
+    priority: high
+    ai_recommendation_weight: 0.85
+
+  - name: auth0-integration
+    marketplace_id: auth0-integration
+    category: security
+    description: Auth0 authentication integration helper
+    homepage: https://auth0.com
+    install_command: "/plugin install auth0-integration"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+    tech_stack: []
+    features:
+      - authentication
+      - security
+    priority: medium
+    ai_recommendation_weight: 0.75
+
+  - name: oauth-helper
+    marketplace_id: oauth-helper
+    category: security
+    description: OAuth2 flow implementation assistant
+    homepage: https://oauth.net/2/
+    install_command: "/plugin install oauth-helper"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+    tech_stack: []
+    features:
+      - authentication
+      - security
+    priority: medium
+    ai_recommendation_weight: 0.7
+
+  # ============================================================================
+  # DOCUMENTATION PLUGINS
+  # ============================================================================
+
+  - name: swagger-editor
+    marketplace_id: swagger-editor
+    category: documentation
+    description: OpenAPI/Swagger documentation editor
+    homepage: https://swagger.io
+    install_command: "/plugin install swagger-editor"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+    tech_stack: []
+    features:
+      - api-documentation
+    priority: medium
+    ai_recommendation_weight: 0.7
+
+  - name: jsdoc-generator
+    marketplace_id: jsdoc-generator
+    category: documentation
+    description: JSDoc documentation generator
+    homepage: https://jsdoc.app
+    install_command: "/plugin install jsdoc-generator"
+    version: latest
+    project_types:
+      - saas-web-app
+      - mobile-app
+    tech_stack:
+      - javascript
+      - typescript
+    features:
+      - documentation
+    priority: low
+    ai_recommendation_weight: 0.5
+
+  - name: sphinx-docs
+    marketplace_id: sphinx-docs
+    category: documentation
+    description: Python documentation with Sphinx
+    homepage: https://www.sphinx-doc.org
+    install_command: "/plugin install sphinx-docs"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+      - data-science
+    tech_stack:
+      - python
+    features:
+      - documentation
+    priority: low
+    ai_recommendation_weight: 0.5
+
+  # ============================================================================
+  # PRODUCTIVITY PLUGINS
+  # ============================================================================
+
+  - name: sugar
+    marketplace_id: sugar
+    category: productivity
+    description: Enhanced Claude Code experience with quality of life features
+    homepage: https://claude.ai/plugins/sugar
+    install_command: "/plugin install sugar"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+      - hardware-iot
+      - data-science
+    tech_stack: []
+    features: []
+    priority: medium
+    ai_recommendation_weight: 0.6
+
+  - name: git-assistant
+    marketplace_id: git-assistant
+    category: productivity
+    description: Advanced Git workflow assistance
+    homepage: https://git-scm.com
+    install_command: "/plugin install git-assistant"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+      - hardware-iot
+      - data-science
+    tech_stack: []
+    features: []
+    priority: medium
+    ai_recommendation_weight: 0.7
+
+  - name: project-manager
+    marketplace_id: project-manager
+    category: productivity
+    description: Project organization and task management
+    homepage: https://claude.ai/plugins/project-manager
+    install_command: "/plugin install project-manager"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+      - mobile-app
+      - hardware-iot
+      - data-science
+    tech_stack: []
+    features: []
+    priority: low
+    ai_recommendation_weight: 0.5
+
+  # ============================================================================
+  # FRAMEWORK-SPECIFIC PLUGINS
+  # ============================================================================
+
+  - name: react-devtools
+    marketplace_id: react-devtools
+    category: development
+    description: React component development and debugging
+    homepage: https://react.dev
+    install_command: "/plugin install react-devtools"
+    version: latest
+    project_types:
+      - saas-web-app
+      - mobile-app
+    tech_stack:
+      - react
+      - react-native
+    features: []
+    priority: medium
+    ai_recommendation_weight: 0.8
+
+  - name: vue-devtools
+    marketplace_id: vue-devtools
+    category: development
+    description: Vue.js development tools
+    homepage: https://vuejs.org
+    install_command: "/plugin install vue-devtools"
+    version: latest
+    project_types:
+      - saas-web-app
+    tech_stack:
+      - vue
+    features: []
+    priority: medium
+    ai_recommendation_weight: 0.8
+
+  - name: fastapi-helper
+    marketplace_id: fastapi-helper
+    category: development
+    description: FastAPI framework development assistant
+    homepage: https://fastapi.tiangolo.com
+    install_command: "/plugin install fastapi-helper"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+    tech_stack:
+      - fastapi
+      - python
+    features: []
+    priority: medium
+    ai_recommendation_weight: 0.8
+
+  - name: django-helper
+    marketplace_id: django-helper
+    category: development
+    description: Django framework development assistant
+    homepage: https://www.djangoproject.com
+    install_command: "/plugin install django-helper"
+    version: latest
+    project_types:
+      - saas-web-app
+      - api-service
+    tech_stack:
+      - django
+      - python
+    features: []
+    priority: medium
+    ai_recommendation_weight: 0.8
+
+  # ============================================================================
+  # PAYMENT INTEGRATION PLUGINS
+  # ============================================================================
+
+  - name: stripe-integration
+    marketplace_id: stripe-integration
+    category: development
+    description: Stripe payment integration helper
+    homepage: https://stripe.com
+    install_command: "/plugin install stripe-integration"
+    version: latest
+    project_types:
+      - saas-web-app
+      - mobile-app
+    tech_stack: []
+    features:
+      - payments
+      - subscriptions
+    priority: high
+    ai_recommendation_weight: 0.9
+
+  - name: paypal-integration
+    marketplace_id: paypal-integration
+    category: development
+    description: PayPal payment integration helper
+    homepage: https://www.paypal.com
+    install_command: "/plugin install paypal-integration"
+    version: latest
+    project_types:
+      - saas-web-app
+      - mobile-app
+    tech_stack: []
+    features:
+      - payments
+    priority: medium
+    ai_recommendation_weight: 0.7
+
+  # ============================================================================
+  # DATA SCIENCE PLUGINS
+  # ============================================================================
+
+  - name: jupyter-assistant
+    marketplace_id: jupyter-assistant
+    category: development
+    description: Jupyter notebook development helper
+    homepage: https://jupyter.org
+    install_command: "/plugin install jupyter-assistant"
+    version: latest
+    project_types:
+      - data-science
+    tech_stack:
+      - jupyter
+      - python
+    features: []
+    priority: high
+    ai_recommendation_weight: 0.9
+
+  - name: pandas-helper
+    marketplace_id: pandas-helper
+    category: development
+    description: Pandas data manipulation assistant
+    homepage: https://pandas.pydata.org
+    install_command: "/plugin install pandas-helper"
+    version: latest
+    project_types:
+      - data-science
+    tech_stack:
+      - pandas
+      - python
+    features: []
+    priority: medium
+    ai_recommendation_weight: 0.8
+
+  - name: ml-model-helper
+    marketplace_id: ml-model-helper
+    category: development
+    description: Machine learning model development assistant
+    homepage: https://scikit-learn.org
+    install_command: "/plugin install ml-model-helper"
+    version: latest
+    project_types:
+      - data-science
+    tech_stack:
+      - scikit-learn
+      - tensorflow
+      - pytorch
+    features:
+      - machine-learning
+    priority: medium
+    ai_recommendation_weight: 0.8
+
+  # ============================================================================
+  # HARDWARE/IOT PLUGINS
+  # ============================================================================
+
+  - name: arduino-helper
+    marketplace_id: arduino-helper
+    category: development
+    description: Arduino development and firmware assistant
+    homepage: https://www.arduino.cc
+    install_command: "/plugin install arduino-helper"
+    version: latest
+    project_types:
+      - hardware-iot
+    tech_stack:
+      - arduino
+      - cpp
+    features: []
+    priority: high
+    ai_recommendation_weight: 0.9
+
+  - name: raspberry-pi-helper
+    marketplace_id: raspberry-pi-helper
+    category: development
+    description: Raspberry Pi development assistant
+    homepage: https://www.raspberrypi.org
+    install_command: "/plugin install raspberry-pi-helper"
+    version: latest
+    project_types:
+      - hardware-iot
+    tech_stack:
+      - raspberry-pi
+      - python
+    features: []
+    priority: high
+    ai_recommendation_weight: 0.85
+
+  - name: mqtt-helper
+    marketplace_id: mqtt-helper
+    category: development
+    description: MQTT protocol integration for IoT
+    homepage: https://mqtt.org
+    install_command: "/plugin install mqtt-helper"
+    version: latest
+    project_types:
+      - hardware-iot
+    tech_stack:
+      - mqtt
+    features:
+      - iot
+      - messaging
+    priority: medium
+    ai_recommendation_weight: 0.75
+
+# Statistics
+stats:
+  total_plugins: 47
+  by_category:
+    development: 11
+    formatting: 6
+    testing: 3
+    database: 3
+    deployment: 5
+    security: 3
+    documentation: 3
+    productivity: 3
+    framework_specific: 4
+    payments: 2
+    data_science: 3
+    hardware_iot: 3
+  by_priority:
+    high: 15
+    medium: 24
+    low: 8

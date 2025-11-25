@@ -1,0 +1,303 @@
+# Monitor Serial Output
+
+Connect to {{ project_name }} device serial console for debugging and monitoring.
+
+{% if project_type != 'hardware-iot' %}
+**Note:** This command is designed for hardware/IoT projects. Your project type is {{ project_type }}.
+{% endif %}
+
+## Quick Monitor Commands
+
+### Using Screen (Unix/macOS)
+
+```bash
+# Connect to device
+screen /dev/ttyUSB0 115200
+
+# Exit: Press Ctrl+A, then K, then Y
+
+# Common baud rates: 9600, 115200
+screen /dev/ttyACM0 9600
+```
+
+### Using PuTTY (Windows)
+
+1. Open PuTTY
+2. Select "Serial"
+3. Set COM port (e.g., COM3)
+4. Set baud rate (115200)
+5. Click "Open"
+
+### Using Arduino Serial Monitor
+
+```bash
+# Using Arduino CLI
+arduino-cli monitor -p /dev/ttyACM0 -c baudrate=115200
+```
+
+### Using Python (miniterm)
+
+```bash
+# Install pyserial
+pip install pyserial
+
+# Start monitor
+python -m serial.tools.miniterm /dev/ttyUSB0 115200
+
+# Exit: Ctrl+]
+```
+
+## Interactive REPL
+
+{% if platform == 'pico-w' or platform == 'esp32' %}
+### MicroPython REPL
+
+```bash
+# Connect
+screen /dev/ttyUSB0 115200
+
+# Press Ctrl+C to stop running program
+# Press Ctrl+D to soft reboot
+# >>> prompt appears - you can now type Python code
+
+# Test connection
+>>> print("Hello from device!")
+Hello from device!
+
+# Import modules
+>>> import machine
+>>> machine.freq()
+125000000
+
+# Control hardware
+>>> from machine import Pin
+>>> led = Pin(25, Pin.OUT)
+>>> led.on()
+>>> led.off()
+```
+
+### Common REPL Commands
+
+```python
+# System info
+import sys
+print(sys.implementation)
+print(sys.version)
+
+# Memory usage
+import micropython
+micropython.mem_info()
+
+# File system
+import os
+os.listdir()
+
+# Run script
+import main
+
+# Exit REPL: Ctrl+D (soft reboot)
+```
+
+{% endif %}
+
+## Debugging Output
+
+### Print Debugging
+
+```python
+# In your firmware code
+print("Debug: Variable value =", variable)
+print(f"Sensor reading: {sensor.read()}")
+
+# Flush output immediately
+import sys
+print("Important message", flush=True)
+
+# Debug with timestamp
+import time
+print(f"[{time.time()}] Event occurred")
+```
+
+### Log Levels
+
+```python
+# Add log levels to your code
+def log(level, message):
+    levels = {'DEBUG': 0, 'INFO': 1, 'WARN': 2, 'ERROR': 3}
+    if levels[level] >= LOG_LEVEL:
+        print(f"[{level}] {message}")
+
+log('INFO', 'Starting device...')
+log('DEBUG', 'Sensor initialized')
+log('ERROR', 'Connection failed')
+```
+
+## Monitor Configuration
+
+### Find Device Port
+
+```bash
+# Linux/macOS
+ls /dev/tty*
+# Look for: /dev/ttyUSB0, /dev/ttyACM0, /dev/cu.usb*
+
+# List with details
+ls -l /dev/tty* | grep USB
+
+# Windows (PowerShell)
+Get-WMIObject Win32_SerialPort | Select-Object Name,DeviceID
+
+# Or check Device Manager
+```
+
+### Set Baud Rate
+
+Common baud rates:
+- **9600** - Default for many Arduino boards
+- **115200** - MicroPython/ESP32 default
+- **921600** - High-speed debugging
+
+```bash
+# Match device baud rate
+screen /dev/ttyUSB0 115200  # MicroPython
+screen /dev/ttyACM0 9600    # Arduino
+```
+
+### Color Output
+
+```python
+# Add colors to serial output (ANSI codes)
+RED = '\033[91m'
+GREEN = '\033[92m'
+YELLOW = '\033[93m'
+RESET = '\033[0m'
+
+print(f"{GREEN}[OK]{RESET} Connection established")
+print(f"{RED}[ERROR]{RESET} Failed to connect")
+print(f"{YELLOW}[WARN]{RESET} Low battery")
+```
+
+## Advanced Monitoring
+
+### Capture to File
+
+```bash
+# Using screen with logging
+screen -L -Logfile device.log /dev/ttyUSB0 115200
+
+# Using miniterm with file capture
+python -m serial.tools.miniterm /dev/ttyUSB0 115200 | tee output.log
+
+# Using cat (simple capture)
+cat /dev/ttyUSB0 > device.log
+```
+
+### Plot Real-time Data
+
+```python
+# monitor_plot.py - Plot serial data in real-time
+import serial
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
+ser = serial.Serial('/dev/ttyUSB0', 115200)
+data = []
+
+def update(frame):
+    line = ser.readline().decode().strip()
+    try:
+        value = float(line)
+        data.append(value)
+        if len(data) > 100:
+            data.pop(0)
+        plt.cla()
+        plt.plot(data)
+    except ValueError:
+        pass
+
+ani = FuncAnimation(plt.gcf(), update, interval=100)
+plt.show()
+```
+
+### Filter Output
+
+```bash
+# Only show lines containing "ERROR"
+python -m serial.tools.miniterm /dev/ttyUSB0 115200 | grep ERROR
+
+# Exclude debug messages
+python -m serial.tools.miniterm /dev/ttyUSB0 115200 | grep -v DEBUG
+```
+
+## Troubleshooting
+
+### Permission Denied
+
+```bash
+# Add user to dialout group (Linux)
+sudo usermod -a -G dialout $USER
+# Logout and login again
+
+# Or use sudo (not recommended)
+sudo screen /dev/ttyUSB0 115200
+
+# Change permissions temporarily
+sudo chmod 666 /dev/ttyUSB0
+```
+
+### No Output Visible
+
+- Check correct port selected
+- Verify baud rate matches device
+- Try pressing reset button on device
+- Check USB cable quality
+- Some devices need Ctrl+C to stop running code and show REPL
+
+### Garbled Output
+
+```
+- Wrong baud rate (try 9600, 115200, 921600)
+- Cable issue (try different cable)
+- Hardware problem (try different device)
+```
+
+### Device Resets on Connect
+
+```
+- Normal for Arduino (DTR resets board)
+- Disable auto-reset if needed
+- Use screen with `-a` flag: screen -a /dev/ttyUSB0 115200
+```
+
+## Useful Shortcuts
+
+### Screen Commands
+
+```
+Ctrl+A, then K : Kill window (exit)
+Ctrl+A, then D : Detach (resume with: screen -r)
+Ctrl+A, then [ : Enter scroll mode (navigate with arrows, exit with Esc)
+Ctrl+C : Stop running code (MicroPython)
+Ctrl+D : Soft reboot (MicroPython)
+```
+
+### Miniterm Commands
+
+```
+Ctrl+] : Exit
+Ctrl+T, Ctrl+Q : Show menu
+Ctrl+T, Ctrl+R : Toggle RTS
+Ctrl+T, Ctrl+D : Toggle DTR
+```
+
+## Next Steps
+
+While monitoring:
+- Test device functionality
+- Debug code issues
+- Monitor sensor values
+- Check for errors
+- Verify WiFi/network connections
+- Measure performance
+
+Serial monitoring active for {{ project_name }}! 📡
