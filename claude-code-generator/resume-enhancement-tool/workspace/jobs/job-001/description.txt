@@ -1,0 +1,38 @@
+Senior Backend Engineer
+
+Location: San Francisco, CA
+Company: InnovateTech Solutions
+
+About the Role:
+We are seeking a Senior Backend Engineer to join our growing engineering team. You will architect and build scalable backend services using modern technologies.
+
+Requirements:
+- 5+ years of professional software development experience
+- Expert-level Python programming skills
+- Strong experience with FastAPI or similar async frameworks
+- PostgreSQL and database design expertise
+- RESTful API design and development
+- Experience with AWS cloud services (EC2, S3, Lambda, RDS)
+- Docker and containerization experience
+- Strong understanding of microservices architecture
+- Experience with CI/CD pipelines and DevOps practices
+- Team leadership and mentoring abilities
+
+Preferred Qualifications:
+- Experience with Redis or other caching solutions
+- Knowledge of Kubernetes for orchestration
+- Contributions to open-source projects
+- Experience with GraphQL
+- Familiarity with Agile/Scrum methodologies
+
+Responsibilities:
+- Design and implement scalable backend APIs serving millions of requests
+- Lead technical architecture decisions for new features
+- Mentor junior engineers and conduct code reviews
+- Optimize application performance and database queries
+- Collaborate with frontend team on API contracts
+- Implement monitoring, logging, and alerting systems
+- Participate in on-call rotation for production support
+
+Tech Stack:
+Python, FastAPI, PostgreSQL, Redis, AWS (ECS, RDS, S3), Docker, Kubernetes, GitHub Actions

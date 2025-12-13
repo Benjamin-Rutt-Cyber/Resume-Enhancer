@@ -4,13 +4,9 @@ Unit tests for TemplateSelector.
 
 import unittest
 from pathlib import Path
-import sys
 
-# Add src directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'src'))
-
-from generator.selector import TemplateSelector
-from generator.analyzer import ProjectConfig
+from src.generator.selector import TemplateSelector
+from src.generator.analyzer import ProjectConfig
 
 
 class TestTemplateSelector(unittest.TestCase):
@@ -335,6 +331,312 @@ class TestTemplateSelector(unittest.TestCase):
         self.assertIn('description', info)
         self.assertIn('tech_stack_options', info)
         self.assertIn('features', info)
+
+
+class TestTemplateSelectorErrorHandling(unittest.TestCase):
+    """Test error handling and edge cases for TemplateSelector."""
+
+    def test_missing_registry_file(self):
+        """Test handling of missing registry.yaml file."""
+        import tempfile
+        import shutil
+
+        # Create temp directory without registry.yaml
+        temp_dir = tempfile.mkdtemp()
+        try:
+            selector = TemplateSelector(temp_dir)
+
+            # Should create default registry
+            self.assertIsNotNone(selector.registry)
+            self.assertIn('agents', selector.registry)
+            self.assertIn('skills', selector.registry)
+            self.assertEqual(selector.registry['agents'], [])
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def test_invalid_registry_yaml_syntax(self):
+        """Test handling of malformed YAML in registry file."""
+        import tempfile
+        import shutil
+
+        temp_dir = tempfile.mkdtemp()
+        try:
+            # Create registry with invalid YAML syntax
+            registry_path = Path(temp_dir) / 'registry.yaml'
+            with open(registry_path, 'w') as f:
+                f.write("invalid: yaml: syntax:\n  - broken")
+
+            # Should raise ValueError
+            with self.assertRaises(ValueError) as cm:
+                TemplateSelector(temp_dir)
+
+            self.assertIn("Failed to parse", str(cm.exception))
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def test_registry_not_dict(self):
+        """Test handling of registry that's not a dictionary."""
+        import tempfile
+        import shutil
+
+        temp_dir = tempfile.mkdtemp()
+        try:
+            # Create registry as a list instead of dict
+            registry_path = Path(temp_dir) / 'registry.yaml'
+            with open(registry_path, 'w') as f:
+                f.write("- item1\n- item2\n")
+
+            # Should raise ValueError
+            with self.assertRaises(ValueError) as cm:
+                TemplateSelector(temp_dir)
+
+            self.assertIn("Invalid registry format", str(cm.exception))
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def test_missing_project_types_directory(self):
+        """Test handling of missing project-types directory."""
+        import tempfile
+        import shutil
+
+        temp_dir = tempfile.mkdtemp()
+        try:
+            # Create valid registry but no project-types directory
+            registry_path = Path(temp_dir) / 'registry.yaml'
+            with open(registry_path, 'w') as f:
+                f.write("agents: []\nskills: []\n")
+
+            selector = TemplateSelector(temp_dir)
+
+            # Should have empty project_types
+            self.assertEqual(selector.project_types, {})
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def test_invalid_project_type_yaml(self):
+        """Test handling of invalid YAML in project type files."""
+        import tempfile
+        import shutil
+
+        temp_dir = tempfile.mkdtemp()
+        try:
+            # Create valid registry
+            registry_path = Path(temp_dir) / 'registry.yaml'
+            with open(registry_path, 'w') as f:
+                f.write("agents: []\nskills: []\n")
+
+            # Create project-types directory with invalid YAML
+            project_types_dir = Path(temp_dir) / 'project-types'
+            project_types_dir.mkdir()
+
+            invalid_file = project_types_dir / 'invalid.yaml'
+            with open(invalid_file, 'w') as f:
+                f.write("invalid: yaml: [syntax\n")
+
+            # Should skip invalid file and continue
+            selector = TemplateSelector(temp_dir)
+            self.assertNotIn('invalid', selector.project_types)
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def test_project_type_not_dict(self):
+        """Test handling of project type config that's not a dictionary."""
+        import tempfile
+        import shutil
+
+        temp_dir = tempfile.mkdtemp()
+        try:
+            # Create valid registry
+            registry_path = Path(temp_dir) / 'registry.yaml'
+            with open(registry_path, 'w') as f:
+                f.write("agents: []\nskills: []\n")
+
+            # Create project-types directory with non-dict config
+            project_types_dir = Path(temp_dir) / 'project-types'
+            project_types_dir.mkdir()
+
+            list_file = project_types_dir / 'list-type.yaml'
+            with open(list_file, 'w') as f:
+                f.write("- item1\n- item2\n")
+
+            # Should skip non-dict file
+            selector = TemplateSelector(temp_dir)
+            self.assertNotIn('list-type', selector.project_types)
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def test_project_type_missing_name(self):
+        """Test handling of project type config without 'name' field."""
+        import tempfile
+        import shutil
+
+        temp_dir = tempfile.mkdtemp()
+        try:
+            # Create valid registry
+            registry_path = Path(temp_dir) / 'registry.yaml'
+            with open(registry_path, 'w') as f:
+                f.write("agents: []\nskills: []\n")
+
+            # Create project-types directory with config missing 'name'
+            project_types_dir = Path(temp_dir) / 'project-types'
+            project_types_dir.mkdir()
+
+            no_name_file = project_types_dir / 'no-name.yaml'
+            with open(no_name_file, 'w') as f:
+                f.write("description: Test\nagents: []\n")
+
+            # Should skip file without 'name' field
+            selector = TemplateSelector(temp_dir)
+            self.assertEqual(len(selector.project_types), 0)
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def test_io_error_reading_registry(self):
+        """Test handling of IO errors when reading registry."""
+        import tempfile
+        import shutil
+        from unittest.mock import patch, mock_open
+
+        temp_dir = tempfile.mkdtemp()
+        try:
+            # Create registry file
+            registry_path = Path(temp_dir) / 'registry.yaml'
+            with open(registry_path, 'w') as f:
+                f.write("agents: []\n")
+
+            # Mock open to raise IOError
+            with patch('builtins.open', side_effect=IOError("Permission denied")):
+                with self.assertRaises(IOError) as cm:
+                    TemplateSelector(temp_dir)
+
+                self.assertIn("Failed to read", str(cm.exception))
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def test_io_error_reading_project_type(self):
+        """Test handling of IO errors when reading project type files."""
+        import tempfile
+        import shutil
+
+        temp_dir = tempfile.mkdtemp()
+        try:
+            # Create valid registry
+            registry_path = Path(temp_dir) / 'registry.yaml'
+            with open(registry_path, 'w') as f:
+                f.write("agents: []\nskills: []\n")
+
+            # Create project-types directory with unreadable file
+            project_types_dir = Path(temp_dir) / 'project-types'
+            project_types_dir.mkdir()
+
+            # Create a file and make it unreadable (on Unix systems)
+            unreadable_file = project_types_dir / 'unreadable.yaml'
+            with open(unreadable_file, 'w') as f:
+                f.write("name: test\n")
+
+            # Try to make file unreadable (may not work on Windows)
+            import os
+            try:
+                os.chmod(unreadable_file, 0o000)
+            except:
+                pass  # Skip if chmod not supported
+
+            # Should skip the unreadable file and continue
+            selector = TemplateSelector(temp_dir)
+            # May or may not include 'test' depending on OS permissions
+            self.assertIsNotNone(selector.project_types)
+
+        finally:
+            # Restore permissions before cleanup
+            try:
+                if unreadable_file.exists():
+                    os.chmod(unreadable_file, 0o644)
+            except:
+                pass
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+
+class TestTemplateSelectorFiltering(unittest.TestCase):
+    """Test advanced filtering logic in TemplateSelector."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.templates_dir = Path(__file__).parent.parent.parent / 'templates'
+        self.selector = TemplateSelector(self.templates_dir)
+
+    def test_required_all_filtering(self):
+        """Test that required_all (AND logic) filters correctly."""
+        # Create config that should match required_all conditions
+        config = ProjectConfig(
+            project_name='TestProject',  # At least 3 chars
+            project_slug='test',
+            project_type='saas-web-app',
+            description='A test project for validating required_all filtering logic',  # At least 10 chars
+            backend_framework='python-fastapi',
+            frontend_framework='react-typescript',
+            database='postgresql',
+            deployment_platform='docker',
+            features=[]
+        )
+
+        selected = self.selector.select_templates(config)
+
+        # Should select templates that match ALL required conditions
+        # FastAPI skill requires backend_framework=python-fastapi
+        skill_files = selected['skills']
+        self.assertTrue(any('python-fastapi' in s for s in skill_files),
+                       "Should select FastAPI skill when all requirements met")
+
+    def test_feature_based_template_selection(self):
+        """Test that features add appropriate templates."""
+        # Create config with authentication feature
+        config = ProjectConfig(
+            project_name='FeatureTest',
+            project_slug='feature-test',
+            project_type='saas-web-app',
+            description='A test project with authentication and payment features for validation',
+            backend_framework='python-fastapi',
+            frontend_framework='react-typescript',
+            database='postgresql',
+            deployment_platform='docker',
+            features=['authentication', 'payments']  # Add features
+        )
+
+        selected = self.selector.select_templates(config)
+
+        # Features should add relevant templates
+        skill_files = selected['skills']
+        # Authentication feature should add auth-related skills
+        # This depends on your registry configuration
+
+        # At minimum, should have selected skills
+        self.assertTrue(len(skill_files) > 0,
+                       "Should select skills when features are specified")
+
+    def test_select_templates_returns_all_categories(self):
+        """Test that select_templates returns all template categories."""
+        config = ProjectConfig(
+            project_name='AllCategories',
+            project_slug='all-categories',
+            project_type='saas-web-app',
+            description='A test to ensure all template categories are included in results',
+            backend_framework='python-fastapi',
+            features=[]
+        )
+
+        selected = self.selector.select_templates(config)
+
+        # Should return all expected categories
+        self.assertIn('agents', selected)
+        self.assertIn('skills', selected)
+        self.assertIn('commands', selected)
+        self.assertIn('docs', selected)
+
+        # Each category should be a list
+        self.assertIsInstance(selected['agents'], list)
+        self.assertIsInstance(selected['skills'], list)
+        self.assertIsInstance(selected['commands'], list)
+        self.assertIsInstance(selected['docs'], list)
 
 
 if __name__ == '__main__':

@@ -12,10 +12,11 @@ Thank you for your interest in contributing to the Claude Code Generator! This d
 4. [Project Structure](#project-structure)
 5. [How to Contribute](#how-to-contribute)
 6. [Creating Templates](#creating-templates)
-7. [Testing Guidelines](#testing-guidelines)
-8. [Code Style](#code-style)
-9. [Pull Request Process](#pull-request-process)
-10. [Community](#community)
+7. [Documenting Architectural Decisions](#documenting-architectural-decisions)
+8. [Testing Guidelines](#testing-guidelines)
+9. [Code Style](#code-style)
+10. [Pull Request Process](#pull-request-process)
+11. [Community](#community)
 
 ---
 
@@ -525,6 +526,142 @@ elif any(word in desc_lower for word in ['cli', 'command line', 'terminal']):
     project_type = 'cli-tool'
     backend_framework = 'python-click'
 ```
+
+---
+
+## Documenting Architectural Decisions
+
+### What are ADRs?
+
+Architecture Decision Records (ADRs) document important architectural decisions made in the project. They help contributors understand:
+- Why certain technologies were chosen
+- What alternatives were considered
+- What trade-offs were accepted
+
+### When to Create an ADR
+
+Create an ADR when making:
+- **Technology choices**: Selecting a framework, library, or tool
+- **Design patterns**: Adopting a particular architectural pattern
+- **Security decisions**: Implementing security measures or policies
+- **Performance trade-offs**: Choosing performance vs. other concerns
+- **API design**: Defining major API structures or interfaces
+
+**Examples**:
+- Choosing between FastAPI and Django for backend
+- Deciding on YAML vs. JSON for configuration files
+- Implementing a caching strategy
+- Selecting a template engine
+
+### How to Create an ADR
+
+**1. Copy the Template**
+
+```bash
+# Get next number (e.g., if 0008 exists, use 0009)
+ls docs/adr/
+cp docs/adr/template.md docs/adr/0009-short-descriptive-title.md
+```
+
+**2. Fill Out the Template**
+
+```markdown
+---
+adr: 0009
+title: Use Redis for Caching
+date: 2025-11-26
+status: Proposed
+---
+
+# ADR-0009: Use Redis for Caching
+
+## Status
+
+🚧 **Proposed**
+
+## Context
+
+We need a caching solution to improve API response times.
+Our current approach loads data from PostgreSQL on every request,
+causing 500ms+ latency for frequently accessed resources.
+
+## Decision
+
+We will use Redis as an in-memory cache for frequently accessed data.
+
+## Consequences
+
+**Positive:**
+- Reduces database load by 70%
+- Improves response times from 500ms to ~50ms
+- Battle-tested and widely used
+
+**Negative:**
+- Adds operational complexity (one more service)
+- Cache invalidation complexity
+- Additional dependency
+
+## Alternatives Considered
+
+### Memcached
+- Pros: Simpler, faster for pure caching
+- Cons: No data structures, no persistence
+- Why rejected: Need sorted sets for leaderboards
+
+### In-Memory Python Dict
+- Pros: No dependencies, simple
+- Cons: Not shared across processes, lost on restart
+- Why rejected: Doesn't work with multi-process deployments
+
+## References
+
+- File(s): `src/cache/redis_client.py`
+- Related ADRs: None
+- External: https://redis.io/docs/
+```
+
+**3. Update the Index**
+
+Add your ADR to `docs/adr/README.md`:
+
+```markdown
+| [0009](0009-use-redis-for-caching.md) | Use Redis for Caching | 🚧 Proposed | 2025-11-26 |
+```
+
+**4. Submit for Review**
+
+- Create a pull request with your ADR
+- ADRs should be discussed and approved before implementation
+- Status starts as **Proposed**, becomes **Accepted** when implemented
+
+### ADR Status Lifecycle
+
+- 🚧 **Proposed**: Under discussion, not yet decided
+- ✅ **Accepted**: Decision made and implemented
+- ❌ **Deprecated**: No longer recommended (but may still be in use)
+- ⚠️ **Superseded**: Replaced by a newer ADR (link to it)
+
+### Tips for Writing Good ADRs
+
+**Do:**
+- Explain the problem context clearly
+- List real alternatives that were considered
+- Be honest about trade-offs (every decision has cons)
+- Link to code that implements the decision
+- Use objective, factual language
+
+**Don't:**
+- Document trivial decisions (use `console.log` vs `print`)
+- Write implementation details (that belongs in code comments)
+- Skip the "Alternatives Considered" section
+- Be vague ("we chose X because it's better")
+
+### Example ADRs in This Project
+
+See `docs/adr/` for examples:
+- ADR-0001: Use Jinja2 for Template Rendering
+- ADR-0003: Dual-Mode Analysis (AI + Keyword Fallback)
+- ADR-0005: Path Traversal Security Model
 
 ---
 

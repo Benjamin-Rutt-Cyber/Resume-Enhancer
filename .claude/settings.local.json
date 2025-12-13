@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(pytest:*)",
+      "Bash(done)",
+      "Bash(python -m src.cli.main:*)",
+      "WebSearch"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

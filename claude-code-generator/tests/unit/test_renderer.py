@@ -637,3 +637,57 @@ class TestEdgeCases:
         # All should render correctly
         for i, result in enumerate(results):
             assert f'# Project {i}' in result
+
+    def test_undefined_variable_error(self, renderer, temp_templates_dir):
+        """Test handling of undefined variables in strict mode."""
+        # Create template with undefined variable that will raise UndefinedError
+        # when using strict undefined in certain contexts
+        (temp_templates_dir / 'undefined.md.j2').write_text(
+            '{{ undefined_var.some_attribute }}'
+        )
+
+        # Should raise ValueError with helpful message
+        with pytest.raises(ValueError) as exc_info:
+            renderer.render_template('undefined.md.j2', {})
+
+        assert "undefined" in str(exc_info.value).lower() or "template" in str(exc_info.value).lower()
+
+    def test_general_template_error_render(self, renderer, temp_templates_dir):
+        """Test handling of general template errors during rendering."""
+        from jinja2 import TemplateError
+        from unittest.mock import patch
+
+        # Create a valid template
+        (temp_templates_dir / 'error.md.j2').write_text('# {{ project_name }}')
+
+        # Mock render to raise a general TemplateError
+        with patch.object(renderer.env, 'get_template') as mock_get:
+            mock_template = mock_get.return_value
+            mock_template.render.side_effect = TemplateError("General template error")
+
+            # Should catch and re-raise as ValueError
+            with pytest.raises(ValueError) as exc_info:
+                renderer.render_template('error.md.j2', {})
+
+            assert "Error rendering" in str(exc_info.value)
+
+    def test_general_template_error_validate(self, renderer, temp_templates_dir):
+        """Test handling of general template errors during validation."""
+        # Create a template with valid syntax but will fail on module compilation
+        # This is tricky - we need something that passes syntax check but fails on validate
+        from unittest.mock import patch
+        from jinja2 import TemplateError
+
+        # Create a valid template
+        (temp_templates_dir / 'valid.md.j2').write_text('# {{ project_name }}')
+
+        # Mock the template.module access to raise TemplateError
+        with patch.object(renderer.env, 'get_template') as mock_get:
+            mock_template = mock_get.return_value
+            # Make module property raise TemplateError
+            type(mock_template).module = property(lambda self: (_ for _ in ()).throw(TemplateError("Module error")))
+
+            with pytest.raises(ValueError) as exc_info:
+                renderer.validate_template('valid.md.j2')
+
+            assert "Template validation failed" in str(exc_info.value)

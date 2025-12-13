@@ -76,6 +76,12 @@ claude-code-generator/
 │   └── ...
 │
 ├── docs/                       # Project documentation
+│   ├── adr/                    # Architecture Decision Records
+│   │   ├── README.md           # ADR index
+│   │   ├── template.md         # Template for new ADRs
+│   │   ├── 0001-jinja2-templates.md
+│   │   ├── 0002-click-cli-framework.md
+│   │   └── ...                 # 8 ADRs total
 │   ├── ARCHITECTURE.md
 │   ├── TEMPLATE_GUIDE.md
 │   └── ...

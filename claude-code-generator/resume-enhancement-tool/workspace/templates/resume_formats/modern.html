@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume</title>
+    <style>
+        @page {
+            size: letter;
+            margin: 0.75in;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+            font-size: 11pt;
+        }
+
+        /* Name/Header */
+        h1 {
+            color: #2c3e50;
+            font-size: 32px;
+            font-weight: 700;
+            border-bottom: 4px solid #3498db;
+            padding-bottom: 12px;
+            margin-bottom: 8px;
+            margin-top: 0;
+            letter-spacing: 0.5px;
+        }
+
+        /* Contact info (immediately after h1) */
+        h1 + p {
+            color: #555;
+            font-size: 10pt;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        /* Main section headings */
+        h2 {
+            color: #2c3e50;
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Job titles / subsection headings */
+        h3 {
+            color: #34495e;
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 16px;
+            margin-bottom: 4px;
+        }
+
+        /* Professional summary or dates */
+        p {
+            margin: 8px 0;
+            text-align: justify;
+        }
+
+        /* Bullet points */
+        ul {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin: 6px 0;
+            line-height: 1.5;
+        }
+
+        ul ul {
+            margin-top: 4px;
+            margin-bottom: 4px;
+        }
+
+        /* Bold text */
+        strong {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        /* Italic text (typically dates) */
+        em {
+            font-style: italic;
+            color: #7f8c8d;
+            font-size: 10pt;
+        }
+
+        /* Links */
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Tables (if needed) */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 6px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* Code/technical terms */
+        code {
+            background-color: #ecf0f1;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: 'Courier New', Consolas, monospace;
+            font-size: 10pt;
+            color: #e74c3c;
+        }
+
+        /* Blockquotes */
+        blockquote {
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+            margin-left: 0;
+            color: #555;
+            font-style: italic;
+            margin: 15px 0;
+        }
+
+        /* Horizontal rules */
+        hr {
+            border: none;
+            border-top: 1px solid #bdc3c7;
+            margin: 20px 0;
+        }
+
+        /* Print-specific styles */
+        @media print {
+            body {
+                font-size: 10.5pt;
+            }
+
+            h1 {
+                page-break-after: avoid;
+            }
+
+            h2, h3 {
+                page-break-after: avoid;
+            }
+
+            ul, ol, p {
+                page-break-inside: avoid;
+            }
+
+            a {
+                color: #3498db;
+            }
+        }
+
+        /* Avoid orphans and widows */
+        p, li {
+            orphans: 3;
+            widows: 3;
+        }
+    </style>
+</head>
+<body>
+    {{content}}
+</body>
+</html>

@@ -3,11 +3,14 @@ Project Analyzer - Analyzes project descriptions using Claude API.
 """
 
 import json
+import logging
 import os
 from typing import Dict, Any, Optional
-from anthropic import Anthropic
+from anthropic import Anthropic, APIError, APIConnectionError, RateLimitError
 from pydantic import BaseModel, Field, field_validator, ValidationInfo
 import re
+
+logger = logging.getLogger(__name__)
 
 from .constants import (
     MIN_PROJECT_NAME_LENGTH,
@@ -92,8 +95,16 @@ class ProjectAnalyzer:
             raise ValueError("Description must be at least 10 characters")
 
         if self.client:
-            # Use Claude API for intelligent analysis
-            config_dict = self._analyze_with_claude(description, project_name)
+            # Use Claude API for intelligent analysis with fallback on error
+            try:
+                config_dict = self._analyze_with_claude(description, project_name)
+            except (APIError, APIConnectionError, RateLimitError, ValueError, json.JSONDecodeError, Exception) as e:
+                # Log the error and fall back to keyword-based analysis
+                logger.warning(
+                    f"Claude API analysis failed ({type(e).__name__}: {str(e)}). "
+                    "Falling back to keyword-based analysis."
+                )
+                config_dict = self._analyze_with_keywords(description, project_name)
         else:
             # Fallback to keyword-based analysis
             config_dict = self._analyze_with_keywords(description, project_name)

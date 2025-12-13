@@ -1,0 +1,105 @@
+project_type: saas-web-app
+project_name: Demo Task Manager
+generated_by: claude-code-generator
+recommended_plugins:
+  high_priority:
+  - name: prettier
+    reason: Code formatting for JavaScript/TypeScript frontend code
+    priority: high
+    marketplace_id: prettier
+    install_command: /plugin install prettier
+    category: formatting
+  - name: eslint
+    reason: JavaScript/TypeScript linting for code quality
+    priority: high
+    marketplace_id: eslint
+    install_command: /plugin install eslint
+    category: formatting
+  - name: black
+    reason: Python code formatting for backend
+    priority: high
+    marketplace_id: black
+    install_command: /plugin install black
+    category: formatting
+  - name: pytest-runner
+    reason: Python testing framework integration
+    priority: high
+    marketplace_id: pytest-runner
+    install_command: /plugin install pytest-runner
+    category: testing
+  - name: jest-runner
+    reason: JavaScript/TypeScript testing framework
+    priority: high
+    marketplace_id: jest-runner
+    install_command: /plugin install jest-runner
+    category: testing
+  - name: docker-manager
+    reason: Docker container management for deployment
+    priority: high
+    marketplace_id: docker-manager
+    install_command: /plugin install docker-manager
+    category: deployment
+  - name: github-actions
+    reason: CI/CD workflow management
+    priority: high
+    marketplace_id: github-actions
+    install_command: /plugin install github-actions
+    category: deployment
+  - name: snyk-security
+    reason: Vulnerability scanning and dependency checking
+    priority: high
+    marketplace_id: snyk-security
+    install_command: /plugin install snyk-security
+    category: security
+  medium_priority:
+  - name: github-copilot
+    reason: AI-powered code completion and suggestions
+    priority: medium
+    marketplace_id: github-copilot
+    install_command: /plugin install github-copilot
+    category: development
+  - name: pylint
+    reason: Python code analysis and linting
+    priority: medium
+    marketplace_id: pylint
+    install_command: /plugin install pylint
+    category: formatting
+  - name: react-devtools
+    reason: React component development and debugging
+    priority: medium
+    marketplace_id: react-devtools
+    install_command: /plugin install react-devtools
+    category: development
+  - name: fastapi-helper
+    reason: FastAPI framework development assistant
+    priority: medium
+    marketplace_id: fastapi-helper
+    install_command: /plugin install fastapi-helper
+    category: development
+  - name: swagger-editor
+    reason: OpenAPI/Swagger documentation editor
+    priority: medium
+    marketplace_id: swagger-editor
+    install_command: /plugin install swagger-editor
+    category: documentation
+  - name: sql-formatter
+    reason: SQL query formatting and optimization
+    priority: medium
+    marketplace_id: sql-formatter
+    install_command: /plugin install sql-formatter
+    category: database
+  low_priority:
+  - name: git-assistant
+    reason: Advanced Git workflow assistance
+    priority: low
+    marketplace_id: git-assistant
+    install_command: /plugin install git-assistant
+    category: productivity
+  - name: sugar
+    reason: Enhanced Claude Code experience with quality of life features
+    priority: low
+    marketplace_id: sugar
+    install_command: /plugin install sugar
+    category: productivity
+installed_plugins: []
+notes: Install recommended plugins using the install_command for each plugin.

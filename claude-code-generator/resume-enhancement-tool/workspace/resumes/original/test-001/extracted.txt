@@ -1,0 +1,32 @@
+John Doe
+john.doe@email.com | (555) 123-4567 | San Francisco, CA
+LinkedIn: linkedin.com/in/johndoe | GitHub: github.com/johndoe
+
+PROFESSIONAL EXPERIENCE
+
+Software Engineer - TechCorp Inc.
+June 2020 - Present
+
+- Developed web applications using Python and JavaScript
+- Worked with databases and APIs
+- Collaborated with team members on various projects
+- Fixed bugs and improved application performance
+
+Junior Developer - StartupXYZ
+January 2018 - May 2020
+
+- Built features for company website
+- Wrote code in Python
+- Helped with testing and deployment
+
+EDUCATION
+
+Bachelor of Science in Computer Science
+State University, Graduated May 2018
+GPA: 3.5
+
+SKILLS
+
+Programming: Python, JavaScript, SQL
+Tools: Git, VS Code
+Other: Teamwork, Problem Solving

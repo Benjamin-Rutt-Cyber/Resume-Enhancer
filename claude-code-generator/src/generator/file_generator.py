@@ -14,6 +14,8 @@ from .selector import TemplateSelector
 from .renderer import TemplateRenderer
 from .plugin_analyzer import PluginAnalyzer
 from .boilerplate_generator import BoilerplateGenerator
+from .ai_generator import AIAgentGenerator, AIGenerationConfig
+from .ai_cache import AICacheManager
 
 logger = logging.getLogger(__name__)
 
@@ -21,19 +23,30 @@ logger = logging.getLogger(__name__)
 class FileGenerator:
     """Generate project files from templates."""
 
-    def __init__(self, templates_dir: Path, api_key: Optional[str] = None):
+    def __init__(
+        self,
+        templates_dir: Path,
+        api_key: Optional[str] = None,
+        ai_config: Optional[AIGenerationConfig] = None
+    ):
         """
         Initialize file generator.
 
         Args:
             templates_dir: Path to templates directory
             api_key: Optional Anthropic API key for plugin recommendations
+            ai_config: Optional AI generation configuration
         """
         self.templates_dir = Path(templates_dir)
         self.selector = TemplateSelector(templates_dir)
         self.renderer = TemplateRenderer(templates_dir)
         self.plugin_analyzer = PluginAnalyzer(api_key=api_key, templates_dir=templates_dir)
         self.boilerplate_generator = BoilerplateGenerator(templates_dir)
+
+        # Initialize AI generation components
+        self.ai_config = ai_config or AIGenerationConfig(enabled=False)
+        self.ai_cache = AICacheManager() if ai_config and ai_config.use_cache else None
+        self.ai_generator = AIAgentGenerator(self.ai_config, self.ai_cache) if ai_config else None
 
     def _validate_output_path(self, output_dir: Path) -> Path:
         """
@@ -231,14 +244,92 @@ class FileGenerator:
     def _generate_agent(
         self, template_path: str, context: Dict[str, Any], output_dir: Path
     ) -> Path:
-        """Generate agent file - either copy reusable or render template."""
+        """
+        Generate agent file - library template, AI-generated, or Jinja2 template.
+
+        Decision flow:
+        1. Check if AI generation is enabled and should be used (domain uniqueness)
+        2. Try cache if AI generation is warranted
+        3. Generate with AI if needed
+        4. Fall back to library template if AI fails or not needed
+        """
         template_file = self.templates_dir / template_path
 
         # Create output directory
         output_dir_path = output_dir / '.claude' / 'agents'
         output_dir_path.mkdir(parents=True, exist_ok=True)
 
-        # Check if this is a reusable agent (no .j2 extension) or template (.j2)
+        # Extract agent name and purpose from template path
+        agent_name = Path(template_path).stem.replace('.j2', '')
+        agent_type = agent_name.replace('-agent', '')
+        agent_purpose = f"Specialized {agent_type} guidance for {context.get('project_type', 'project')}"
+
+        # Try AI generation if enabled
+        if self.ai_generator and self.ai_config.enabled:
+            try:
+                # Calculate library match score
+                library_templates = self.selector.registry.get('agents', [])
+                library_match_score = self.ai_generator._calculate_library_match(
+                    agent_name, context, library_templates
+                )
+
+                # Decide whether to use AI generation
+                should_generate, reason, uniqueness_score = self.ai_generator.should_generate_custom_agent(
+                    agent_name, context, library_match_score
+                )
+
+                logger.info(f"Agent {agent_name}: {reason}")
+
+                if should_generate:
+                    # Try cache first
+                    if self.ai_cache and self.ai_config.use_cache:
+                        cache_key = self.ai_cache.generate_cache_key(
+                            "agent",
+                            context.get('project_type', 'unknown'),
+                            agent_purpose,
+                            context
+                        )
+
+                        cached = self.ai_cache.get_cached_content(cache_key, "agent")
+                        if cached:
+                            content, metadata = cached
+                            filename = f"{agent_name}.ai-generated.md"
+                            output_path = output_dir_path / 'generated' / filename
+                            output_path.parent.mkdir(parents=True, exist_ok=True)
+                            output_path.write_text(content, encoding='utf-8')
+                            logger.info(f"Using cached AI agent: {agent_name}")
+                            return output_path
+
+                    # Generate with AI
+                    logger.info(f"Generating custom AI agent: {agent_name}")
+                    content, metadata = self.ai_generator.generate_agent(
+                        agent_type, agent_purpose, context
+                    )
+
+                    # Cache the generated content
+                    if self.ai_cache and self.ai_config.use_cache:
+                        cache_key = self.ai_cache.generate_cache_key(
+                            "agent",
+                            context.get('project_type', 'unknown'),
+                            agent_purpose,
+                            context
+                        )
+                        self.ai_cache.store_content(cache_key, "agent", content, metadata)
+
+                    # Write AI-generated agent to generated/ subdirectory
+                    filename = f"{agent_name}.ai-generated.md"
+                    output_path = output_dir_path / 'generated' / filename
+                    output_path.parent.mkdir(parents=True, exist_ok=True)
+                    output_path.write_text(content, encoding='utf-8')
+
+                    logger.info(f"Generated AI agent: {agent_name} ({metadata.get('tokens_used', 0)} tokens)")
+                    return output_path
+
+            except Exception as e:
+                logger.warning(f"AI generation failed for {agent_name}: {e}. Falling back to library template.")
+                # Fall through to library template
+
+        # Standard flow: Library template or Jinja2 template
         if template_path.endswith('.j2'):
             # GENERATED AGENT: Render Jinja2 template with project context
             content = self.renderer.render_template(template_path, context)
@@ -257,9 +348,10 @@ class FileGenerator:
         self, template_path: str, context: Dict[str, Any], output_dir: Path
     ) -> Path:
         """
-        Generate skill directory.
+        Generate skill directory - library, AI-generated, or template.
 
-        Handles both:
+        Handles:
+        - AI-generated skills: Generated via Claude API for novel domains
         - Library skills: skills/library/python-fastapi/SKILL.md (copy as-is)
         - Template skills: skills/python-fastapi/ (render SKILL.md.j2)
 
@@ -271,8 +363,83 @@ class FileGenerator:
         Returns:
             Path to generated skill directory
         """
+        # Extract skill name
+        template_path_obj = Path(template_path)
         is_library_skill = self._is_library_skill(template_path)
 
+        if is_library_skill:
+            skill_name = template_path_obj.parent.name
+        else:
+            skill_name = template_path_obj.name
+
+        skill_purpose = f"Specialized {skill_name} skill for {context.get('project_type', 'project')}"
+
+        # Try AI generation if enabled (similar logic to agents)
+        if self.ai_generator and self.ai_config.enabled:
+            try:
+                # Calculate library match score
+                library_templates = self.selector.registry.get('skills', [])
+                library_match_score = self.ai_generator._calculate_library_match(
+                    skill_name, context, library_templates
+                )
+
+                # Decide whether to use AI generation
+                should_generate, reason, uniqueness_score = self.ai_generator.should_generate_custom_agent(
+                    skill_name, context, library_match_score
+                )
+
+                logger.info(f"Skill {skill_name}: {reason}")
+
+                if should_generate:
+                    # Try cache first
+                    if self.ai_cache and self.ai_config.use_cache:
+                        cache_key = self.ai_cache.generate_cache_key(
+                            "skill",
+                            context.get('project_type', 'unknown'),
+                            skill_purpose,
+                            context
+                        )
+
+                        cached = self.ai_cache.get_cached_content(cache_key, "skill")
+                        if cached:
+                            content, metadata = cached
+                            output_path = output_dir / '.claude' / 'skills' / skill_name / 'generated'
+                            output_path.mkdir(parents=True, exist_ok=True)
+                            skill_file = output_path / 'SKILL.ai-generated.md'
+                            skill_file.write_text(content, encoding='utf-8')
+                            logger.info(f"Using cached AI skill: {skill_name}")
+                            return output_path
+
+                    # Generate with AI
+                    logger.info(f"Generating custom AI skill: {skill_name}")
+                    content, metadata = self.ai_generator.generate_skill(
+                        skill_name, skill_purpose, context
+                    )
+
+                    # Cache the generated content
+                    if self.ai_cache and self.ai_config.use_cache:
+                        cache_key = self.ai_cache.generate_cache_key(
+                            "skill",
+                            context.get('project_type', 'unknown'),
+                            skill_purpose,
+                            context
+                        )
+                        self.ai_cache.store_content(cache_key, "skill", content, metadata)
+
+                    # Write AI-generated skill
+                    output_path = output_dir / '.claude' / 'skills' / skill_name / 'generated'
+                    output_path.mkdir(parents=True, exist_ok=True)
+                    skill_file = output_path / 'SKILL.ai-generated.md'
+                    skill_file.write_text(content, encoding='utf-8')
+
+                    logger.info(f"Generated AI skill: {skill_name} ({metadata.get('tokens_used', 0)} tokens)")
+                    return output_path
+
+            except Exception as e:
+                logger.warning(f"AI generation failed for skill {skill_name}: {e}. Falling back to library.")
+                # Fall through to library/template
+
+        # Standard flow: Library or template skill
         if is_library_skill:
             content, skill_name = self._process_library_skill(template_path)
         else:

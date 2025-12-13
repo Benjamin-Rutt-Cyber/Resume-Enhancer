@@ -3,13 +3,9 @@ Analyze selection coverage - what gets selected for each project type.
 """
 
 from pathlib import Path
-import sys
 
-# Add src directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'src'))
-
-from generator.selector import TemplateSelector
-from generator.analyzer import ProjectConfig
+from src.generator.selector import TemplateSelector
+from src.generator.analyzer import ProjectConfig
 
 
 def analyze_project_type(selector, project_type, config):

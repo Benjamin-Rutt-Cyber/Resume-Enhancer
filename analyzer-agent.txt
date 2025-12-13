@@ -1,0 +1,412 @@
+claude-code -a "@bank-statement-categorizer You are now tasked with building the complete backend system for intelligent PDF transaction analysis. Create a production-ready application with the following structure:
+
+## PROJECT SETUP
+
+1. Create project structure:
+   - /src (main source code)
+   - /src/pdf_parser (PDF extraction and OCR)
+   - /src/categorization (intelligent categorization engine)
+   - /src/web_search (merchant lookup via web)
+   - /src/learning (machine learning and pattern recognition)
+   - /src/database (data storage and caching)
+   - /src/api (CLI and API interfaces)
+   - /tests (comprehensive test suite)
+   - /data (sample PDFs, merchant cache, learned patterns)
+   - /config (configuration files)
+
+2. Technology Stack (choose best for the job):
+   - Language: Python (recommended) or Node.js
+   - PDF parsing: pdfplumber + pytesseract (Python) or pdf-parse + tesseract.js (Node)
+   - Database: SQLite for local storage
+   - Web search: Integration with web_search tool
+   - CLI framework: Click (Python) or Commander (Node.js)
+
+## CORE COMPONENTS TO BUILD
+
+### Component 1: PDF Parser Module
+Create /src/pdf_parser/parser.py (or .js) with:
+- extract_text_from_pdf(file_path) - handles both native and OCR
+- parse_transactions(text, bank_format) - extracts transaction data
+- detect_bank_format(text) - identifies statement type (ANZ, CommBank, etc.)
+- clean_ocr_artifacts(text) - removes OCR errors
+- extract_metadata(text) - gets statement period, account info
+- validate_extraction(transactions) - ensures data quality
+
+Support these Australian bank formats:
+- Commonwealth Bank (CBA)
+- ANZ
+- Westpac
+- NAB
+- Bank of Queensland
+- ING
+- Macquarie
+- Credit card statements (generic format)
+
+### Component 2: Transfer Detection Engine
+Create /src/categorization/transfer_detector.py with:
+- is_transfer(transaction) - main detection logic
+- detect_internal_transfer(transaction) - between own accounts
+- detect_credit_card_payment(transaction) - CC payments
+- detect_loan_payment(transaction) - distinguishes principal vs interest
+- find_matching_transfer(transaction, all_transactions) - finds pairs
+- get_transfer_confidence_score(transaction) - returns 0-1 score
+
+CRITICAL RULES:
+- ANY movement between user's own accounts = TRANSFER
+- Credit card payments from bank account = TRANSFER
+- Savings account transfers = TRANSFER
+- Keywords: "Transfer", "BPAY", "Payment to own account", "Internal"
+- NEVER categorize transfers as expenses
+- Log all transfer detections with reasoning
+
+### Component 3: Investment Detection Engine
+Create /src/categorization/investment_detector.py with:
+- is_investment(transaction) - main detection logic
+- detect_platform(transaction) - identifies investment platforms
+- get_investment_type(platform) - returns ETF/Crypto/Stock/Super
+- INVESTMENT_PLATFORMS dictionary with:
+  * ETF: Betashares, Vanguard, BlackRock, iShares
+  * Crypto: Coinbase, Binance, Kraken, Swyftx, CoinSpot, BTCMarkets
+  * Brokers: CommSec, SelfWealth, Stake, Superhero, Interactive Brokers
+  * Robo: Raiz, Spaceship, Pearler
+  * Super: AustralianSuper, Rest, HESTA (voluntary only)
+
+CRITICAL RULES:
+- Money TO investment platforms = INVESTMENT (not expense or transfer)
+- Categorize by subcategory (Stocks/ETFs, Crypto, etc.)
+- Track platform name in metadata
+- NEVER misclassify as transfer or expense
+
+### Component 4: Merchant Web Search Module
+Create /src/web_search/merchant_lookup.py with:
+- search_merchant(merchant_name, location=None) - main search function
+- parse_business_type(search_results) - extracts category from results
+- search_with_fallback(merchant_name) - tries multiple search strategies
+- cache_merchant_result(merchant, category, confidence) - saves to cache
+- get_cached_merchant(merchant_name) - retrieves from cache
+
+Search Strategy:
+1. First try: "{merchant_name} {location} business type"
+2. If unclear: "{merchant_name} what is it"
+3. Fallback: "{merchant_name} restaurant/cafe/shop"
+4. Parse results for keywords: cafe, restaurant, shop, service, etc.
+5. Return category with confidence score
+6. Cache result for future use
+
+Integration:
+- Use Claude's web_search tool for all searches
+- Implement 5-second timeout per search
+- Rate limit: max 10 searches per minute
+- Cache hits should skip web search
+- Log all searches with results
+
+### Component 5: Intelligent Categorization Engine
+Create /src/categorization/categorizer.py with:
+- categorize_transaction(transaction) - main categorization function
+- apply_pattern_rules(transaction) - pattern matching
+- apply_machine_learning(transaction) - learned patterns
+- get_category_confidence(transaction, category) - confidence scoring
+- suggest_alternative_categories(transaction) - for low confidence
+
+Pattern Rules (implement comprehensive dictionary):
+```python
+MERCHANT_PATTERNS = {
+    'WOOLWORTHS': 'FOOD & DINING - Groceries',
+    'COLES': 'FOOD & DINING - Groceries',
+    'ALDI': 'FOOD & DINING - Groceries',
+    'BP': 'TRANSPORTATION - Fuel',
+    'SHELL': 'TRANSPORTATION - Fuel',
+    '7-ELEVEN': 'TRANSPORTATION - Fuel',
+    'NETFLIX': 'ENTERTAINMENT - Streaming',
+    'SPOTIFY': 'ENTERTAINMENT - Streaming',
+    'UBER': 'TRANSPORTATION - Ride-sharing',
+    # Add 100+ common Australian merchants
+}
+
+KEYWORD_PATTERNS = {
+    'cafe': 'FOOD & DINING - Coffee Shops',
+    'coffee': 'FOOD & DINING - Coffee Shops',
+    'restaurant': 'FOOD & DINING - Restaurants',
+    'pharmacy': 'HEALTHCARE - Pharmacy',
+    'chemist': 'HEALTHCARE - Pharmacy',
+    # Add comprehensive keywords
+}
+
+AMOUNT_PATTERNS = {
+    (2.0, 8.0): 'FOOD & DINING - Coffee Shops',  # likely coffee
+    (10.0, 30.0): 'FOOD & DINING - Takeaway',    # likely takeaway
+    # Add amount-based heuristics
+}
+```
+
+Categorization Logic:
+1. Check if transfer → return 'TRANSFER' (stop processing)
+2. Check if investment → return 'INVESTMENT' + subcategory (stop)
+3. Check merchant patterns (exact match)
+4. Check keyword patterns (fuzzy match)
+5. Check learned patterns from user corrections
+6. If no match → trigger web search
+7. Apply web search results
+8. Calculate confidence score
+9. Flag if confidence < 70%
+
+### Component 6: Machine Learning System
+Create /src/learning/pattern_learner.py with:
+- learn_from_correction(transaction, old_category, new_category)
+- build_merchant_rule(merchant_name, category, confidence)
+- update_confidence_scores()
+- get_learned_patterns() - export learned rules
+- apply_learned_pattern(transaction) - use ML patterns
+
+Learning Database Schema:
+```sql
+CREATE TABLE merchant_patterns (
+    id INTEGER PRIMARY KEY,
+    merchant_name TEXT UNIQUE,
+    category TEXT,
+    subcategory TEXT,
+    confidence_score REAL,
+    times_confirmed INTEGER,
+    times_corrected INTEGER,
+    last_updated TIMESTAMP,
+    source TEXT  -- 'user', 'web_search', 'pattern'
+);
+
+CREATE TABLE user_corrections (
+    id INTEGER PRIMARY KEY,
+    transaction_id TEXT,
+    merchant_name TEXT,
+    original_category TEXT,
+    corrected_category TEXT,
+    timestamp TIMESTAMP
+);
+
+CREATE TABLE categorization_cache (
+    merchant_name TEXT PRIMARY KEY,
+    category TEXT,
+    confidence REAL,
+    search_results TEXT,  -- JSON
+    cached_at TIMESTAMP,
+    expires_at TIMESTAMP
+);
+```
+
+### Component 7: Database Layer
+Create /src/database/db_manager.py with:
+- init_database() - creates all tables
+- save_transaction(transaction) - stores parsed transaction
+- save_merchant_pattern(merchant, category, confidence)
+- get_merchant_pattern(merchant_name)
+- update_pattern_confidence(merchant, correct=True/False)
+- export_learned_patterns(output_file)
+- import_learned_patterns(input_file)
+- get_transactions_for_review(min_confidence=0.7)
+
+Database Schema:
+```sql
+CREATE TABLE transactions (
+    id TEXT PRIMARY KEY,
+    date DATE,
+    description TEXT,
+    merchant_name TEXT,
+    amount REAL,
+    type TEXT,  -- 'debit' or 'credit'
+    category TEXT,
+    subcategory TEXT,
+    confidence_score REAL,
+    is_transfer BOOLEAN,
+    is_investment BOOLEAN,
+    investment_type TEXT,
+    needs_review BOOLEAN,
+    categorization_method TEXT,
+    search_results TEXT,  -- JSON
+    tags TEXT,  -- JSON array
+    notes TEXT,
+    created_at TIMESTAMP,
+    reviewed BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE statements (
+    id TEXT PRIMARY KEY,
+    filename TEXT,
+    bank_name TEXT,
+    account_number TEXT,
+    statement_period_start DATE,
+    statement_period_end DATE,
+    processed_at TIMESTAMP,
+    total_transactions INTEGER,
+    total_categorized INTEGER,
+    total_needs_review INTEGER
+);
+```
+
+### Component 8: CLI Interface
+Create /src/api/cli.py with commands:
+```bash
+# Main analysis command
+finance-tracker analyze <pdf_file> [options]
+  --review          Review before saving
+  --offline         No web searches
+  --batch          Process multiple files
+  --export <file>   Export results
+  --format [json|csv]
+
+# Review commands
+finance-tracker review              # Review uncategorized
+finance-tracker review --all        # Review everything
+finance-tracker correct <id> <category>  # Correct category
+
+# Learning commands
+finance-tracker export-patterns <file>
+finance-tracker import-patterns <file>
+finance-tracker clear-cache
+
+# Stats and reports
+finance-tracker stats [--month YYYY-MM]
+finance-tracker merchants           # List learned merchants
+finance-tracker confidence-report   # Show confidence breakdown
+
+# Testing
+finance-tracker test <pdf_file>    # Dry run
+finance-tracker validate           # Validate database
+```
+
+### Component 9: Processing Pipeline
+Create /src/api/processor.py with:
+- process_pdf(file_path, options) - main orchestrator
+- Pipeline stages:
+  1. validate_pdf(file_path)
+  2. extract_transactions(file_path)
+  3. detect_transfers(transactions)
+  4. detect_investments(transactions)
+  5. categorize_expenses(transactions)
+  6. calculate_confidence_scores(transactions)
+  7. save_to_database(transactions)
+  8. generate_report(transactions)
+
+Pipeline error handling:
+- Graceful failures at each stage
+- Partial processing support
+- Detailed error logging
+- Recovery suggestions
+
+### Component 10: Reporting System
+Create /src/api/reporter.py with:
+- generate_summary_report(transactions)
+- generate_confidence_report(transactions)
+- generate_category_breakdown(transactions)
+- export_to_csv(transactions, output_file)
+- export_to_json(transactions, output_file)
+- generate_html_report(transactions, output_file)
+
+Report Contents:
+- Total transactions processed
+- Categorization breakdown
+- Transfer count and total
+- Investment count and total
+- Confidence score distribution
+- Transactions needing review
+- New merchants learned
+- Web searches performed
+- Category totals with amounts
+
+## CONFIGURATION
+
+Create /config/config.yaml:
+```yaml
+database:
+  path: ./data/transactions.db
+  backup_path: ./data/backups/
+
+cache:
+  merchant_ttl_days: 90
+  max_cache_size_mb: 100
+
+web_search:
+  enabled: true
+  rate_limit_per_minute: 10
+  timeout_seconds: 5
+  retry_attempts: 3
+
+categorization:
+  confidence_threshold: 0.70
+  require_review_below: 0.70
+  auto_learn_above: 0.85
+
+pdf:
+  ocr_enabled: true
+  supported_formats: [pdf]
+  max_file_size_mb: 50
+
+logging:
+  level: INFO
+  file: ./logs/transaction_analyzer.log
+```
+
+## TESTING
+
+Create comprehensive tests in /tests:
+- test_pdf_parser.py - PDF extraction tests
+- test_transfer_detector.py - Transfer detection accuracy
+- test_investment_detector.py - Investment detection accuracy
+- test_categorizer.py - Categorization accuracy
+- test_web_search.py - Mock web search tests
+- test_learning.py - ML pattern learning tests
+- test_cli.py - CLI command tests
+- test_integration.py - End-to-end pipeline tests
+
+Include sample test data:
+- /tests/data/sample_statements/ - 5-10 sample PDFs
+- /tests/data/expected_results/ - Expected categorizations
+- /tests/data/edge_cases/ - Tricky transactions
+
+## DOCUMENTATION
+
+Create comprehensive docs:
+- README.md - Setup and quick start
+- ARCHITECTURE.md - System design and flow
+- API.md - CLI command reference
+- CATEGORIZATION_RULES.md - All categorization logic
+- CONTRIBUTING.md - How to add patterns/merchants
+
+## SAMPLE DATA
+
+Include in /data:
+- sample_transactions.json - 100 diverse transactions
+- merchant_patterns_seed.json - Initial 200+ merchants
+- test_statement.pdf - Sample PDF for testing
+
+## ERROR HANDLING
+
+Implement robust error handling:
+- PDF read errors → clear message + recovery
+- OCR failures → fallback strategies
+- Web search timeouts → use cache or flag
+- Database errors → transaction rollback
+- Invalid data → skip with warning
+- Missing fields → use defaults + flag
+
+## PERFORMANCE OPTIMIZATION
+
+- Batch web searches where possible
+- Cache aggressively (merchant patterns, search results)
+- Use database indexes for fast queries
+- Lazy load large datasets
+- Async web searches (parallel processing)
+- Progress bars for long operations
+
+## DELIVERABLES
+
+Build complete, production-ready system with:
+1. ✅ All 10 components fully implemented
+2. ✅ Working CLI with all commands
+3. ✅ Comprehensive test suite (80%+ coverage)
+4. ✅ Complete documentation
+5. ✅ Sample data and test PDFs
+6. ✅ Configuration management
+7. ✅ Logging and monitoring
+8. ✅ Error handling throughout
+9. ✅ Database migrations
+10. ✅ Installation script
+
+Make it production-ready, well-documented, and thoroughly tested. The system should work flawlessly for analyzing bank statements with intelligent categorization, perfect transfer/investment detection, and web search integration."

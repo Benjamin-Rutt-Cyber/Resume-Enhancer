@@ -5,13 +5,9 @@ Comprehensive validation tests for registry and selection system.
 import unittest
 from pathlib import Path
 import yaml
-import sys
 
-# Add src directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'src'))
-
-from generator.selector import TemplateSelector
-from generator.analyzer import ProjectConfig
+from src.generator.selector import TemplateSelector
+from src.generator.analyzer import ProjectConfig
 
 
 class TestRegistryValidation(unittest.TestCase):

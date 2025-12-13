@@ -1,0 +1,3 @@
+"""Bens Workout Web App application package."""
+
+__version__ = "0.1.0"

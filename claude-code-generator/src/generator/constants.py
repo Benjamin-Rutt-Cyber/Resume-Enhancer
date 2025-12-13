@@ -54,3 +54,18 @@ PRIORITY_ORDER = {
     'medium': 1,
     'low': 2
 }
+
+# ==================== AI Generation Configuration ====================
+
+# Domain uniqueness thresholds
+UNIQUENESS_THRESHOLD_LOW = 30  # Below this: Use library only
+UNIQUENESS_THRESHOLD_MEDIUM = 70  # Above this: Always generate custom
+
+# Token budgets for AI generation
+DEFAULT_TOKEN_BUDGET = 5000  # Hard cap per generation session
+AGENT_GENERATION_TOKENS = 2000  # Max tokens per agent
+SKILL_GENERATION_TOKENS = 1500  # Max tokens per skill
+
+# Cache settings
+CACHE_EXPIRY_DAYS = 30  # Days before cache entries expire
+CACHE_DIR_NAME = '.claude-generator-cache'  # Cache directory name

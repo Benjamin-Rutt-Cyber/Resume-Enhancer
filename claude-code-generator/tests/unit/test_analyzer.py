@@ -417,7 +417,7 @@ class TestClaudeAPIAnalysis:
             assert config.project_name == "Test"
 
     def test_claude_analysis_handles_malformed_json(self):
-        """Test error handling for malformed JSON responses."""
+        """Test graceful fallback when Claude API returns malformed JSON."""
         analyzer = ProjectAnalyzer(api_key="test-key")
 
         mock_response = Mock()
@@ -426,8 +426,12 @@ class TestClaudeAPIAnalysis:
         with patch.object(
             analyzer.client.messages, "create", return_value=mock_response
         ):
-            with pytest.raises(ValueError, match="Could not extract JSON"):
-                analyzer.analyze("Test project")
+            # Should fall back to keyword-based analysis instead of raising
+            config = analyzer.analyze("A web application for task management")
+
+            # Should return valid config from keyword analysis
+            assert config.project_type == "saas-web-app"
+            assert config.project_name is not None
 
 
 # ============================================================================
@@ -805,3 +809,116 @@ class TestEdgeCases:
 
         assert config.frontend_framework is None
         assert config.state_management is None
+
+
+# ============================================================================
+# API Error Handling Tests
+# ============================================================================
+
+
+class TestAPIErrorHandling:
+    """Test comprehensive error handling for Claude API failures."""
+
+    def test_api_connection_error_fallback(self):
+        """Test graceful fallback on API connection errors."""
+        analyzer = ProjectAnalyzer(api_key="test-key")
+
+        # Simulate connection error by raising a generic exception
+        with patch.object(
+            analyzer.client.messages,
+            "create",
+            side_effect=Exception("Connection failed")
+        ):
+            config = analyzer.analyze("A web application for project management")
+
+            # Should fall back to keyword-based analysis
+            assert config.project_type == "saas-web-app"
+            assert config.backend_framework == "python-fastapi"
+            assert config.project_name is not None
+
+    def test_api_timeout_error_fallback(self):
+        """Test graceful fallback on timeout errors."""
+        analyzer = ProjectAnalyzer(api_key="test-key")
+
+        # Simulate timeout by raising an exception
+        with patch.object(
+            analyzer.client.messages,
+            "create",
+            side_effect=TimeoutError("Request timed out")
+        ):
+            config = analyzer.analyze("An API service for data processing")
+
+            # Should fall back to keyword-based analysis
+            assert config.project_type == "api-service"
+            assert config.backend_framework == "python-fastapi"
+            assert config.frontend_framework is None
+
+    def test_network_error_fallback(self):
+        """Test graceful fallback on network errors."""
+        analyzer = ProjectAnalyzer(api_key="test-key")
+
+        # Simulate network error
+        with patch.object(
+            analyzer.client.messages,
+            "create",
+            side_effect=ConnectionError("Network unreachable")
+        ):
+            config = analyzer.analyze("An IoT sensor network with MQTT")
+
+            # Should fall back to keyword-based analysis
+            assert config.project_type == "hardware-iot"
+            assert config.connectivity == "mqtt"
+
+    def test_json_decode_error_fallback(self):
+        """Test graceful fallback on JSON parsing errors."""
+        analyzer = ProjectAnalyzer(api_key="test-key")
+
+        # Return response with invalid JSON
+        mock_response = Mock()
+        mock_response.content = [Mock(text='{"invalid_json": ')]
+
+        with patch.object(
+            analyzer.client.messages, "create", return_value=mock_response
+        ):
+            config = analyzer.analyze("A mobile app for fitness tracking")
+
+            # Should fall back to keyword-based analysis
+            assert config.project_type == "mobile-app"
+            assert config.frontend_framework == "react-native"
+
+    def test_api_error_preserves_project_name(self):
+        """Test that provided project name is preserved during fallback."""
+        analyzer = ProjectAnalyzer(api_key="test-key")
+
+        with patch.object(
+            analyzer.client.messages,
+            "create",
+            side_effect=Exception("API error")
+        ):
+            config = analyzer.analyze(
+                "A web application",
+                project_name="MyCustomProject"
+            )
+
+            # Project name should be preserved in fallback
+            assert config.project_name == "MyCustomProject"
+
+    def test_multiple_api_errors_handled(self):
+        """Test that multiple consecutive API failures are handled gracefully."""
+        analyzer = ProjectAnalyzer(api_key="test-key")
+
+        # Simulate multiple API calls with errors
+        with patch.object(
+            analyzer.client.messages,
+            "create",
+            side_effect=Exception("Connection failed")
+        ):
+            # First call
+            config1 = analyzer.analyze("A SaaS application")
+            assert config1.project_type == "saas-web-app"
+
+            # Second call
+            config2 = analyzer.analyze("An API service")
+            assert config2.project_type == "api-service"
+
+            # Both should succeed with keyword analysis

@@ -381,7 +381,8 @@ class TestInitCommand:
 
         assert result.exit_code == 1
         assert "Error:" in result.output
-        assert "at least 10 characters" in result.output
+        # Check for parts of the message (Rich adds color codes around numbers)
+        assert "at least" in result.output and "characters" in result.output
 
     @patch("src.cli.main.ProjectAnalyzer")
     def test_init_unexpected_error(self, mock_analyzer_class, runner):

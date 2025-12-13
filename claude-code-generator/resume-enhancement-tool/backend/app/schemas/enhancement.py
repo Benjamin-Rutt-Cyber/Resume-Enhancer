@@ -1,0 +1,56 @@
+"""Enhancement schemas for API requests and responses."""
+
+from datetime import datetime
+from uuid import UUID
+from pydantic import BaseModel, Field
+
+
+class EnhancementBase(BaseModel):
+    """Base enhancement schema."""
+
+    resume_id: UUID = Field(..., description="Resume ID to enhance")
+    enhancement_type: str = Field(..., description="Type: job_tailoring or industry_revamp")
+
+
+class EnhancementTailorCreate(EnhancementBase):
+    """Schema for creating a job tailoring enhancement."""
+
+    job_id: UUID = Field(..., description="Job ID to tailor resume for")
+
+    class Config:
+        extra = "forbid"
+
+
+class EnhancementRevampCreate(BaseModel):
+    """Schema for creating an industry revamp enhancement."""
+
+    resume_id: UUID = Field(..., description="Resume ID to enhance")
+    industry: str = Field(..., description="Target industry (IT, Cybersecurity, Finance)")
+
+    class Config:
+        extra = "forbid"
+
+
+class EnhancementResponse(EnhancementBase):
+    """Schema for enhancement response."""
+
+    id: UUID
+    job_id: UUID | None
+    industry: str | None
+    output_path: str | None
+    pdf_path: str | None
+    status: str
+    error_message: str | None
+    created_at: datetime
+    completed_at: datetime | None
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class EnhancementListResponse(BaseModel):
+    """Schema for list of enhancements."""
+
+    enhancements: list[EnhancementResponse]
+    total: int

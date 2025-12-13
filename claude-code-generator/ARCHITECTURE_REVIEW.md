@@ -31,7 +31,7 @@ The Claude Code Generator demonstrates a well-thought-out architecture with clea
 1. Add comprehensive test coverage (currently minimal/missing)
 2. Extract hardcoded boilerplate generation logic to templates
 3. Improve error recovery and partial generation handling
-4. Add architecture decision records (ADRs)
+4. ✅ Add architecture decision records (ADRs) - **COMPLETED** (see `docs/adr/`)
 
 ### Summary Recommendation
 
@@ -421,15 +421,22 @@ if part == '..':
 
 ### Medium Priority Issues
 
-#### M1: No Architecture Decision Records (ADRs)
-**Severity**: Medium
+#### M1: ✅ Architecture Decision Records (ADRs) - IMPLEMENTED
+**Severity**: Medium (RESOLVED)
 **Impact**: Hard for new contributors to understand design choices
+**Status**: ✅ **COMPLETED** (2025-11-26)
 
-**Recommendation**: Add `docs/adr/` directory documenting key decisions:
-- Why Jinja2 over other template engines?
-- Why Click over Typer?
-- Why dual-mode analysis?
-- Why reusable vs generated agents?
+**Implementation**: Created `docs/adr/` directory with 8 comprehensive ADRs:
+- ADR-0001: Use Jinja2 for Template Rendering
+- ADR-0002: Choose Click over Typer for CLI
+- ADR-0003: Dual-Mode Analysis (AI + Keyword Fallback)
+- ADR-0004: Reusable Agent Library Approach
+- ADR-0005: Path Traversal Security Model
+- ADR-0006: Use Pydantic for Configuration Validation
+- ADR-0007: YAML-Based Project Configuration
+- ADR-0008: Smart Template Selection with Conditions
+
+**Location**: `docs/adr/README.md` - See index for all ADRs
 
 #### M2: Interactive Mode Function in main.py
 **Severity**: Medium (Consistency)

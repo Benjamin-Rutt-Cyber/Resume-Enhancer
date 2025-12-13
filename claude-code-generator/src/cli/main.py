@@ -3,25 +3,37 @@ Claude Code Generator CLI - Main entry point.
 """
 
 import click
+import sys
 from pathlib import Path
 import os
-import sys
 from typing import Optional, Dict, List
 import questionary
 from questionary import Style
 
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
 from src.generator.analyzer import ProjectAnalyzer, ProjectConfig
 from src.generator.selector import TemplateSelector
 from src.generator.file_generator import FileGenerator
+from src.generator.ai_generator import AIGenerationConfig
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich import print as rprint
 
-console = Console()
+
+def _create_console() -> Console:
+    """Create console with Windows compatibility."""
+    import platform
+
+    if platform.system() == 'Windows':
+        return Console(
+            force_terminal=True,
+            force_interactive=True,
+            legacy_windows=False
+        )
+    return Console()
+
+
+console = _create_console()
 
 # Custom style for questionary prompts
 custom_style = Style([
@@ -34,62 +46,139 @@ custom_style = Style([
 ])
 
 
+def _safe_prompt(prompt_func, error_context: str):
+    """
+    Safely execute a questionary prompt with error handling.
+
+    Args:
+        prompt_func: Questionary prompt function to execute
+        error_context: Context description for error messages
+
+    Returns:
+        Prompt result or None if error occurred
+    """
+    try:
+        return prompt_func.ask()
+    except KeyboardInterrupt:
+        console.print("\n[yellow]Cancelled by user[/yellow]")
+        sys.exit(0)
+    except EOFError:
+        console.print(
+            f"\n[red]Error: {error_context} failed (terminal disconnected)[/red]"
+        )
+        console.print("[yellow]Try using command-line arguments instead:[/yellow]")
+        console.print("  claude-gen init --project 'NAME' --description 'DESC'")
+        sys.exit(1)
+    except Exception as e:
+        console.print(
+            f"\n[red]Error: {error_context} failed[/red]"
+        )
+        console.print(f"[dim]Details: {e}[/dim]")
+        console.print("\n[yellow]Your terminal may not support interactive mode.[/yellow]")
+        console.print("[yellow]Use command-line arguments instead:[/yellow]")
+        console.print("  claude-gen init --project 'NAME' --description 'DESC'")
+        sys.exit(1)
+
+
+def _check_terminal_compatibility() -> tuple[bool, str]:
+    """
+    Check if terminal supports interactive prompts.
+
+    Returns:
+        (is_compatible, reason) tuple
+    """
+    import sys
+    import os
+
+    # Check if stdin is a TTY
+    if not sys.stdin.isatty():
+        return False, "stdin is not a TTY (running in pipe/redirect)"
+
+    # Check for CI/CD environment variables
+    ci_vars = ['CI', 'JENKINS', 'TRAVIS', 'CIRCLECI', 'GITHUB_ACTIONS']
+    if any(os.getenv(var) for var in ci_vars):
+        return False, "running in CI/CD environment"
+
+    # Check for dumb terminal
+    if os.getenv('TERM') == 'dumb':
+        return False, "TERM is set to 'dumb'"
+
+    return True, ""
+
+
 def _interactive_mode() -> tuple[str, str, Optional[str], bool]:
     """Run interactive project configuration."""
-    console.print("\n[bold green]🎯 Claude Code Project Generator[/bold green]")
+    # Check terminal compatibility first
+    is_compatible, reason = _check_terminal_compatibility()
+    if not is_compatible:
+        console.print(f"\n[red]Cannot use interactive mode: {reason}[/red]")
+        console.print("[yellow]Use command-line arguments instead:[/yellow]")
+        console.print("  claude-gen init --project 'NAME' --description 'DESCRIPTION'")
+        sys.exit(1)
+
+    console.print("\n[bold green]Claude Code Project Generator[/bold green]")
     console.print("[dim]Answer a few questions to generate your project...[/dim]\n")
 
     # Project name
-    project_name = questionary.text(
-        "What's your project name?",
-        validate=lambda text: len(text) >= 3 or "Project name must be at least 3 characters",
-        style=custom_style
-    ).ask()
-
-    if not project_name:
-        console.print("[yellow]Cancelled[/yellow]")
-        sys.exit(0)
+    project_name = _safe_prompt(
+        questionary.text(
+            "What's your project name?",
+            validate=lambda text: len(text) >= 3 or "Project name must be at least 3 characters",
+            style=custom_style
+        ),
+        "Project name input"
+    )
 
     # Project description
-    description = questionary.text(
-        "Describe your project (be detailed):",
-        validate=lambda text: len(text) >= 10 or "Please provide more detail (10+ characters)",
-        style=custom_style
-    ).ask()
-
-    if not description:
-        console.print("[yellow]Cancelled[/yellow]")
-        sys.exit(0)
+    description = _safe_prompt(
+        questionary.text(
+            "Describe your project (be detailed):",
+            validate=lambda text: len(text) >= 10 or "Please provide more detail (10+ characters)",
+            style=custom_style
+        ),
+        "Project description input"
+    )
 
     # Project type
-    project_type_choice = questionary.select(
-        "What type of project is this?",
-        choices=[
-            questionary.Choice("SaaS Web Application (Full-stack app with auth, payments, APIs)", value='saas-web-app'),
-            questionary.Choice("API/Backend Service (RESTful API or microservice)", value='api-service'),
-            questionary.Choice("Mobile Application (React Native, Flutter, or native)", value='mobile-app'),
-            questionary.Choice("Hardware/IoT Device (Embedded systems, firmware, sensors)", value='hardware-iot'),
-            questionary.Choice("Data Science Project (ML/AI, Jupyter notebooks, analysis)", value='data-science'),
-            questionary.Choice("Auto-detect from description", value=None),
-        ],
-        style=custom_style
-    ).ask()
+    project_type_choice = _safe_prompt(
+        questionary.select(
+            "What type of project is this?",
+            choices=[
+                questionary.Choice("SaaS Web Application (Full-stack app with auth, payments, APIs)", value='saas-web-app'),
+                questionary.Choice("API/Backend Service (RESTful API or microservice)", value='api-service'),
+                questionary.Choice("Mobile Application (React Native, Flutter, or native)", value='mobile-app'),
+                questionary.Choice("Hardware/IoT Device (Embedded systems, firmware, sensors)", value='hardware-iot'),
+                questionary.Choice("Data Science Project (ML/AI, Jupyter notebooks, analysis)", value='data-science'),
+                questionary.Choice("Auto-detect from description", value=None),
+            ],
+            style=custom_style
+        ),
+        "Project type selection"
+    )
 
-    if project_type_choice is None and questionary.confirm(
-        "Let AI analyze your description to determine the best project type?",
-        default=True,
-        style=custom_style
-    ).ask():
-        project_type = None  # Will be auto-detected
+    # Auto-detect confirmation
+    if project_type_choice is None:
+        auto_detect_confirm = _safe_prompt(
+            questionary.confirm(
+                "Let AI analyze your description to determine the best project type?",
+                default=True,
+                style=custom_style
+            ),
+            "Auto-detect confirmation"
+        )
+        project_type = None if auto_detect_confirm else 'saas-web-app'
     else:
         project_type = project_type_choice
 
     # Generate boilerplate code?
-    with_code = questionary.confirm(
-        "Generate starter code/boilerplate for your tech stack?",
-        default=False,
-        style=custom_style
-    ).ask()
+    with_code = _safe_prompt(
+        questionary.confirm(
+            "Generate starter code/boilerplate for your tech stack?",
+            default=False,
+            style=custom_style
+        ),
+        "Boilerplate confirmation"
+    )
 
     return project_name, description, project_type, with_code
 
@@ -172,6 +261,28 @@ def cli() -> None:
     is_flag=True,
     help='Generate starter code/boilerplate for the project'
 )
+@click.option(
+    '--with-ai-agents',
+    is_flag=True,
+    help='Enable AI-generated custom agents/skills for novel domains (requires API key)'
+)
+@click.option(
+    '--ai-threshold',
+    type=int,
+    default=30,
+    help='Minimum uniqueness score (0-100) to trigger AI generation (default: 30)'
+)
+@click.option(
+    '--no-cache',
+    'no_ai_cache',
+    is_flag=True,
+    help='Bypass cache and force fresh AI generation'
+)
+@click.option(
+    '--show-ai-stats',
+    is_flag=True,
+    help='Display detailed AI generation statistics'
+)
 def init(
     project: Optional[str],
     description: Optional[str],
@@ -183,7 +294,11 @@ def init(
     no_ai: bool,
     no_plugins: bool,
     no_ai_plugins: bool,
-    with_code: bool
+    with_code: bool,
+    with_ai_agents: bool,
+    ai_threshold: int,
+    no_ai_cache: bool,
+    show_ai_stats: bool
 ) -> None:
     """
     Initialize a new Claude Code project.
@@ -216,15 +331,25 @@ def init(
                        --description "Temperature monitoring with Pico W"
     """
     # Interactive mode
-    if interactive or (not project or not description):
+    if interactive or (not project and not description):
         project, description, project_type, with_code = _interactive_mode()
         # In interactive mode, always assume user wants to proceed
         yes = True
 
     # Validate required fields
     if not project or not description:
-        console.print("[bold red]Error:[/bold red] --project and --description are required in non-interactive mode")
-        console.print("Use --interactive for guided prompts or provide both options.")
+        missing = []
+        if not project:
+            missing.append("--project")
+        if not description:
+            missing.append("--description")
+
+        console.print(f"[bold red]Error:[/bold red] Missing required arguments: {', '.join(missing)}")
+        console.print("\n[bold]Options:[/bold]")
+        console.print("  1. Provide both arguments:")
+        console.print("     [cyan]claude-gen init --project 'NAME' --description 'DESCRIPTION'[/cyan]")
+        console.print("  2. Use interactive mode:")
+        console.print("     [cyan]claude-gen init --interactive[/cyan]")
         sys.exit(1)
 
     console.print(Panel.fit(
@@ -271,8 +396,25 @@ def init(
         else:
             output = Path(output)
 
+        # Initialize AI generation config if enabled
+        ai_config = None
+        if with_ai_agents:
+            # Check for API key
+            if not api_key:
+                console.print(
+                    "[yellow]Warning: AI agent generation requires ANTHROPIC_API_KEY. "
+                    "Falling back to library templates.[/yellow]"
+                )
+            ai_config = AIGenerationConfig(
+                enabled=with_ai_agents,
+                threshold=ai_threshold,
+                use_cache=not no_ai_cache,
+                show_stats=show_ai_stats,
+                api_key=api_key
+            )
+
         # Initialize file generator
-        generator = FileGenerator(templates_dir, api_key=api_key)
+        generator = FileGenerator(templates_dir, api_key=api_key, ai_config=ai_config)
 
         # Generate project
         with console.status(f"[bold green]Generating project at {output}..."):
@@ -291,6 +433,10 @@ def init(
         # Display plugin recommendations
         if not no_plugins:
             _display_plugin_recommendations(output, no_ai_plugins)
+
+        # Display AI generation statistics
+        if with_ai_agents and (show_ai_stats or generator.ai_generator):
+            _display_ai_stats(generator, show_ai_stats)
 
         # Next steps
         _display_next_steps(output, with_boilerplate=with_code)
@@ -474,6 +620,46 @@ def _display_plugin_recommendations(output_dir: Path, no_ai: bool) -> None:
         console.print()
 
     console.print(f"[dim]View all recommendations: {plugins_file.relative_to(output_dir.parent)}[/dim]")
+
+
+def _display_ai_stats(generator: FileGenerator, show_detailed: bool) -> None:
+    """Display AI generation statistics."""
+    if not generator.ai_generator:
+        return
+
+    stats = generator.ai_generator.get_generation_stats()
+
+    # Always show summary if AI was enabled
+    if stats['enabled']:
+        console.print("\n[bold blue]AI Generation Summary:[/bold blue]\n")
+
+        if stats['tokens_used'] > 0:
+            console.print(f"  [green]✓[/green] Generated custom agents/skills")
+            console.print(f"    Tokens used: {stats['tokens_used']:,} / {stats['token_budget']:,} ({stats['percentage_used']}%)")
+            console.print(f"    Tokens remaining: {stats['tokens_remaining']:,}")
+
+            # Estimate cost (approximate rates)
+            estimated_cost = (stats['tokens_used'] / 1000) * 0.015  # $0.015 per 1K tokens (Sonnet input+output avg)
+            console.print(f"    Estimated cost: ${estimated_cost:.3f}")
+        else:
+            console.print(f"  [yellow]○[/yellow] No AI generation needed (library templates sufficient)")
+
+    # Show detailed stats if requested
+    if show_detailed and generator.ai_cache:
+        cache_stats = generator.ai_cache.get_statistics()
+
+        console.print("\n[bold blue]Cache Statistics:[/bold blue]\n")
+        console.print(f"  Cache directory: {cache_stats['cache_directory']}")
+        console.print(f"  Total agents cached: {cache_stats['total_agents_cached']}")
+        console.print(f"  Total skills cached: {cache_stats['total_skills_cached']}")
+
+        if cache_stats['cache_hits'] > 0 or cache_stats['cache_misses'] > 0:
+            console.print(f"  Cache hit rate: {cache_stats['hit_rate_percentage']}%")
+            console.print(f"  Tokens saved by cache: {cache_stats['total_tokens_saved']:,}")
+
+            # Estimate savings
+            estimated_savings = (cache_stats['total_tokens_saved'] / 1000) * 0.015
+            console.print(f"  Estimated cost savings: ${estimated_savings:.3f}")
 
 
 def _display_next_steps(output_dir: Path, with_boilerplate: bool = False) -> None:

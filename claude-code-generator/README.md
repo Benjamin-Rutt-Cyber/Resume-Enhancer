@@ -168,6 +168,7 @@ The generator includes native Claude Code integration:
 ## 📚 Documentation
 
 - **[ARCHITECTURE_REVIEW.md](ARCHITECTURE_REVIEW.md)** - Comprehensive architecture review (NEW!)
+- **[Architecture Decision Records](docs/adr/README.md)** - Key architectural decisions documented (NEW!)
 - **[ENHANCEMENTS.md](ENHANCEMENTS.md)** - All completed enhancements (NEW!)
 - **[USAGE.md](USAGE.md)** - Complete usage guide with PATH troubleshooting
 - **[PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)** - Project architecture
