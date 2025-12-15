@@ -25,6 +25,9 @@ WORKSPACE_ROOT = Path("workspace")
 workspace_service = WorkspaceService(WORKSPACE_ROOT)
 document_parser = DocumentParser()
 
+# Constants
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
+
 
 @router.post("/resumes/upload", response_model=ResumeResponse, status_code=status.HTTP_201_CREATED)
 async def upload_resume(
@@ -59,6 +62,20 @@ async def upload_resume(
     # Save uploaded file to temporary location
     with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as temp_file:
         content = await file.read()
+
+        # Validate file size
+        if len(content) > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"File too large. Maximum file size is {MAX_FILE_SIZE / 1024 / 1024:.0f} MB, uploaded file is {len(content) / 1024 / 1024:.1f} MB.",
+            )
+
+        if len(content) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Uploaded file is empty.",
+            )
+
         temp_file.write(content)
         temp_file_path = Path(temp_file.name)
 
@@ -94,16 +111,16 @@ async def upload_resume(
                 detail=error_detail,
             )
 
-        # Temporarily lower threshold for debugging
-        if word_count < 1:
+        # Validate minimum word count (resumes should have at least 50 words)
+        if word_count < 50:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Document appears too short to be a valid resume (only {word_count} words extracted). The PDF may be image-based or have extraction issues.",
+                detail=f"Document appears too short to be a valid resume (only {word_count} words extracted). Resumes must have at least 50 words. The PDF may be image-based or have extraction issues.",
             )
 
-        # Warn if word count is suspiciously low
-        if word_count < 50:
-            logger.warning(f"Resume has only {word_count} words - may indicate parsing issues")
+        # Warn if word count is on the lower end (but still valid)
+        if word_count < 100:
+            logger.warning(f"Resume has only {word_count} words - consider if this is sufficient")
 
         # Store in workspace
         metadata = {

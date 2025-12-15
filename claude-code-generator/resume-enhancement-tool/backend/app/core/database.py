@@ -1,10 +1,13 @@
 """Database configuration and session management."""
 
+import logging
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 from .config import settings
+
+logger = logging.getLogger(__name__)
 
 # Create SQLAlchemy engine
 # Add connect_args for SQLite compatibility
@@ -24,9 +27,17 @@ def get_db():
 
     Yields:
         Database session
+
+    Raises:
+        Exception: Re-raises any exception after rolling back the transaction
     """
     db = SessionLocal()
     try:
         yield db
+    except Exception as e:
+        # Rollback on any error to prevent partial commits
+        db.rollback()
+        logger.error(f"Database error occurred: {e}", exc_info=True)
+        raise
     finally:
         db.close()

@@ -1,5 +1,6 @@
 """Enhancement API routes."""
 
+import logging
 from pathlib import Path
 from uuid import UUID
 from datetime import datetime
@@ -18,6 +19,8 @@ from app.schemas import (
 )
 from app.services.workspace_service import WorkspaceService
 
+logger = logging.getLogger(__name__)
+
 # Try to import PDF generator (optional on Windows without GTK)
 try:
     from app.utils.pdf_generator import PDFGenerator
@@ -25,8 +28,12 @@ try:
     PDF_AVAILABLE = True
 except (ImportError, OSError) as e:
     PDF_AVAILABLE = False
-    print(f"Warning: PDF generation not available: {e}")
-    print("PDF generation endpoints will not work. Install GTK libraries or use Docker for PDF support.")
+    logger.warning(f"PDF generation not available: {e}")
+    logger.warning(
+        "PDF generation endpoints will not work. "
+        "Install GTK libraries or use Docker for PDF support. "
+        "Markdown downloads will still work."
+    )
 
 router = APIRouter()
 
