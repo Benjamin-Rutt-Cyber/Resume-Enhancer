@@ -33,6 +33,35 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = "postgresql://user:password@localhost/dbname"
 
+    # Anthropic Claude API
+    ANTHROPIC_API_KEY: str = ""  # Required for style preview generation
+
+    # File Storage
+    WORKSPACE_ROOT: str = "workspace"  # Default to 'workspace' in current directory
+
+    @validator('ALLOWED_ORIGINS')
+    def validate_cors_origins(cls, v):
+        """Warn if wildcard CORS is enabled."""
+        if '*' in v:
+            logger.warning(
+                "Wildcard CORS origin detected! "
+                "This is insecure for production. "
+                "Use specific origins instead."
+            )
+        return v
+
+    @validator('WORKSPACE_ROOT')
+    def validate_workspace_root(cls, v):
+        """Ensure workspace root is a valid directory path."""
+        from pathlib import Path
+        workspace_path = Path(v)
+        if not workspace_path.exists():
+            logger.warning(
+                f"Workspace directory does not exist: {v}. "
+                "It will be created on startup."
+            )
+        return v
+
     @validator('SECRET_KEY')
     def validate_secret_key(cls, v):
         """Validate SECRET_KEY meets security requirements."""
@@ -60,6 +89,32 @@ class Settings(BaseSettings):
             )
         return v
 
+    def validate_production_config(self) -> List[str]:
+        """
+        Validate production configuration and return list of issues.
+
+        Returns:
+            list[str]: List of configuration issues (empty if no issues)
+        """
+        issues = []
+
+        if self.DEBUG:
+            issues.append("CRITICAL: DEBUG mode enabled")
+
+        if "sqlite" in self.DATABASE_URL.lower():
+            issues.append("WARNING: Using SQLite (recommend PostgreSQL for production)")
+
+        if len(self.SECRET_KEY) < 32:
+            issues.append("CRITICAL: SECRET_KEY too short (minimum 32 characters)")
+
+        if not self.ANTHROPIC_API_KEY:
+            issues.append("WARNING: ANTHROPIC_API_KEY not set (style preview feature will fail)")
+
+        if '*' in self.ALLOWED_ORIGINS:
+            issues.append("CRITICAL: Wildcard CORS origin detected (security risk)")
+
+        return issues
+
     def is_production_ready(self) -> bool:
         """
         Check if configuration is production-ready.
@@ -67,16 +122,7 @@ class Settings(BaseSettings):
         Returns:
             bool: True if configuration meets production requirements
         """
-        issues = []
-
-        if self.DEBUG:
-            issues.append("DEBUG mode is enabled")
-
-        if "sqlite" in self.DATABASE_URL.lower():
-            issues.append("Using SQLite (consider PostgreSQL for production)")
-
-        if len(self.SECRET_KEY) < 32:
-            issues.append("SECRET_KEY is too short")
+        issues = self.validate_production_config()
 
         if issues:
             logger.warning(

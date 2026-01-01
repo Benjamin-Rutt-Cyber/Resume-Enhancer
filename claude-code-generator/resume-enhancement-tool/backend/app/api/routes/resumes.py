@@ -7,32 +7,39 @@ from pathlib import Path
 from uuid import UUID
 from typing import List
 
-from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, status
+from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.core.database import get_db
 from app.models import Resume
 from app.schemas import ResumeResponse, ResumeListResponse
+from app.schemas.style_preview import StyleUpdateRequest, StyleUpdateResponse
 from app.utils.document_parser import DocumentParser
+from app.utils.error_sanitizer import sanitize_error_message
 from app.services.workspace_service import WorkspaceService
+from app.config.styles import STYLES
+from app.api.dependencies import get_workspace_service, get_document_parser, WORKSPACE_ROOT
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-# Initialize services
-WORKSPACE_ROOT = Path("workspace")
-workspace_service = WorkspaceService(WORKSPACE_ROOT)
-document_parser = DocumentParser()
+limiter = Limiter(key_func=get_remote_address)
 
 # Constants
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 
 
 @router.post("/resumes/upload", response_model=ResumeResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/minute")
 async def upload_resume(
+    request: Request,
     file: UploadFile = File(..., description="Resume file (PDF or DOCX)"),
     db: Session = Depends(get_db),
+    workspace_service: WorkspaceService = Depends(get_workspace_service),
+    document_parser: DocumentParser = Depends(get_document_parser),
 ):
     """
     Upload a resume file (PDF or DOCX).
@@ -84,9 +91,11 @@ async def upload_resume(
         try:
             parse_result = document_parser.parse_file(temp_file_path)
         except Exception as e:
+            # Security: Sanitize error message to prevent PII leakage
+            safe_message = sanitize_error_message(e, "document parsing")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Failed to parse document: {str(e)}",
+                detail=f"Failed to parse document: {safe_message}",
             )
 
         extracted_text = parse_result.get("text", "")
@@ -199,3 +208,121 @@ async def get_resume(
         )
 
     return resume
+
+
+@router.delete("/resumes/{resume_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_resume(
+    resume_id: UUID,
+    db: Session = Depends(get_db),
+    workspace_service: WorkspaceService = Depends(get_workspace_service),
+):
+    """
+    Delete a specific resume by ID.
+
+    This will:
+    1. Delete the resume from the database
+    2. Delete associated files from workspace
+    """
+    resume = db.query(Resume).filter(Resume.id == resume_id).first()
+
+    if not resume:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Resume not found: {resume_id}",
+        )
+
+    # Delete from database
+    db.delete(resume)
+    db.commit()
+
+    # Delete workspace files using workspace service
+    workspace_service.delete_resume(str(resume_id))
+
+    return None
+
+
+@router.delete("/resumes", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_all_resumes(
+    db: Session = Depends(get_db),
+    workspace_service: WorkspaceService = Depends(get_workspace_service),
+):
+    """
+    Delete all resumes from the database and workspace.
+
+    WARNING: This action cannot be undone!
+    """
+    # Delete all from database
+    db.query(Resume).delete()
+    db.commit()
+
+    # Delete all workspace files using workspace service
+    workspace_service.delete_all_resumes()
+
+    return None
+
+
+@router.patch("/{resume_id}/update-style", response_model=StyleUpdateResponse)
+async def update_resume_style(
+    resume_id: UUID,
+    style_update: StyleUpdateRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    Update the selected writing style for a resume.
+
+    This endpoint allows users to change the writing style after initial selection.
+    Can be called from the frontend or as a result of agent recommendation during
+    enhancement processing.
+
+    Args:
+        resume_id: UUID of the resume to update
+        style_update: New style information
+        db: Database session
+
+    Returns:
+        StyleUpdateResponse with confirmation and old/new styles
+
+    Raises:
+        HTTPException: If resume not found or style is invalid
+    """
+    # Fetch resume
+    resume = db.query(Resume).filter(Resume.id == resume_id).first()
+    if not resume:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Resume not found: {resume_id}",
+        )
+
+    # Validate style exists
+    if style_update.new_style not in STYLES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid style: {style_update.new_style}. "
+            f"Valid styles: {', '.join(STYLES.keys())}",
+        )
+
+    # Store old style for response
+    old_style = resume.selected_style or "none"
+
+    # Update style
+    resume.selected_style = style_update.new_style
+    resume.updated_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(resume)
+
+    logger.info(
+        f"Style updated for resume {resume_id}: "
+        f"{old_style} -> {style_update.new_style} "
+        f"(source: {style_update.source})"
+    )
+
+    if style_update.reason:
+        logger.info(f"Reason: {style_update.reason}")
+
+    return StyleUpdateResponse(
+        message="Resume style updated successfully",
+        resume_id=resume_id,
+        old_style=old_style,
+        new_style=style_update.new_style,
+    )
