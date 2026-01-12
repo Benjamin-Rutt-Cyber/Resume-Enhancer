@@ -1,0 +1,82 @@
+{
+  "resume_keywords": {
+    "technical_skills": [
+      "python",
+      "javascript",
+      "postgresql",
+      "mysql",
+      "aws",
+      "docker",
+      "git",
+      "ci/cd",
+      "agile"
+    ],
+    "soft_skills": [
+      "analytical",
+      "management",
+      "agile"
+    ],
+    "action_verbs": [
+      "developed",
+      "designed",
+      "implemented",
+      "managed",
+      "maintained",
+      "deployed"
+    ],
+    "certifications": [
+      "aws certified"
+    ],
+    "tools": []
+  },
+  "job_keywords": {
+    "technical_skills": [
+      "python",
+      "react",
+      "vue",
+      "django",
+      "fastapi",
+      "postgresql",
+      "aws",
+      "docker",
+      "kubernetes",
+      "ci/cd",
+      "teams"
+    ],
+    "soft_skills": [
+      "communication"
+    ],
+    "action_verbs": [],
+    "certifications": [],
+    "tools": []
+  },
+  "match_analysis": {
+    "match_score": 41,
+    "keywords_found": [
+      "aws",
+      "ci/cd",
+      "docker",
+      "postgresql",
+      "python"
+    ],
+    "keywords_missing": [
+      "communication",
+      "django",
+      "fastapi",
+      "kubernetes",
+      "react",
+      "teams",
+      "vue"
+    ],
+    "resume_keyword_count": 12,
+    "job_keyword_count": 12,
+    "match_count": 5
+  },
+  "recommendations": [
+    "Low match score - consider adding more relevant keywords from the job description",
+    "Add these technical skills if applicable: django, fastapi, kubernetes, react, teams",
+    "Consider highlighting these soft skills: communication",
+    "Use exact keyword matches from the job description where possible",
+    "Include keywords naturally in your experience bullets and skills section"
+  ]
+}

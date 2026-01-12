@@ -34,7 +34,10 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql://user:password@localhost/dbname"
 
     # Anthropic Claude API
-    ANTHROPIC_API_KEY: str = ""  # Required for style preview generation
+    ANTHROPIC_API_KEY: str = ""  # OPTIONAL - Only needed if ENABLE_STYLE_PREVIEW_API=true
+
+    # API Cost Controls
+    ENABLE_STYLE_PREVIEW_API: bool = False  # Disabled to eliminate API costs ($3/month savings)
 
     # File Storage
     WORKSPACE_ROOT: str = "workspace"  # Default to 'workspace' in current directory
@@ -107,8 +110,8 @@ class Settings(BaseSettings):
         if len(self.SECRET_KEY) < 32:
             issues.append("CRITICAL: SECRET_KEY too short (minimum 32 characters)")
 
-        if not self.ANTHROPIC_API_KEY:
-            issues.append("WARNING: ANTHROPIC_API_KEY not set (style preview feature will fail)")
+        if self.ENABLE_STYLE_PREVIEW_API and not self.ANTHROPIC_API_KEY:
+            issues.append("WARNING: ENABLE_STYLE_PREVIEW_API=true but ANTHROPIC_API_KEY not set")
 
         if '*' in self.ALLOWED_ORIGINS:
             issues.append("CRITICAL: Wildcard CORS origin detected (security risk)")

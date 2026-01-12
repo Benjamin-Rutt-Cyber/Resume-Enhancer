@@ -267,41 +267,161 @@ The user has selected the **{style_config['name']}** writing style for their res
 **Status:** Pending
 
 {style_guidance}
-## Length Requirements (CRITICAL - MUST FOLLOW)
+## Length Requirements (CRITICAL - MUST FOLLOW - 2026 BEST PRACTICES)
 
-**Target Page Length:** 1-2 pages maximum based on experience
-**Target Word Count:**
-- Entry-level (0-5 years): 450-550 words (1 page)
-- Mid-level (5-10 years): 550-750 words (1-2 pages)
-- Senior (10+ years): 750-850 words (2 pages MAX)
+**Target Page Length:** Based on 2026 industry research
+- Entry-level (0-5 years): **1 PAGE ONLY** (not 2 pages)
+- Mid-level (5-10 years): 1-2 pages
+- Senior (10+ years): 2 pages MAX
 
-**NEVER exceed 2 pages regardless of experience level**
+**ABSOLUTE MAXIMUM WORD COUNTS:**
+- Entry-level (0-5 years): **400 WORDS MAX** = 1 PAGE ONLY
+- Mid-level (5-10 years): **600 WORDS MAX** = 1-2 PAGES
+- Senior (10+ years): **800 WORDS MAX** = 2 PAGES (fill both pages)
 
-## Formatting Rules (STRICT)
+**CRITICAL:** Count words BEFORE adding markdown syntax. If over limit, CUT content aggressively.
 
-❌ **FORBIDDEN:**
+**STRICT LIMITS:**
+- NEVER exceed 2 pages regardless of experience
+- NEVER exceed word count maximums (400/600/800)
+- Entry-level MUST be 1 page (66% of employers require this)
+- Minimize white space - use 0.5-0.75" margins if needed
+- Line spacing: 1.0-1.15 (single-spaced)
+
+## Formatting Rules (ULTRA-STRICT - ZERO WHITE SPACE TOLERANCE)
+
+❌ **ABSOLUTELY FORBIDDEN:**
 - NO decorative dividers (`---` or `===`)
 - NO emojis or special characters
 - NO blank lines between bullets
+- NO blank lines between skill categories
+- NO blank lines in Education section
+- NO blank lines in Certifications section
 - NO custom creative headers
-- NO excessive spacing
-- NO more than 4 jobs listed
+- NO more than 3-4 jobs listed
+- NO tables, text boxes, or graphics
+- NO "Professional Development" or "Hobbies" sections for entry-level
+- NO "Relevant Coursework" expansions in Education
+- NO certification descriptions (title and date ONLY)
 
-✅ **REQUIRED:**
-- Single blank line between sections ONLY
-- Standard section headers only
-- 3-5 bullets per job position
-- Professional summary: 2-3 sentences (40-60 words)
-- Contact info on ONE line
-- Lead every bullet with action verb + metric
+✅ **STRICT REQUIREMENTS:**
+- ONLY 4-5 blank lines in ENTIRE document (one between each major section)
+- Contact info: ONE line with pipes (|) separating elements
+- Professional Summary: 2-3 sentences (40-60 words MAX), NO blank lines before/after
+- Skills: Single-line categories with pipes (see format below), NO multi-line categories
+- Each job: Title/Company/Dates, then bullets immediately following
+- Education: Degree, University, Location, Dates - ONE line per degree, NO coursework
+- Certifications: Name - Issuer | Date - ONE line per cert, NO descriptions
+- Lead every bullet with action verb + quantified result
 
-## Content Prioritization
+## Skills Section Format (REQUIRED - SINGLE-LINE CATEGORIES)
 
-1. Focus on most recent 3-4 positions
-2. Include ONLY relevant experience for target role
-3. Quantify EVERY achievement possible
-4. Eliminate verbose explanations
-5. Remove redundant information
+**WRONG (wastes 8+ lines):**
+```
+## Skills
+**System Administration:** Windows Server, Active Directory...
+
+**Infrastructure & Tools:** Azure, ServiceNow...
+
+**Networking & Security:** TCP/IP, DNS/DHCP...
+```
+
+**CORRECT (3-4 lines total with pipe-separated categories):**
+```
+## Skills
+**System Administration:** Windows Server, Active Directory, Microsoft 365, DNS/DHCP, Group Policy | **Infrastructure:** Azure, ServiceNow, Cherwell ITSM, TeamViewer, PowerShell, Virtual Machines | **Networking:** TCP/IP, Network Troubleshooting, Security Compliance | **Technical:** Windows 10/11, Linux, Documentation
+```
+
+**Format rules:**
+- Maximum 3-4 category groups
+- Each category on SAME line, separated by ` | `
+- NO blank lines between categories
+- Total Skills section: 2-4 lines maximum
+
+## Education & Certifications Format (ULTRA-CONDENSED)
+
+**Education - WRONG:**
+```
+**Bachelor of Cybersecurity** - Griffith University, Brisbane, QLD | March 2024 - 2026
+
+Relevant Coursework: Applied Network Security, Database Design...
+```
+
+**Education - CORRECT:**
+```
+## Education
+**Bachelor of Cybersecurity** - Griffith University, Brisbane, QLD | 2024-2026
+**Diploma of Information Technology** - Griffith College, Brisbane, QLD | 2022-2023
+```
+
+**Certifications - WRONG:**
+```
+**IT Support Technical Skills** - Udemy | June 2025
+
+Gained hands-on experience with Active Directory...
+```
+
+**Certifications - CORRECT (Name and date ONLY):**
+```
+## Certifications
+IT Support Technical Skills Helpdesk - Udemy | 2025
+Computer Systems and Networks - Griffith College | 2023
+Advent of Cyber - TryHackMe | 2024
+```
+
+**Format rules:**
+- ONE line per certification
+- NO descriptions or details whatsoever
+- NO blank lines between certifications
+- Format: `[Certification Name] - [Issuer] | [Year]`
+
+## Bullet Point Guidelines (CRITICAL - VARIES BY JOB)
+
+**Most Recent/Relevant Job:** 4-5 bullets
+**Second Most Recent Job:** 3-4 bullets
+**Older/Less Relevant Jobs:** 1-3 bullets (or remove if not relevant)
+
+**Each Bullet Must:**
+- Be 1-2 lines maximum (no paragraph bullets)
+- Start with strong action verb (Led, Developed, Implemented, Managed)
+- Include quantified results (numbers, percentages, scale)
+- Focus on achievements, NOT responsibilities
+
+## Content Prioritization (AGGRESSIVE REDUCTION)
+
+1. **Remove entirely:** Irrelevant jobs, generic skills, obvious duties
+2. **Condense:** Education (degree + dates only), Certifications (name + date)
+3. **Prioritize:** Most recent 2-3 relevant positions
+4. **Quantify:** Every bullet must have a metric (users, %, time saved, etc.)
+5. **Eliminate:** Verbose explanations, adjectives, filler words (the, an, a)
+6. **Cut:** Any section that doesn't directly support job qualifications
+
+## 2-Page Resume Formatting (FOR MID/SENIOR LEVEL ONLY - 10+ YEARS)
+
+**If using 2 pages, follow these rules:**
+
+1. **Page Distribution:**
+   - **Page 1:** Contact info, Professional Summary, Key Skills, most recent 2-3 jobs (detailed)
+   - **Page 2:** Older jobs (condensed 2-3 bullets each), Education, Certifications, optional Projects/Awards
+
+2. **Page Breaks:**
+   - DO NOT split a single job description between pages
+   - Finish one complete job on page 1, start fresh job on page 2
+   - Ensure page 1 ends with complete content (not mid-bullet)
+
+3. **Page 2 Header:**
+   - Include: [Name] | [Phone] | [Email] | Page 2
+   - Keeps pages connected if separated
+
+4. **Fill Both Pages:**
+   - AVOID 1.5-page resumes (looks incomplete)
+   - If you can't fill 2 full pages, use 1 page instead
+   - Balance white space - don't cram page 1 and leave page 2 sparse
+
+5. **Content Strategy:**
+   - Most important content on page 1 (first 30 seconds of review)
+   - Older experience gets less detail on page 2
+   - Recent jobs: 4-5 bullets | Older jobs: 2-3 bullets
 
 ## Task
 
@@ -362,6 +482,20 @@ Use markdown with clear sections:
 [Projects, Publications, etc.]
 ```
 
+## VALIDATION CHECKPOINT
+
+Before considering this resume complete, verify:
+- [ ] Total word count is under 400 words (entry-level) or 600 (mid-level) or 800 (senior)
+- [ ] No more than 5 blank lines in entire document
+- [ ] Skills section uses single-line categories with pipes (|) - NO multi-line categories
+- [ ] Education has NO "Relevant Coursework" details
+- [ ] Certifications are ONE line each with NO descriptions (just name, issuer, date)
+- [ ] Professional Summary is exactly 2-3 sentences (40-60 words)
+- [ ] Each job has 3-5 bullets maximum (not more)
+- [ ] NO blank lines between skill categories, education entries, or certifications
+
+**If any checkbox is unchecked, the resume is NOT complete. Revise immediately.**
+
 ## When Complete
 
 After writing `enhanced.md`, the backend will:
@@ -409,41 +543,161 @@ The user has selected the **{style_config['name']}** writing style for their res
 **Status:** Pending
 
 {style_guidance}
-## Length Requirements (CRITICAL - MUST FOLLOW)
+## Length Requirements (CRITICAL - MUST FOLLOW - 2026 BEST PRACTICES)
 
-**Target Page Length:** 1-2 pages maximum based on experience
-**Target Word Count:**
-- Entry-level (0-5 years): 450-550 words (1 page)
-- Mid-level (5-10 years): 550-750 words (1-2 pages)
-- Senior (10+ years): 750-850 words (2 pages MAX)
+**Target Page Length:** Based on 2026 industry research
+- Entry-level (0-5 years): **1 PAGE ONLY** (not 2 pages)
+- Mid-level (5-10 years): 1-2 pages
+- Senior (10+ years): 2 pages MAX
 
-**NEVER exceed 2 pages regardless of experience level**
+**ABSOLUTE MAXIMUM WORD COUNTS:**
+- Entry-level (0-5 years): **400 WORDS MAX** = 1 PAGE ONLY
+- Mid-level (5-10 years): **600 WORDS MAX** = 1-2 PAGES
+- Senior (10+ years): **800 WORDS MAX** = 2 PAGES (fill both pages)
 
-## Formatting Rules (STRICT)
+**CRITICAL:** Count words BEFORE adding markdown syntax. If over limit, CUT content aggressively.
 
-❌ **FORBIDDEN:**
+**STRICT LIMITS:**
+- NEVER exceed 2 pages regardless of experience
+- NEVER exceed word count maximums (400/600/800)
+- Entry-level MUST be 1 page (66% of employers require this)
+- Minimize white space - use 0.5-0.75" margins if needed
+- Line spacing: 1.0-1.15 (single-spaced)
+
+## Formatting Rules (ULTRA-STRICT - ZERO WHITE SPACE TOLERANCE)
+
+❌ **ABSOLUTELY FORBIDDEN:**
 - NO decorative dividers (`---` or `===`)
 - NO emojis or special characters
 - NO blank lines between bullets
+- NO blank lines between skill categories
+- NO blank lines in Education section
+- NO blank lines in Certifications section
 - NO custom creative headers
-- NO excessive spacing
-- NO more than 4 jobs listed
+- NO more than 3-4 jobs listed
+- NO tables, text boxes, or graphics
+- NO "Professional Development" or "Hobbies" sections for entry-level
+- NO "Relevant Coursework" expansions in Education
+- NO certification descriptions (title and date ONLY)
 
-✅ **REQUIRED:**
-- Single blank line between sections ONLY
-- Standard section headers only
-- 3-5 bullets per job position
-- Professional summary: 2-3 sentences (40-60 words)
-- Contact info on ONE line
-- Lead every bullet with action verb + metric
+✅ **STRICT REQUIREMENTS:**
+- ONLY 4-5 blank lines in ENTIRE document (one between each major section)
+- Contact info: ONE line with pipes (|) separating elements
+- Professional Summary: 2-3 sentences (40-60 words MAX), NO blank lines before/after
+- Skills: Single-line categories with pipes (see format below), NO multi-line categories
+- Each job: Title/Company/Dates, then bullets immediately following
+- Education: Degree, University, Location, Dates - ONE line per degree, NO coursework
+- Certifications: Name - Issuer | Date - ONE line per cert, NO descriptions
+- Lead every bullet with action verb + quantified result
 
-## Content Prioritization
+## Skills Section Format (REQUIRED - SINGLE-LINE CATEGORIES)
 
-1. Focus on most recent 3-4 positions
-2. Include ONLY relevant experience for target industry
-3. Quantify EVERY achievement possible
-4. Eliminate verbose explanations
-5. Remove redundant information
+**WRONG (wastes 8+ lines):**
+```
+## Skills
+**System Administration:** Windows Server, Active Directory...
+
+**Infrastructure & Tools:** Azure, ServiceNow...
+
+**Networking & Security:** TCP/IP, DNS/DHCP...
+```
+
+**CORRECT (3-4 lines total with pipe-separated categories):**
+```
+## Skills
+**System Administration:** Windows Server, Active Directory, Microsoft 365, DNS/DHCP, Group Policy | **Infrastructure:** Azure, ServiceNow, Cherwell ITSM, TeamViewer, PowerShell, Virtual Machines | **Networking:** TCP/IP, Network Troubleshooting, Security Compliance | **Technical:** Windows 10/11, Linux, Documentation
+```
+
+**Format rules:**
+- Maximum 3-4 category groups
+- Each category on SAME line, separated by ` | `
+- NO blank lines between categories
+- Total Skills section: 2-4 lines maximum
+
+## Education & Certifications Format (ULTRA-CONDENSED)
+
+**Education - WRONG:**
+```
+**Bachelor of Cybersecurity** - Griffith University, Brisbane, QLD | March 2024 - 2026
+
+Relevant Coursework: Applied Network Security, Database Design...
+```
+
+**Education - CORRECT:**
+```
+## Education
+**Bachelor of Cybersecurity** - Griffith University, Brisbane, QLD | 2024-2026
+**Diploma of Information Technology** - Griffith College, Brisbane, QLD | 2022-2023
+```
+
+**Certifications - WRONG:**
+```
+**IT Support Technical Skills** - Udemy | June 2025
+
+Gained hands-on experience with Active Directory...
+```
+
+**Certifications - CORRECT (Name and date ONLY):**
+```
+## Certifications
+IT Support Technical Skills Helpdesk - Udemy | 2025
+Computer Systems and Networks - Griffith College | 2023
+Advent of Cyber - TryHackMe | 2024
+```
+
+**Format rules:**
+- ONE line per certification
+- NO descriptions or details whatsoever
+- NO blank lines between certifications
+- Format: `[Certification Name] - [Issuer] | [Year]`
+
+## Bullet Point Guidelines (CRITICAL - VARIES BY JOB)
+
+**Most Recent/Relevant Job:** 4-5 bullets
+**Second Most Recent Job:** 3-4 bullets
+**Older/Less Relevant Jobs:** 1-3 bullets (or remove if not relevant)
+
+**Each Bullet Must:**
+- Be 1-2 lines maximum (no paragraph bullets)
+- Start with strong action verb (Led, Developed, Implemented, Managed)
+- Include quantified results (numbers, percentages, scale)
+- Focus on achievements, NOT responsibilities
+
+## Content Prioritization (AGGRESSIVE REDUCTION)
+
+1. **Remove entirely:** Irrelevant jobs, generic skills, obvious duties
+2. **Condense:** Education (degree + dates only), Certifications (name + date)
+3. **Prioritize:** Most recent 2-3 relevant positions
+4. **Quantify:** Every bullet must have a metric (users, %, time saved, etc.)
+5. **Eliminate:** Verbose explanations, adjectives, filler words (the, an, a)
+6. **Cut:** Any section that doesn't directly support job qualifications
+
+## 2-Page Resume Formatting (FOR MID/SENIOR LEVEL ONLY - 10+ YEARS)
+
+**If using 2 pages, follow these rules:**
+
+1. **Page Distribution:**
+   - **Page 1:** Contact info, Professional Summary, Key Skills, most recent 2-3 jobs (detailed)
+   - **Page 2:** Older jobs (condensed 2-3 bullets each), Education, Certifications, optional Projects/Awards
+
+2. **Page Breaks:**
+   - DO NOT split a single job description between pages
+   - Finish one complete job on page 1, start fresh job on page 2
+   - Ensure page 1 ends with complete content (not mid-bullet)
+
+3. **Page 2 Header:**
+   - Include: [Name] | [Phone] | [Email] | Page 2
+   - Keeps pages connected if separated
+
+4. **Fill Both Pages:**
+   - AVOID 1.5-page resumes (looks incomplete)
+   - If you can't fill 2 full pages, use 1 page instead
+   - Balance white space - don't cram page 1 and leave page 2 sparse
+
+5. **Content Strategy:**
+   - Most important content on page 1 (first 30 seconds of review)
+   - Older experience gets less detail on page 2
+   - Recent jobs: 4-5 bullets | Older jobs: 2-3 bullets
 
 ## Task
 
@@ -626,11 +880,41 @@ Write the cover letter to:
 
 ## Cover Letter Requirements
 
-### Length & Structure
-- **Target Length:** 250-350 words (3-4 paragraphs)
-- **Opening paragraph:** State the position and express genuine enthusiasm
-- **1-2 body paragraphs:** Highlight 2-3 key qualifications from resume that match job requirements
-- **Closing paragraph:** Express interest in interview and next steps
+### Length & Structure (CRITICAL - HARD LIMIT)
+- **ABSOLUTE MAXIMUM:** 200 words total body content
+- **Target Range:** 180-200 words (4 paragraphs)
+- **NEVER EXCEED 200 words** - will overflow to page 2 by 2+ lines
+- **Reason for strict limit:** 262-word cover letters overflow. 200-word limit ensures single-page fit.
+- **Opening paragraph:** 35-40 words MAX (2 sentences)
+- **Body paragraph 1:** 50-60 words MAX (2-3 sentences)
+- **Body paragraph 2:** 50-60 words MAX (2-3 sentences)
+- **Closing paragraph:** 30-35 words MAX (1-2 sentences)
+- **If at 201+ words:** Delete filler words, combine sentences, use contractions
+
+### Word Reduction Checklist (CRITICAL - USE BEFORE FINALIZING)
+
+**Cut these filler phrases immediately:**
+- ❌ "I am writing to express my interest in" → ✅ "I'm interested in"
+- ❌ "I have been responsible for" → ✅ "I managed" or "I administered"
+- ❌ "Additionally," "Furthermore," "Moreover," → ✅ Delete entirely, start new sentence
+- ❌ "in my current position" → ✅ "Currently" or "At [Company]"
+- ❌ "while ensuring" → ✅ "ensuring" (delete "while")
+- ❌ "that align with your requirements" → ✅ Delete entire phrase
+- ❌ "I am particularly attracted to" → ✅ "I'm drawn to" or "This role offers"
+- ❌ "I look forward to discussing" → ✅ "I'd welcome discussing"
+
+**Active voice shortcuts:**
+- ❌ "I have supported" → ✅ "I supported"
+- ❌ "I have assisted with" → ✅ "I assisted with"
+- ❌ "positions me to contribute" → ✅ "enables me to contribute"
+
+**Professional Style Adaptation:**
+While resume uses formal passive voice, cover letters MUST be CONCISE:
+- ✅ Use "I managed" not "I was responsible for managing"
+- ✅ Use "I'm" and "I'd" to save words (still professional in 2026)
+- ✅ Keep sentences under 20 words each
+- ✅ Use periods instead of clauses with "while" or "and"
+- ✅ Delete ALL transitional phrases ("Additionally", "Furthermore", "Moreover")
 
 ### Content Guidelines
 1. **Use ENHANCED resume content** (not original) - reference the improved achievements
@@ -663,25 +947,21 @@ Use clean markdown:
 
 Dear Hiring Manager,
 
-[Opening paragraph: 2-3 sentences]
-- State the specific position you're applying for
-- Express genuine enthusiasm for the role
-- Show you've researched the company (reference something specific)
+[Opening paragraph: 2 sentences]
+- State the position and qualifications
 
-[Body paragraph 1: 3-4 sentences]
-- Highlight your most relevant qualification with a metric from resume
-- Connect your experience to a specific job requirement
-- Show impact with quantified results
+[Body paragraph 1: 2-3 sentences]
+- Highlight most relevant qualification with metrics
+- Connect to job requirement
+- Show impact
 
-[Body paragraph 2 (optional): 2-3 sentences]
-- Highlight second major qualification or achievement
-- Address another key requirement from job description
-- Demonstrate how you'll add value
+[Body paragraph 2: 2-3 sentences]
+- Highlight second qualification with metrics
+- Address another requirement
+- Demonstrate value
 
-[Closing paragraph: 2-3 sentences]
-- Express strong interest in discussing the opportunity
-- Thank them for their consideration
-- Indicate availability for next steps
+[Closing paragraph: 1-2 sentences]
+- Express interest and thank them
 
 Sincerely,
 [Name from resume]
@@ -689,17 +969,24 @@ Sincerely,
 [Phone from resume]
 ```
 
-## Quality Checklist
+## VALIDATION CHECKPOINT
 
-Before finalizing, ensure:
-- [ ] Length is 250-350 words
-- [ ] Includes 1-2 quantified achievements from resume
+Before considering this cover letter complete, COUNT WORDS:
+- [ ] Total word count (opening + body1 + body2 + closing) is 180-200 words MAX
+- [ ] Opening paragraph: 35-40 words
+- [ ] Body paragraph 1: 50-60 words
+- [ ] Body paragraph 2: 50-60 words
+- [ ] Closing paragraph: 30-35 words
+- [ ] Has 4 paragraphs (opening + 2 body + closing)
+- [ ] Includes 2-3 quantified achievements from resume
 - [ ] References specific job requirements
-- [ ] Opening shows company research/enthusiasm
+- [ ] NO paragraph uses "Additionally" or "Furthermore"
+- [ ] NO passive constructions like "I have been responsible for"
+- [ ] ALL sentences are under 20 words
 - [ ] Tone matches resume writing style
-- [ ] No generic or templated phrases
-- [ ] Professional formatting in markdown
 - [ ] Contact information matches resume
+
+**If word count exceeds 200, CUT content immediately. This is non-negotiable.**
 
 ## Examples of Strong Openings
 

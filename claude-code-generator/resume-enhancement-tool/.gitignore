@@ -83,3 +83,36 @@ temp/
 tmp/
 *.bak
 *.tmp
+nul
+
+# User data - IMPORTANT: Excludes uploaded resumes and personal info
+backend/workspace/resumes/
+backend/workspace/jobs/
+backend/workspace/enhancement_data.json
+backend/workspace/job_data.json
+backend/workspace/test_*.txt
+backend/workspace/test_*.docx
+backend/workspace/test_*.pdf
+
+# Test files
+backend/test_*.py
+backend/test_*.pdf
+backend/test_*.docx
+backend/test_*.md
+test_*.pdf
+test_download.pdf
+test_cover_letter.pdf
+
+# Coverage reports
+coverage.xml
+*.cover
+
+# Docker
+docker-compose.override.yml
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Keep these files (documentation)
+!.env.example
+!backend/.env.example

@@ -226,6 +226,7 @@ async def list_enhancements(
 async def get_enhancement(
     enhancement_id: UUID,
     db: Session = Depends(get_db),
+    workspace_service: WorkspaceService = Depends(get_workspace_service),
 ):
     """
     Get a specific enhancement by ID.

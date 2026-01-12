@@ -15,13 +15,13 @@ A complete, enterprise-grade web application that enhances resumes using AI-powe
 
 ### Core Functionality
 - 📄 **Resume Upload & Parsing** - PDF/DOCX support with intelligent text extraction
-- 🎨 **5 AI Writing Styles** - Professional, Executive, Technical, Creative, Concise
-- 🤖 **Intelligent Style Validation** - Analyzes job descriptions and recommends optimal writing style
+- 🎨 **5 Writing Styles** - Professional, Executive, Technical, Creative, Concise (static selection - zero API costs)
 - 🎯 **Job-Specific Tailoring** - Matches resumes to job descriptions with ATS keyword optimization
 - 🏢 **Industry-Focused Revamp** - Comprehensive overhaul for IT, Cybersecurity, Finance sectors
 - 📊 **ATS Analysis** - Keyword matching, job match scoring, comparison view
-- 💼 **Cover Letter Generation** - Anti-fabrication protection, AI detection avoidance
+- 💼 **Cover Letter Generation** - Automatic 1-page generation (185-205 words), anti-fabrication protection, AI detection avoidance ✨ OPTIMIZED
 - 📥 **Multi-Format Download** - Markdown, DOCX, PDF (with Docker/GTK)
+- 💰 **Zero API Costs** - Style selection uses predefined descriptions, no AI generation needed
 
 ### Security (Phase 1 - Jan 2026)
 - 🔒 **Path Traversal Protection** - Validates all file downloads, blocks `../../` attacks
@@ -108,10 +108,11 @@ npm run dev
    - Minimum 50 words required
    - Wait for upload confirmation
 
-2. **Select Writing Style** (Automatic after upload)
-   - See 5 AI-generated style previews (~3-5 seconds)
+2. **Select Writing Style** (Instant after upload)
+   - See 5 predefined style options with clear descriptions
    - Choose: Professional, Executive, Technical, Creative, or Concise
-   - Preview shows Professional Summary in each style
+   - Each style includes tone description and industry recommendations
+   - No API calls - instant selection (zero cost)
 
 3. **Add Job Description** (Tab 2: Jobs)
    - Fill in job title, company, description
@@ -144,9 +145,9 @@ npm run dev
 - `POST /api/resumes/upload` - Upload PDF/DOCX (rate limited: 10/min)
 - `GET /api/resumes` - List all resumes
 - `GET /api/resumes/{id}` - Get specific resume
-- `POST /api/resumes/{id}/style-previews` - Generate 5 style previews
-- `GET /api/resumes/{id}/style-previews` - Get existing previews
-- `POST /api/resumes/{id}/select-style` - Save style selection
+- ~~`POST /api/resumes/{id}/style-previews`~~ - DEPRECATED (returns 410 Gone)
+- ~~`GET /api/resumes/{id}/style-previews`~~ - DEPRECATED (returns 410 Gone)
+- `POST /api/resumes/{id}/select-style` - Save style selection (no API costs)
 - `PATCH /api/resumes/{id}/update-style` - Update style after validation
 
 **Jobs:**
@@ -173,7 +174,7 @@ npm run dev
 - FastAPI 0.115.0 (web framework)
 - SQLAlchemy 2.0.36 (ORM)
 - SQLite (database, PostgreSQL for production)
-- Anthropic Claude API (style preview generation)
+- ~~Anthropic Claude API~~ (not currently used - style preview API disabled to eliminate costs)
 - pdfplumber + pypdf (PDF parsing)
 - python-docx (DOCX parsing)
 - slowapi (rate limiting)
@@ -198,9 +199,9 @@ npm run dev
 ```
 User → Upload Resume → Backend parses PDF/DOCX → Stores in workspace/
                                 ↓
-        Backend calls Anthropic API → Generates 5 style previews (~3-5s)
+        Frontend displays 5 predefined style options → User selects writing style
                                 ↓
-        User selects writing style → Saves to database
+        Backend saves style selection to database (no API call)
                                 ↓
         User adds job description → Stores in workspace/jobs/
                                 ↓
@@ -213,6 +214,8 @@ User → Upload Resume → Backend parses PDF/DOCX → Stores in workspace/
         Frontend auto-polls (5s) → Shows download buttons
                                 ↓
         User downloads Markdown/DOCX → Optionally converts to PDF
+
+NOTE: Zero API costs - style selection is fully static
 ```
 
 ### Directory Structure
@@ -407,7 +410,8 @@ npm run build
    SECRET_KEY=<strong-random-32+-char-key>
    DEBUG=False
    DATABASE_URL=postgresql://user:pass@host/db
-   ANTHROPIC_API_KEY=<your-api-key>  # Optional for style previews
+   # ANTHROPIC_API_KEY - NOT NEEDED (style preview API disabled)
+   # ENABLE_STYLE_PREVIEW_API=false  # Disabled by default
    WORKSPACE_ROOT=/var/app/workspace
    ```
 

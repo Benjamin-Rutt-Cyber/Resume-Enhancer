@@ -42,6 +42,35 @@ This is a single-user web application that helps you enhance your resume using C
 - Text extracted and saved as `extracted.txt` (for Claude Code to read)
 - Metadata saved in `metadata.json`
 
+### Step 1.5: Select Your Writing Style ✨ OPTIMIZED (Zero API Costs)
+
+**Immediately after upload**, you'll see 5 predefined writing style options:
+
+1. **Professional** - Traditional corporate tone with formal language
+2. **Executive** - Senior leadership language with strategic focus
+3. **Technical** - Detailed technical terminology, metrics-driven
+4. **Creative** - Dynamic, personality-focused, engaging language
+5. **Concise** - Brief impactful statements (maximum brevity)
+
+**How it works:**
+- Frontend displays static style options with clear descriptions
+- NO API calls - instant selection (eliminated ~$3/month in costs)
+- Each style includes tone description and industry recommendations
+- Select the style that best matches your target role and personality
+- Your selected style will be applied to all enhancements of this resume
+
+**What happens:**
+- Selected style saved to Resume record in database (single API call to save selection)
+- Style guidance will be included in INSTRUCTIONS.md for Claude Code
+- Enhanced resume will use your selected writing style consistently
+
+**Tips:**
+- **Professional**: Best for corporate jobs, traditional industries (Banking, Healthcare)
+- **Executive**: Best for C-suite, VP, Director level positions
+- **Technical**: Best for engineering, data science, technical specialist roles
+- **Creative**: Best for marketing, design, product management, startup roles
+- **Concise**: Best for senior roles where brevity matters, scanning-heavy positions
+
 ### Step 2: Add Job Description (Web UI)
 
 #### Option A: For Job Tailoring
@@ -124,22 +153,51 @@ Skip this step - you'll specify the industry when creating the enhancement.
   - ATS-friendly formatting
   - Industry-specific terminology
 
+### Step 4.5: Cover Letter Auto-Generation ✨ OPTIMIZED
+
+**Automatic process - no action required!**
+
+After Claude Code generates the enhanced resume:
+- Backend automatically triggers cover letter generation
+- Cover letter is generated following the same writing style as resume
+- **Exactly 1 page** (185-205 words, 4 paragraphs)
+- Professional structure:
+  - Opening: State position and qualifications (2 sentences)
+  - Body 1: Primary qualification with metrics (2-3 sentences)
+  - Body 2: Secondary qualification with metrics (2-3 sentences)
+  - Closing: Express interest and thanks (1-2 sentences)
+
+**What happens:**
+- System detects `enhanced.md` completion
+- Reads job description and enhanced resume
+- Generates tailored cover letter in markdown
+- Saves to `workspace/resumes/enhanced/{id}/cover_letter.md`
+- Status updated to "completed" for both resume and cover letter
+
+**Quality Guarantees:**
+- ✅ No overflow to page 2
+- ✅ No excessive white space
+- ✅ Accounts for formatting overhead (company address, salutation, signature)
+- ✅ Consistent tone with selected writing style
+- ✅ Only uses information from resume (no fabrication)
+
 ### Step 5: Finalize and Download (Web UI)
 
 **Return to the Web UI!**
 
 1. Navigate to "Enhancements" page
-2. You'll see the enhancement status changed to "Ready"
-3. Click "Finalize"
-4. Backend converts markdown → PDF using WeasyPrint
-5. Click "Download" to get your enhanced PDF resume
+2. You'll see the enhancement status changed to "completed"
+3. Download options available:
+   - **Download Resume (Markdown)** - Enhanced resume in markdown format
+   - **Download Resume (DOCX)** - Enhanced resume as Word document
+   - **Download Cover Letter (Markdown)** - 1-page cover letter
+   - **Download Cover Letter (DOCX)** - Cover letter as Word document
 
 **What happens:**
-- Backend detects `enhanced.md` file
-- Converts markdown to PDF using HTML template
-- Saves as `enhanced.pdf`
-- Status changed to "completed"
-- PDF ready for download
+- Backend detects both `enhanced.md` and `cover_letter.md` files
+- Status changed to "completed" for both
+- All download formats available immediately
+- DOCX files generated on-demand with proper formatting
 
 ## Available Industries
 
@@ -274,29 +332,54 @@ resume-enhancement-tool/
 
 After generating your project, you'll need to:
 
-1. **Set up database:**
+1. **Set up environment:**
    ```bash
    cd backend
-   # Update DATABASE_URL in .env
+   # Create .env file
+   cp .env.example .env
+
+   # NOTE: ANTHROPIC_API_KEY is NOT required
+   # Style preview API has been disabled to eliminate costs
+   # The application uses static style selection (zero API costs)
+
+   # Set your SECRET_KEY (required)
+   echo "SECRET_KEY=$(python -c 'import secrets; print(secrets.token_urlsafe(32))')" >> .env
+   ```
+
+2. **Set up database:**
+   ```bash
+   cd backend
+   # Update DATABASE_URL in .env if needed
    alembic upgrade head
    ```
 
-2. **Start backend:**
+3. **Install dependencies:**
+   ```bash
+   # Backend
+   cd backend
+   pip install -r requirements.txt
+
+   # Frontend
+   cd ../frontend
+   npm install
+   ```
+
+4. **Start backend:**
    ```bash
    cd backend
    uvicorn main:app --reload
    ```
 
-3. **Start frontend:**
+5. **Start frontend:**
    ```bash
    cd frontend
-   npm install
    npm run dev
    ```
 
-4. **Use Claude Code:**
+6. **Use Claude Code:**
    - Open project in Claude Code
    - Upload resume via web UI
+   - Select writing style
    - Use `/tailor-resume` or `/revamp-for-industry`
    - Finalize and download
 

@@ -83,10 +83,15 @@ class PDFGenerator:
             # Convert HTML to PDF using WeasyPrint
             output_path.parent.mkdir(parents=True, exist_ok=True)
 
+            html = HTML(string=full_html)
             if css_objects:
-                HTML(string=full_html).write_pdf(output_path, stylesheets=css_objects)
+                pdf_doc = html.render(stylesheets=css_objects)
             else:
-                HTML(string=full_html).write_pdf(output_path)
+                pdf_doc = html.render()
+
+            # Write PDF to file
+            with open(output_path, 'wb') as f:
+                pdf_doc.write_pdf(f)
 
             logger.info(f"Successfully generated PDF: {output_path}")
 

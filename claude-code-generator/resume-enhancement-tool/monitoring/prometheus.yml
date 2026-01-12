@@ -1,0 +1,59 @@
+# Prometheus Configuration for Resume Enhancement Tool
+#
+# This configuration sets up basic metrics collection for the application.
+# For production, you may want to add additional scrape targets, alerting rules,
+# and integrate with Alertmanager.
+
+global:
+  scrape_interval: 15s      # How frequently to scrape targets
+  evaluation_interval: 15s  # How frequently to evaluate rules
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+    monitor: 'resume-tool-monitor'
+    environment: 'production'
+
+# Alertmanager configuration (optional - configure if you set up Alertmanager)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets:
+#           - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+# rule_files:
+#   - "alerts/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Scrape Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          component: 'monitoring'
+
+  # Scrape the Resume Enhancement Tool backend
+  # Note: You'll need to add prometheus-fastapi-instrumentator to requirements.txt
+  # and configure it in main.py to expose /metrics endpoint
+  - job_name: 'resume-tool-backend'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['backend:8000']
+        labels:
+          component: 'backend'
+          app: 'resume-enhancement-tool'
+
+    # Only scrape if /metrics endpoint exists
+    # If you haven't added Prometheus metrics to FastAPI yet,
+    # comment out this scrape target
+    # metrics_path: '/metrics'
+
+  # Scrape node exporter for system metrics (optional)
+  # Uncomment if you install node_exporter
+  # - job_name: 'node'
+  #   static_configs:
+  #     - targets: ['node-exporter:9100']
+  #       labels:
+  #         component: 'system'

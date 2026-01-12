@@ -16,6 +16,7 @@ class EnhancementTailorCreate(EnhancementBase):
     """Schema for creating a job tailoring enhancement."""
 
     job_id: UUID = Field(..., description="Job ID to tailor resume for")
+    run_analysis: bool = Field(default=False, description="Whether to run ATS keyword analysis and job match scoring")
 
     class Config:
         extra = "forbid"
@@ -39,6 +40,17 @@ class EnhancementResponse(EnhancementBase):
     industry: str | None
     output_path: str | None
     pdf_path: str | None
+    docx_path: str | None
+
+    # Cover letter fields
+    cover_letter_path: str | None
+    cover_letter_pdf_path: str | None
+    cover_letter_docx_path: str | None
+    cover_letter_status: str
+    cover_letter_error: str | None
+
+    run_analysis: bool
+    job_match_score: int | None
     status: str
     error_message: str | None
     created_at: datetime

@@ -8,6 +8,12 @@ from .enhancement import (
     EnhancementResponse,
     EnhancementListResponse,
 )
+from .analysis import (
+    AnalysisResponse,
+    AchievementSuggestion,
+    AchievementSuggestionsResponse,
+)
+from .comparison import ComparisonResponse
 
 __all__ = [
     "ResumeCreate",
@@ -20,4 +26,8 @@ __all__ = [
     "EnhancementRevampCreate",
     "EnhancementResponse",
     "EnhancementListResponse",
+    "AnalysisResponse",
+    "AchievementSuggestion",
+    "AchievementSuggestionsResponse",
+    "ComparisonResponse",
 ]

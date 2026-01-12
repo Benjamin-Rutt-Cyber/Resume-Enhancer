@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Resume</title>
+    <style>
+        @page {
+            size: letter;
+            margin: 0.75in;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 28px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            margin-top: 0;
+        }
+
+        h2 {
+            color: #34495e;
+            font-size: 20px;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #bdc3c7;
+            padding-bottom: 5px;
+        }
+
+        h3 {
+            color: #555;
+            font-size: 16px;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+
+        p {
+            margin: 8px 0;
+        }
+
+        ul, ol {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        strong {
+            color: #2c3e50;
+        }
+
+        em {
+            font-style: italic;
+            color: #7f8c8d;
+        }
+
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 90%;
+        }
+
+        blockquote {
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+            margin-left: 0;
+            color: #555;
+            font-style: italic;
+        }
+
+        /* Print-specific styles */
+        @media print {
+            body {
+                font-size: 11pt;
+            }
+
+            h1 {
+                page-break-after: avoid;
+            }
+
+            h2, h3 {
+                page-break-after: avoid;
+            }
+
+            ul, ol {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    {{content}}
+</body>
+</html>

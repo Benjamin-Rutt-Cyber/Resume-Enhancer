@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { styleApi } from '../services/api';
-import type { StylePreviewItem } from '../types';
 
 interface StylePreviewProps {
   resumeId: string;
@@ -8,13 +7,54 @@ interface StylePreviewProps {
   onClose?: () => void;
 }
 
-interface StyleCardProps {
-  preview: StylePreviewItem;
-  isSelected: boolean;
-  onSelect: () => void;
+interface StyleOption {
+  id: string;
+  name: string;
+  description: string;
+  tone: string;
+  bestFor: string;
 }
 
-// Move styles outside component to prevent recreation on every render
+// Static style options - no API call needed
+const STYLE_OPTIONS: StyleOption[] = [
+  {
+    id: 'professional',
+    name: 'Professional',
+    description: 'Traditional corporate tone with formal language',
+    tone: 'Formal, corporate, traditional',
+    bestFor: 'Corporate jobs, traditional industries (Banking, Healthcare, Government)'
+  },
+  {
+    id: 'executive',
+    name: 'Executive',
+    description: 'Senior leadership language with strategic focus',
+    tone: 'Authoritative, strategic, refined',
+    bestFor: 'Leadership roles, management positions, C-suite applications'
+  },
+  {
+    id: 'technical',
+    name: 'Technical',
+    description: 'Detailed technical terminology with specific metrics',
+    tone: 'Precise, technical, data-driven',
+    bestFor: 'Engineering roles, technical specialist positions, data-driven companies'
+  },
+  {
+    id: 'creative',
+    name: 'Creative',
+    description: 'Dynamic personality-focused with engaging language',
+    tone: 'Engaging, personality-driven, dynamic',
+    bestFor: 'Startups, tech companies, innovative organizations, marketing/design roles'
+  },
+  {
+    id: 'concise',
+    name: 'Concise',
+    description: 'Brief impactful statements in scannable format',
+    tone: 'Brief, impactful, scannable',
+    bestFor: 'Senior roles where brevity matters, executive-level positions'
+  }
+];
+
+// Move styles outside component
 const styles = {
   container: {
     maxWidth: '1200px',
@@ -34,42 +74,13 @@ const styles = {
   subtitle: {
     fontSize: '16px',
     color: '#666',
-    maxWidth: '600px',
+    maxWidth: '700px',
     margin: '0 auto',
-  } as React.CSSProperties,
-  loadingContainer: {
-    textAlign: 'center' as const,
-    padding: '60px 20px',
-  } as React.CSSProperties,
-  spinner: {
-    display: 'inline-block',
-    width: '50px',
-    height: '50px',
-    border: '4px solid #f3f3f3',
-    borderTop: '4px solid #3498db',
-    borderRadius: '50%',
-    animation: 'spin 1s linear infinite',
-    marginBottom: '20px',
-  } as React.CSSProperties,
-  loadingText: {
-    fontSize: '18px',
-    color: '#666',
-  } as React.CSSProperties,
-  errorContainer: {
-    backgroundColor: '#fee',
-    border: '1px solid #fcc',
-    borderRadius: '8px',
-    padding: '20px',
-    margin: '20px 0',
-    textAlign: 'center' as const,
-  } as React.CSSProperties,
-  errorText: {
-    color: '#c33',
-    fontSize: '16px',
+    lineHeight: '1.6',
   } as React.CSSProperties,
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
     gap: '24px',
     marginBottom: '40px',
   } as React.CSSProperties,
@@ -89,9 +100,6 @@ const styles = {
   cardHover: {
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
   } as React.CSSProperties,
-  cardHeader: {
-    marginBottom: '12px',
-  } as React.CSSProperties,
   styleName: {
     fontSize: '22px',
     fontWeight: 'bold',
@@ -106,27 +114,30 @@ const styles = {
     fontSize: '24px',
     fontWeight: 'bold',
   } as React.CSSProperties,
-  styleDescription: {
-    fontSize: '14px',
-    color: '#7f8c8d',
-    marginBottom: '16px',
-  } as React.CSSProperties,
-  previewLabel: {
-    fontSize: '12px',
-    fontWeight: 'bold',
+  description: {
+    fontSize: '15px',
     color: '#555',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.5px',
-    marginBottom: '8px',
+    marginBottom: '12px',
+    lineHeight: '1.5',
   } as React.CSSProperties,
-  previewText: {
+  detail: {
+    fontSize: '13px',
+    color: '#666',
+    marginBottom: '8px',
+    lineHeight: '1.4',
+  } as React.CSSProperties,
+  label: {
+    fontWeight: '600',
+    color: '#444',
+  } as React.CSSProperties,
+  bestFor: {
     backgroundColor: '#f8f9fa',
-    padding: '16px',
-    borderRadius: '8px',
-    fontSize: '14px',
-    lineHeight: '1.6',
-    color: '#333',
-    fontStyle: 'italic',
+    padding: '12px',
+    borderRadius: '6px',
+    fontSize: '13px',
+    color: '#495057',
+    marginTop: '12px',
+    lineHeight: '1.5',
     border: '1px solid #e9ecef',
   } as React.CSSProperties,
   continueContainer: {
@@ -150,17 +161,23 @@ const styles = {
     cursor: 'not-allowed',
     boxShadow: 'none',
   } as React.CSSProperties,
-  continueButtonHover: {
-    backgroundColor: '#2980b9',
-    boxShadow: '0 4px 12px rgba(52, 152, 219, 0.4)',
+  errorText: {
+    color: '#c33',
+    textAlign: 'center' as const,
+    padding: '20px',
+    fontSize: '16px',
   } as React.CSSProperties,
 };
 
-// Memoize StyleCard to prevent unnecessary re-renders
-const StyleCard = React.memo<StyleCardProps>(({ preview, isSelected, onSelect }) => {
+interface StyleCardProps {
+  style: StyleOption;
+  isSelected: boolean;
+  onSelect: () => void;
+}
+
+const StyleCard = React.memo<StyleCardProps>(({ style, isSelected, onSelect }) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  // Memoize cardStyle calculation
   const cardStyle = useMemo(() => ({
     ...styles.card,
     ...(isSelected ? styles.cardSelected : {}),
@@ -173,104 +190,44 @@ const StyleCard = React.memo<StyleCardProps>(({ preview, isSelected, onSelect })
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={cardStyle}
+      role="button"
+      tabIndex={0}
+      aria-label={`Select ${style.name} writing style`}
+      aria-pressed={isSelected}
     >
-      <div style={styles.cardHeader}>
-        <div style={styles.styleName}>
-          {preview.name}
-          {isSelected && <span style={styles.checkmark}>✓</span>}
-        </div>
-        <p style={styles.styleDescription}>{preview.description}</p>
+      <div style={styles.styleName}>
+        {style.name}
+        {isSelected && <span style={styles.checkmark}>✓</span>}
       </div>
 
-      <div>
-        <div style={styles.previewLabel}>Professional Summary Preview:</div>
-        <div style={styles.previewText}>{preview.preview_text}</div>
+      <p style={styles.description}>{style.description}</p>
+
+      <div style={styles.detail}>
+        <span style={styles.label}>Tone:</span> {style.tone}
+      </div>
+
+      <div style={styles.bestFor}>
+        <span style={styles.label}>Best for:</span> {style.bestFor}
       </div>
     </div>
   );
 });
 
+StyleCard.displayName = 'StyleCard';
+
 const StylePreview: React.FC<StylePreviewProps> = ({ resumeId, onStyleSelected }) => {
-  const [loading, setLoading] = useState<boolean>(true);
-  const [previews, setPreviews] = useState<StylePreviewItem[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const abortController = new AbortController();
-
-    const fetchPreviews = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        // Try to get existing previews
-        const response = await styleApi.getStylePreviews(resumeId);
-
-        // Only update state if component is still mounted
-        if (!abortController.signal.aborted) {
-          setPreviews(response.previews);
-        }
-      } catch (err: any) {
-        // Ignore errors from aborted requests
-        if (err.name === 'CanceledError' || abortController.signal.aborted) {
-          return;
-        }
-
-        console.error('Error fetching style previews:', err);
-        if (err.response?.status === 404) {
-          // Previews haven't been generated yet - show manual generation message
-          setError('manual-generation-needed');
-        } else {
-          setError(
-            err.response?.data?.detail ||
-              'Failed to load style previews. Please try again.'
-          );
-        }
-      } finally {
-        if (!abortController.signal.aborted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchPreviews();
-
-    // Cleanup function to abort request if component unmounts
-    return () => {
-      abortController.abort();
-    };
-  }, [resumeId]);
-
-  const handleRetry = async () => {
-    setLoading(true);
+  const handleSelectStyle = (styleId: string) => {
+    setSelectedStyle(styleId);
     setError(null);
-
-    try {
-      const response = await styleApi.getStylePreviews(resumeId);
-      setPreviews(response.previews);
-    } catch (err: any) {
-      console.error('Error fetching style previews:', err);
-      if (err.response?.status === 404) {
-        setError('manual-generation-needed');
-      } else {
-        setError(
-          err.response?.data?.detail ||
-            'Failed to load style previews. Please try again.'
-        );
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleStyleSelect = (style: string) => {
-    setSelectedStyle(style);
   };
 
   const handleContinue = async () => {
     if (!selectedStyle) {
+      setError('Please select a writing style');
       return;
     }
 
@@ -286,150 +243,33 @@ const StylePreview: React.FC<StylePreviewProps> = ({ resumeId, onStyleSelected }
         err.response?.data?.detail ||
           'Failed to save style selection. Please try again.'
       );
+    } finally {
       setSaving(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div style={styles.container}>
-        <div style={styles.loadingContainer}>
-          <div style={styles.spinner}></div>
-          <p style={styles.loadingText}>
-            Generating Style Previews...
-            <br />
-            <small style={{ color: '#999', fontSize: '14px' }}>
-              This may take a few seconds
-            </small>
-          </p>
-        </div>
-        <style>
-          {`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}
-        </style>
-      </div>
-    );
-  }
-
-  if (error) {
-    if (error === 'manual-generation-needed') {
-      return (
-        <div style={styles.container}>
-          <div style={styles.header}>
-            <h1 style={styles.title}>Generate Style Previews</h1>
-          </div>
-          <div style={{
-            ...styles.errorContainer,
-            backgroundColor: '#e3f2fd',
-            border: '2px solid #2196F3',
-            padding: '32px',
-            maxWidth: '700px',
-            margin: '0 auto',
-          }}>
-            <h2 style={{ color: '#1976d2', marginBottom: '16px', fontSize: '20px' }}>
-              📝 Manual Generation Required
-            </h2>
-            <p style={{ color: '#333', fontSize: '16px', marginBottom: '16px', lineHeight: '1.6' }}>
-              Style previews need to be generated using Claude Code. This uses your existing Claude subscription - no API key needed!
-            </p>
-            <div style={{ textAlign: 'left', backgroundColor: '#fff', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
-              <p style={{ fontWeight: 'bold', marginBottom: '12px', color: '#333' }}>Steps:</p>
-              <ol style={{ color: '#555', lineHeight: '1.8', paddingLeft: '20px' }}>
-                <li>Go back to your <strong>Claude Code chat</strong></li>
-                <li>Say: <code style={{ backgroundColor: '#f5f5f5', padding: '2px 8px', borderRadius: '4px', color: '#d32f2f' }}>"Generate style previews for my latest resume"</code></li>
-                <li>Wait ~30 seconds for Claude Code to generate 5 style previews</li>
-                <li>Come back here and click <strong>"Check for Previews"</strong></li>
-              </ol>
-            </div>
-            <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px' }}>
-              Resume ID: <code style={{ backgroundColor: '#f5f5f5', padding: '4px 8px', borderRadius: '4px' }}>{resumeId}</code>
-            </p>
-            <button
-              onClick={handleRetry}
-              style={{
-                padding: '14px 32px',
-                backgroundColor: '#2196F3',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                boxShadow: '0 2px 8px rgba(33, 150, 243, 0.3)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#1976d2';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#2196F3';
-              }}
-            >
-              Check for Previews
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div style={styles.container}>
-        <div style={styles.errorContainer}>
-          <p style={styles.errorText}>{error}</p>
-          <button
-            onClick={handleRetry}
-            style={{
-              marginTop: '16px',
-              padding: '10px 24px',
-              backgroundColor: '#3498db',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '14px',
-            }}
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h1 style={styles.title}>Choose Your Resume Style</h1>
+        <h1 style={styles.title}>Choose Your Writing Style</h1>
         <p style={styles.subtitle}>
-          Select the writing style that best matches your target role and
-          personality. Each preview shows how your Professional Summary would be
-          written in that style.
+          Select the writing style that best matches your target role and industry.
+          This style will be applied consistently throughout your enhanced resume.
         </p>
       </div>
 
       <div style={styles.grid}>
-        {previews.map((preview) => {
-          const isSelected = selectedStyle === preview.style;
-
-          return (
-            <StyleCard
-              key={preview.style}
-              preview={preview}
-              isSelected={isSelected}
-              onSelect={() => handleStyleSelect(preview.style)}
-            />
-          );
-        })}
+        {STYLE_OPTIONS.map((style) => (
+          <StyleCard
+            key={style.id}
+            style={style}
+            isSelected={selectedStyle === style.id}
+            onSelect={() => handleSelectStyle(style.id)}
+          />
+        ))}
       </div>
 
-      {error && (
-        <div style={styles.errorContainer}>
-          <p style={styles.errorText}>{error}</p>
-        </div>
-      )}
+      {error && <div style={styles.errorText}>{error}</div>}
 
       <div style={styles.continueContainer}>
         <button
@@ -437,28 +277,13 @@ const StylePreview: React.FC<StylePreviewProps> = ({ resumeId, onStyleSelected }
           disabled={!selectedStyle || saving}
           style={{
             ...styles.continueButton,
-            ...(!selectedStyle || saving ? styles.continueButtonDisabled : {}),
+            ...((!selectedStyle || saving) ? styles.continueButtonDisabled : {}),
           }}
-          onMouseEnter={(e) => {
-            if (selectedStyle && !saving) {
-              e.currentTarget.style.backgroundColor = '#2980b9';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(52, 152, 219, 0.4)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (selectedStyle && !saving) {
-              e.currentTarget.style.backgroundColor = '#3498db';
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(52, 152, 219, 0.3)';
-            }
-          }}
+          aria-label="Continue with selected style"
+          aria-busy={saving}
         >
-          {saving ? 'Saving...' : 'Continue'}
+          {saving ? 'Saving...' : 'Continue with Selected Style'}
         </button>
-        {!selectedStyle && (
-          <p style={{ color: '#999', fontSize: '14px', marginTop: '12px' }}>
-            Please select a style to continue
-          </p>
-        )}
       </div>
     </div>
   );

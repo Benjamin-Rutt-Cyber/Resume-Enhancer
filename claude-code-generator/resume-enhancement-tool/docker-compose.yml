@@ -14,8 +14,9 @@ services:
       - DEBUG=True
     volumes:
       - ./backend:/app
-depends_on:
-      - postgresql    restart: unless-stopped
+    depends_on:
+      - postgres
+    restart: unless-stopped
   postgres:
     image: postgres:15-alpine
     container_name: resume-enhancement-tool_postgres
@@ -27,6 +28,30 @@ depends_on:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: ../Dockerfile
+    container_name: resume-enhancement-tool_worker
+    command: python worker.py
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - DEBUG=True
+      - WORKSPACE_ROOT=workspace
+      - NO_PROXY=*
+      - HTTP_PROXY=
+      - HTTPS_PROXY=
+      - http_proxy=
+      - https_proxy=
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - postgres
+      - backend
     restart: unless-stopped
 
 volumes:

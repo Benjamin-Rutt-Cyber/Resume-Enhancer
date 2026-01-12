@@ -16,7 +16,10 @@ from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
 from app.api.routes import health, resumes, jobs, enhancements, style_previews, analysis, comparison
+from logging_config import setup_logging
 
+# Initialize structured logging
+setup_logging(log_level="INFO" if not settings.DEBUG else "DEBUG")
 logger = logging.getLogger(__name__)
 
 # Initialize rate limiter
@@ -42,13 +45,18 @@ async def log_requests(request: Request, call_next):
     response = await call_next(request)
 
     # Calculate duration
-    duration = time.time() - start_time
+    duration_ms = (time.time() - start_time) * 1000
 
-    # Log request details
+    # Log request details with structured fields
     logger.info(
-        f"{request.method} {request.url.path} - "
-        f"Status: {response.status_code} - "
-        f"Duration: {duration:.3f}s"
+        f"{request.method} {request.url.path} - Status: {response.status_code}",
+        extra={
+            'method': request.method,
+            'path': request.url.path,
+            'status_code': response.status_code,
+            'duration_ms': round(duration_ms, 2),
+            'client_ip': request.client.host if request.client else None,
+        }
     )
 
     return response

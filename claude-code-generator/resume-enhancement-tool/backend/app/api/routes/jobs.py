@@ -10,18 +10,16 @@ from app.core.database import get_db
 from app.models import Job
 from app.schemas import JobCreate, JobResponse, JobListResponse
 from app.services.workspace_service import WorkspaceService
+from app.api.dependencies import get_workspace_service
 
 router = APIRouter()
-
-# Initialize services
-WORKSPACE_ROOT = Path("workspace")
-workspace_service = WorkspaceService(WORKSPACE_ROOT)
 
 
 @router.post("/jobs", response_model=JobResponse, status_code=status.HTTP_201_CREATED)
 async def create_job(
     job: JobCreate,
     db: Session = Depends(get_db),
+    workspace_service: WorkspaceService = Depends(get_workspace_service),
 ):
     """
     Create a new job description.
