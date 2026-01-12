@@ -5,21 +5,26 @@ import { JobForm } from './components/JobForm';
 import { EnhancementDashboard } from './components/EnhancementDashboard';
 import { ComparisonView } from './components/ComparisonView';
 import StylePreview from './components/StylePreview';
+import { DarkModeToggle } from './components/DarkModeToggle';
+import { DarkModeProvider, useDarkMode } from './contexts/DarkModeContext';
 import { resumeApi, jobApi } from './services/api';
 import type { Resume, Job, Enhancement } from './types';
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<MainApp />} />
-        <Route path="/comparison/:enhancementId" element={<ComparisonView />} />
-      </Routes>
-    </BrowserRouter>
+    <DarkModeProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<MainApp />} />
+          <Route path="/comparison/:enhancementId" element={<ComparisonView />} />
+        </Routes>
+      </BrowserRouter>
+    </DarkModeProvider>
   );
 }
 
 function MainApp() {
+  const { isDarkMode } = useDarkMode();
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [activeTab, setActiveTab] = useState<'upload' | 'jobs' | 'enhance'>(
@@ -107,44 +112,52 @@ function MainApp() {
     console.log('Enhancement created:', enhancement);
   };
 
+  const getStyles = () => getStylesWithTheme(isDarkMode);
+  const s = getStyles();
+
   return (
-    <div style={styles.container}>
-      <header style={styles.header}>
-        <h1 style={styles.appTitle}>Resume Enhancement Tool</h1>
-        <p style={styles.subtitle}>
-          Upload your resume, add job descriptions, and create tailored versions
-        </p>
+    <div style={s.container}>
+      <header style={s.header}>
+        <div style={s.headerContent}>
+          <div>
+            <h1 style={s.appTitle}>Resume Enhancement Tool</h1>
+            <p style={s.subtitle}>
+              Upload your resume, add job descriptions, and create tailored versions
+            </p>
+          </div>
+          <DarkModeToggle />
+        </div>
       </header>
 
       {/* Tab Navigation */}
-      <div style={styles.tabs}>
+      <div style={s.tabs}>
         <button
           onClick={() => setActiveTab('upload')}
           style={{
-            ...styles.tab,
-            ...(activeTab === 'upload' ? styles.tabActive : {}),
+            ...s.tab,
+            ...(activeTab === 'upload' ? s.tabActive : {}),
           }}
         >
           1. Upload Resume
           {resumes.length > 0 && (
-            <span style={styles.badge}>{resumes.length}</span>
+            <span style={s.badge}>{resumes.length}</span>
           )}
         </button>
         <button
           onClick={() => setActiveTab('jobs')}
           style={{
-            ...styles.tab,
-            ...(activeTab === 'jobs' ? styles.tabActive : {}),
+            ...s.tab,
+            ...(activeTab === 'jobs' ? s.tabActive : {}),
           }}
         >
           2. Add Jobs
-          {jobs.length > 0 && <span style={styles.badge}>{jobs.length}</span>}
+          {jobs.length > 0 && <span style={s.badge}>{jobs.length}</span>}
         </button>
         <button
           onClick={() => setActiveTab('enhance')}
           style={{
-            ...styles.tab,
-            ...(activeTab === 'enhance' ? styles.tabActive : {}),
+            ...s.tab,
+            ...(activeTab === 'enhance' ? s.tabActive : {}),
           }}
         >
           3. Create Enhancement
@@ -152,14 +165,14 @@ function MainApp() {
       </div>
 
       {/* Tab Content */}
-      <main style={styles.main}>
+      <main style={s.main}>
         {/* Style Selection Overlay */}
         {showStyleSelection && currentResumeForStyle && (
-          <div style={styles.modalOverlay} onClick={handleCloseStyleSelection}>
-            <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+          <div style={s.modalOverlay} onClick={handleCloseStyleSelection}>
+            <div style={s.modalContent} onClick={(e) => e.stopPropagation()}>
               <button
                 onClick={handleCloseStyleSelection}
-                style={styles.closeButton}
+                style={s.closeButton}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = '#e0e0e0';
                   e.currentTarget.style.color = '#333';
@@ -182,15 +195,15 @@ function MainApp() {
         )}
 
         {activeTab === 'upload' && (
-          <div style={styles.section}>
+          <div style={s.section}>
             <ResumeUpload onUploadSuccess={handleResumeUploaded} />
             {resumes.length > 0 && (
-              <div style={styles.listSection}>
+              <div style={s.listSection}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                  <h3 style={styles.listTitle}>Uploaded Resumes</h3>
+                  <h3 style={s.listTitle}>Uploaded Resumes</h3>
                   <button
                     onClick={handleDeleteAllResumes}
-                    style={styles.deleteAllButton}
+                    style={s.deleteAllButton}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = '#c62828';
                     }}
@@ -201,16 +214,16 @@ function MainApp() {
                     Delete All Resumes
                   </button>
                 </div>
-                <div style={styles.list}>
+                <div style={s.list}>
                   {resumes.map((resume) => (
-                    <div key={resume.id} style={styles.listItem}>
+                    <div key={resume.id} style={s.listItem}>
                       <div style={{ flex: 1 }}>
                         <strong>{resume.filename}</strong>
-                        <div style={styles.listItemMeta}>
+                        <div style={s.listItemMeta}>
                           {resume.word_count} words • Uploaded{' '}
                           {new Date(resume.upload_date).toLocaleDateString()}
                           {resume.selected_style && (
-                            <span style={styles.styleTag}>
+                            <span style={s.styleTag}>
                               Style: {resume.selected_style}
                             </span>
                           )}
@@ -219,7 +232,7 @@ function MainApp() {
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <button
                           onClick={() => handleSelectStyleForResume(resume)}
-                          style={styles.selectStyleButton}
+                          style={s.selectStyleButton}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.backgroundColor = '#1976d2';
                           }}
@@ -231,7 +244,7 @@ function MainApp() {
                         </button>
                         <button
                           onClick={() => handleDeleteResume(resume.id)}
-                          style={styles.deleteButton}
+                          style={s.deleteButton}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.backgroundColor = '#c62828';
                           }}
@@ -252,18 +265,18 @@ function MainApp() {
         )}
 
         {activeTab === 'jobs' && (
-          <div style={styles.section}>
+          <div style={s.section}>
             <JobForm onJobCreated={handleJobCreated} />
             {jobs.length > 0 && (
-              <div style={styles.listSection}>
-                <h3 style={styles.listTitle}>Added Jobs</h3>
-                <div style={styles.list}>
+              <div style={s.listSection}>
+                <h3 style={s.listTitle}>Added Jobs</h3>
+                <div style={s.list}>
                   {jobs.map((job) => (
-                    <div key={job.id} style={styles.listItem}>
+                    <div key={job.id} style={s.listItem}>
                       <div>
                         <strong>{job.title}</strong>
                         {job.company && <> at {job.company}</>}
-                        <div style={styles.listItemMeta}>
+                        <div style={s.listItemMeta}>
                           Added {new Date(job.created_at).toLocaleDateString()}
                         </div>
                       </div>
@@ -276,14 +289,14 @@ function MainApp() {
         )}
 
         {activeTab === 'enhance' && (
-          <div style={styles.section}>
+          <div style={s.section}>
             {resumes.length === 0 ? (
-              <div style={styles.emptyState}>
+              <div style={s.emptyState}>
                 <h3>No Resumes Yet</h3>
                 <p>Please upload a resume first before creating enhancements.</p>
                 <button
                   onClick={() => setActiveTab('upload')}
-                  style={styles.button}
+                  style={s.button}
                 >
                   Go to Upload Resume
                 </button>
@@ -299,10 +312,10 @@ function MainApp() {
         )}
       </main>
 
-      <footer style={styles.footer}>
-        <p style={styles.footerText}>
+      <footer style={s.footer}>
+        <p style={s.footerText}>
           Resume Enhancement Tool • API running at{' '}
-          <a href="http://localhost:8000/docs" target="_blank" rel="noopener noreferrer" style={styles.link}>
+          <a href="http://localhost:8000/docs" target="_blank" rel="noopener noreferrer" style={s.link}>
             http://localhost:8000/docs
           </a>
         </p>
@@ -311,18 +324,26 @@ function MainApp() {
   );
 }
 
-const styles: Record<string, React.CSSProperties> = {
+const getStylesWithTheme = (isDarkMode: boolean): Record<string, React.CSSProperties> => ({
   container: {
     minHeight: '100vh',
     display: 'flex',
     flexDirection: 'column',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: isDarkMode ? '#111827' : '#f5f5f5',
+    transition: 'background-color 0.3s ease',
   },
   header: {
-    backgroundColor: '#2196F3',
+    backgroundColor: isDarkMode ? '#1f2937' : '#2196F3',
     color: '#fff',
     padding: '2rem',
-    textAlign: 'center',
+    transition: 'background-color 0.3s ease',
+  },
+  headerContent: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    maxWidth: '1200px',
+    margin: '0 auto',
   },
   appTitle: {
     margin: 0,
@@ -336,10 +357,11 @@ const styles: Record<string, React.CSSProperties> = {
   },
   tabs: {
     display: 'flex',
-    backgroundColor: '#fff',
-    borderBottom: '1px solid #e0e0e0',
+    backgroundColor: isDarkMode ? '#1f2937' : '#fff',
+    borderBottom: isDarkMode ? '1px solid #374151' : '1px solid #e0e0e0',
     padding: '0 2rem',
     gap: '1rem',
+    transition: 'all 0.3s ease',
   },
   tab: {
     padding: '1rem 1.5rem',
@@ -350,17 +372,17 @@ const styles: Record<string, React.CSSProperties> = {
     borderBottom: '3px solid transparent',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
-    color: '#666',
+    color: isDarkMode ? '#9ca3af' : '#666',
     display: 'flex',
     alignItems: 'center',
     gap: '0.5rem',
   },
   tabActive: {
-    borderBottomColor: '#2196F3',
-    color: '#2196F3',
+    borderBottomColor: isDarkMode ? '#60a5fa' : '#2196F3',
+    color: isDarkMode ? '#60a5fa' : '#2196F3',
   },
   badge: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: isDarkMode ? '#059669' : '#4CAF50',
     color: '#fff',
     borderRadius: '12px',
     padding: '0.125rem 0.5rem',
@@ -375,21 +397,24 @@ const styles: Record<string, React.CSSProperties> = {
     margin: '0 auto',
   },
   section: {
-    backgroundColor: '#fff',
+    backgroundColor: isDarkMode ? '#1f2937' : '#fff',
     borderRadius: '8px',
     padding: '2rem',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    boxShadow: isDarkMode
+      ? '0 2px 4px rgba(0,0,0,0.3)'
+      : '0 2px 4px rgba(0,0,0,0.1)',
+    transition: 'all 0.3s ease',
   },
   listSection: {
     marginTop: '2rem',
     paddingTop: '2rem',
-    borderTop: '1px solid #e0e0e0',
+    borderTop: isDarkMode ? '1px solid #374151' : '1px solid #e0e0e0',
   },
   listTitle: {
     fontSize: '1.25rem',
     fontWeight: 'bold',
     marginBottom: '1rem',
-    color: '#333',
+    color: isDarkMode ? '#f3f4f6' : '#333',
   },
   list: {
     display: 'flex',
@@ -398,23 +423,25 @@ const styles: Record<string, React.CSSProperties> = {
   },
   listItem: {
     padding: '1rem',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: isDarkMode ? '#374151' : '#f9f9f9',
     borderRadius: '4px',
-    border: '1px solid #e0e0e0',
+    border: isDarkMode ? '1px solid #4b5563' : '1px solid #e0e0e0',
     display: 'flex',
     alignItems: 'center',
     gap: '1rem',
+    transition: 'all 0.3s ease',
+    color: isDarkMode ? '#f3f4f6' : '#000',
   },
   listItemMeta: {
     fontSize: '0.875rem',
-    color: '#888',
+    color: isDarkMode ? '#9ca3af' : '#888',
     marginTop: '0.25rem',
   },
   styleTag: {
     marginLeft: '0.5rem',
     padding: '0.125rem 0.5rem',
-    backgroundColor: '#e3f2fd',
-    color: '#1976d2',
+    backgroundColor: isDarkMode ? '#1e3a8a' : '#e3f2fd',
+    color: isDarkMode ? '#93c5fd' : '#1976d2',
     borderRadius: '12px',
     fontSize: '0.75rem',
     fontWeight: 'bold',
@@ -424,7 +451,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '0.875rem',
     fontWeight: '500',
     color: '#fff',
-    backgroundColor: '#2196F3',
+    backgroundColor: isDarkMode ? '#3b82f6' : '#2196F3',
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
@@ -436,7 +463,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '1rem',
     fontWeight: 'bold',
     color: '#fff',
-    backgroundColor: '#d32f2f',
+    backgroundColor: isDarkMode ? '#dc2626' : '#d32f2f',
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
@@ -448,7 +475,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '0.875rem',
     fontWeight: '500',
     color: '#fff',
-    backgroundColor: '#d32f2f',
+    backgroundColor: isDarkMode ? '#dc2626' : '#d32f2f',
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
@@ -461,7 +488,7 @@ const styles: Record<string, React.CSSProperties> = {
     right: '20px',
     width: '40px',
     height: '40px',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: isDarkMode ? '#374151' : '#f5f5f5',
     border: 'none',
     borderRadius: '50%',
     fontSize: '24px',
@@ -469,14 +496,14 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: '#666',
+    color: isDarkMode ? '#9ca3af' : '#666',
     transition: 'all 0.2s',
     zIndex: 10,
   },
   emptyState: {
     textAlign: 'center',
     padding: '3rem',
-    color: '#666',
+    color: isDarkMode ? '#9ca3af' : '#666',
   },
   button: {
     marginTop: '1rem',
@@ -484,24 +511,25 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '1rem',
     fontWeight: '500',
     color: '#fff',
-    backgroundColor: '#2196F3',
+    backgroundColor: isDarkMode ? '#3b82f6' : '#2196F3',
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
   },
   footer: {
-    backgroundColor: '#fff',
-    borderTop: '1px solid #e0e0e0',
+    backgroundColor: isDarkMode ? '#1f2937' : '#fff',
+    borderTop: isDarkMode ? '1px solid #374151' : '1px solid #e0e0e0',
     padding: '1rem 2rem',
     textAlign: 'center',
+    transition: 'all 0.3s ease',
   },
   footerText: {
     margin: 0,
-    color: '#888',
+    color: isDarkMode ? '#9ca3af' : '#888',
     fontSize: '0.9rem',
   },
   link: {
-    color: '#2196F3',
+    color: isDarkMode ? '#60a5fa' : '#2196F3',
     textDecoration: 'none',
   },
   modalOverlay: {
@@ -510,7 +538,7 @@ const styles: Record<string, React.CSSProperties> = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.7)',
     zIndex: 1000,
     overflowY: 'auto',
     display: 'flex',
@@ -519,14 +547,17 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '20px',
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: isDarkMode ? '#1f2937' : '#fff',
     borderRadius: '12px',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+    boxShadow: isDarkMode
+      ? '0 8px 32px rgba(0, 0, 0, 0.5)'
+      : '0 8px 32px rgba(0, 0, 0, 0.3)',
     maxWidth: '1400px',
     width: '100%',
     margin: '40px auto',
     position: 'relative',
+    transition: 'all 0.3s ease',
   },
-};
+});
 
 export default App;
