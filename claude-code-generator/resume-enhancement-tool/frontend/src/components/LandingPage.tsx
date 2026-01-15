@@ -1,9 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   ArrowRight,
-  CheckCircle,
   FileText,
   Zap,
   Layout,
@@ -30,9 +29,6 @@ const staggerContainer = {
 };
 
 export const LandingPage: React.FC = () => {
-  const { scrollYProgress } = useScroll();
-  const y = useTransform(scrollYProgress, [0, 1], [0, -50]);
-
   return (
     <div className="landing-container">
       {/* Navigation */}
