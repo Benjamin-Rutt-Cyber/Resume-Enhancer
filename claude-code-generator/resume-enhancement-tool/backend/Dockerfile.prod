@@ -51,7 +51,8 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 # Production command (no --reload, 2 workers)
 # Copy startup script
 COPY start.sh .
-RUN chmod +x start.sh
+# Fix line endings (CRLF to LF) for Windows uploads
+RUN sed -i 's/\r$//' start.sh && chmod +x start.sh
 
 # Production command (runs worker + api)
 CMD ["./start.sh"]
