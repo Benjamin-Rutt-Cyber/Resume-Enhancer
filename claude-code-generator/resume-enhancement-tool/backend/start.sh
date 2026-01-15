@@ -6,6 +6,10 @@ echo "Starting Resume Enhancement Tool Services..."
 # Ensure workspace exists
 mkdir -p workspace
 
+# Run database migrations
+echo "Running database migrations..."
+alembic upgrade head
+
 # Start Background Worker in background
 # Redirect output to file for debugging
 echo "Starting Background Worker..."
