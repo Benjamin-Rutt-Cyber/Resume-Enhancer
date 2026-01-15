@@ -258,7 +258,30 @@ docker-compose up -d
 docker-compose logs -f
 
 # Stop services
+# Stop services
 docker-compose down
+
+### Option 3: Render (PaaS)
+
+#### Configuration
+
+**Backend Service:**
+- **Runtime:** Python 3
+- **Build Command:** `pip install -r requirements.txt`
+- **Start Command:** `mkdir -p workspace && python worker.py > workspace/worker.log 2>&1 & uvicorn main:app --host 0.0.0.0 --port $PORT`
+- **Root Directory:** `backend` (if using monorepo)
+
+**Important Notes:**
+1. The **Start Command** is critical! It runs the background worker (`worker.py`) *alongside* the web API (`uvicorn`). Without this, enhancements will stay "Pending" forever.
+2. Ensure `ANTHROPIC_API_KEY` is set in the Environment Variables under the **Environment** tab.
+3. If using Docker runtime on Render, standard `Dockerfile` instructions apply, but ensuring `start.sh` is used is recommended.
+
+#### Environment Variables
+Add these in the Render Dashboard:
+- `ANTHROPIC_API_KEY`: starting with `sk-ant...`
+- `SECRET_KEY`: (generated random string)
+- `ALLOWED_ORIGINS`: `https://your-frontend-url.onrender.com`
+- `DEBUG`: `False`
 ```
 
 #### 3. Production Docker Compose
