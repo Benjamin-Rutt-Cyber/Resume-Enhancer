@@ -424,6 +424,20 @@ Output the enhanced resume now:
             except Exception as e:
                 logger.error(f"Error in worker loop: {e}", exc_info=True)
 
+            # Write heartbeat
+            try:
+                with open(self.workspace_root / "worker_heartbeat.json", "w") as f:
+                    import json
+                    status = {
+                        "last_beat": datetime.now().isoformat(),
+                        "status": "running",
+                        "api_key_configured": bool(self.client.api_key),
+                        "pending_enhancements": 0 # Will be updated in loop
+                    }
+                    json.dump(status, f)
+            except Exception as hb_err:
+                logger.error(f"Failed to write heartbeat: {hb_err}")
+
             # Wait before next poll
             time.sleep(poll_interval)
 
@@ -442,9 +456,20 @@ def main():
         logger.error(f"Database connection failed: {e}")
         sys.exit(1)
 
+
     # Create and run worker
-    worker = EnhancementWorker()
-    worker.run(poll_interval=10)
+    try:
+        worker = EnhancementWorker()
+        worker.run(poll_interval=10)
+    except Exception as e:
+        logger.critical(f"Worker failed to start: {e}", exc_info=True)
+        # Write error to workspace for debugging
+        try:
+            with open("workspace/worker_crash.log", "w") as f:
+                f.write(f"Worker crashed at {datetime.now()}:\n{str(e)}")
+        except:
+            pass
+        sys.exit(1)
 
 
 if __name__ == "__main__":

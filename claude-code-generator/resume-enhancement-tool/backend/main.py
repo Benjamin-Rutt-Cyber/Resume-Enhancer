@@ -81,6 +81,37 @@ app.include_router(analysis.router, prefix="/api", tags=["analysis"])
 app.include_router(comparison.router, prefix="/api", tags=["comparison"])
 
 
+# Debug router
+from fastapi import APIRouter
+from pathlib import Path
+debug_router = APIRouter()
+
+@debug_router.get("/debug/worker-status")
+async def get_worker_status():
+    workspace = Path(settings.WORKSPACE_ROOT)
+    status = {"status": "unknown"}
+    
+    # Check heartbeat
+    hb_file = workspace / "worker_heartbeat.json"
+    if hb_file.exists():
+        try:
+            import json
+            status["heartbeat"] = json.loads(hb_file.read_text())
+        except:
+            status["heartbeat"] = "corrupt"
+    else:
+        status["heartbeat"] = "missing"
+        
+    # Check crash log
+    crash_file = workspace / "worker_crash.log"
+    if crash_file.exists():
+        status["crash_log"] = crash_file.read_text()
+        
+    return status
+
+app.include_router(debug_router, prefix="/api", tags=["debug"])
+
+
 @app.on_event("startup")
 async def validate_config_on_startup():
     """
