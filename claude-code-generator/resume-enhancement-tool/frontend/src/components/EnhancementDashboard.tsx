@@ -30,7 +30,7 @@ export const EnhancementDashboard: React.FC<EnhancementDashboardProps> = ({
   const hasPendingEnhancements = useMemo(() => {
     return enhancements.some(
       (e) => e.status === 'pending' ||
-            (e.cover_letter_status && (e.cover_letter_status === 'pending' || e.cover_letter_status === 'in_progress'))
+        (e.cover_letter_status && (e.cover_letter_status === 'pending' || e.cover_letter_status === 'in_progress'))
     );
   }, [enhancements]);
 
@@ -102,7 +102,7 @@ export const EnhancementDashboard: React.FC<EnhancementDashboardProps> = ({
     } catch (err: any) {
       setError(
         err.response?.data?.detail ||
-          'Failed to create enhancement. Please try again.'
+        'Failed to create enhancement. Please try again.'
       );
     } finally {
       setLoading(false);
@@ -144,20 +144,20 @@ export const EnhancementDashboard: React.FC<EnhancementDashboardProps> = ({
   }, [loadEnhancements]);
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>Create Enhancement</h2>
+    <div className="dashboard-container">
+      <h2 className="dashboard-title">Create Enhancement</h2>
 
       {/* Create Enhancement Form */}
-      <div style={styles.form}>
-        <div style={styles.formGroup}>
-          <label htmlFor="resume" style={styles.label}>
-            Select Resume <span style={styles.required}>*</span>
+      <div className="dashboard-form">
+        <div className="form-group">
+          <label htmlFor="resume" className="form-label">
+            Select Resume <span className="form-required">*</span>
           </label>
           <select
             id="resume"
             value={selectedResume}
             onChange={(e) => setSelectedResume(e.target.value)}
-            style={styles.select}
+            className="dashboard-select"
             disabled={loading || resumes.length === 0}
             aria-required="true"
             aria-label="Select resume"
@@ -175,9 +175,9 @@ export const EnhancementDashboard: React.FC<EnhancementDashboardProps> = ({
           </select>
         </div>
 
-        <div style={styles.formGroup}>
-          <label htmlFor="type" style={styles.label}>
-            Enhancement Type <span style={styles.required}>*</span>
+        <div className="form-group">
+          <label htmlFor="type" className="form-label">
+            Enhancement Type <span className="form-required">*</span>
           </label>
           <select
             id="type"
@@ -187,7 +187,7 @@ export const EnhancementDashboard: React.FC<EnhancementDashboardProps> = ({
                 e.target.value as 'job_tailoring' | 'industry_revamp'
               )
             }
-            style={styles.select}
+            className="dashboard-select"
             disabled={loading}
             aria-required="true"
             aria-label="Select enhancement type"
@@ -198,15 +198,15 @@ export const EnhancementDashboard: React.FC<EnhancementDashboardProps> = ({
         </div>
 
         {enhancementType === 'job_tailoring' ? (
-          <div style={styles.formGroup}>
-            <label htmlFor="job" style={styles.label}>
-              Select Job <span style={styles.required}>*</span>
+          <div className="form-group">
+            <label htmlFor="job" className="form-label">
+              Select Job <span className="form-required">*</span>
             </label>
             <select
               id="job"
               value={selectedJob}
               onChange={(e) => setSelectedJob(e.target.value)}
-              style={styles.select}
+              className="dashboard-select"
               disabled={loading || jobs.length === 0}
             >
               <option value="">
@@ -223,15 +223,15 @@ export const EnhancementDashboard: React.FC<EnhancementDashboardProps> = ({
             </select>
           </div>
         ) : (
-          <div style={styles.formGroup}>
-            <label htmlFor="industry" style={styles.label}>
-              Target Industry <span style={styles.required}>*</span>
+          <div className="form-group">
+            <label htmlFor="industry" className="form-label">
+              Target Industry <span className="form-required">*</span>
             </label>
             <select
               id="industry"
               value={selectedIndustry}
               onChange={(e) => setSelectedIndustry(e.target.value)}
-              style={styles.select}
+              className="dashboard-select"
               disabled={loading}
             >
               <option value="IT">IT / Software Development</option>
@@ -242,32 +242,30 @@ export const EnhancementDashboard: React.FC<EnhancementDashboardProps> = ({
         )}
 
         {enhancementType === 'job_tailoring' && (
-          <div style={styles.formGroup}>
-            <label style={styles.checkboxLabel}>
+          <div className="form-group">
+            <label className="checkbox-label">
               <input
                 type="checkbox"
                 checked={runAnalysis}
                 onChange={(e) => setRunAnalysis(e.target.checked)}
                 disabled={loading}
-                style={styles.checkbox}
+                className="dashboard-checkbox"
               />
               <span>Run ATS keyword analysis and job match scoring</span>
             </label>
-            <p style={styles.helpText}>
+            <p className="help-text">
               Enable this to analyze your resume against the job description and get keyword matching insights and a job match score.
             </p>
           </div>
         )}
 
-        {error && <div style={styles.error}>{error}</div>}
+        {error && <div className="error-note">❌ {error}</div>}
 
         <button
           onClick={handleCreateEnhancement}
           disabled={loading || !selectedResume}
-          style={{
-            ...styles.button,
-            ...(loading || !selectedResume ? styles.buttonDisabled : {}),
-          }}
+          className="btn btn-primary"
+          style={{ width: 'fit-content' }}
           aria-busy={loading}
           aria-label="Create enhancement request"
         >
@@ -276,20 +274,20 @@ export const EnhancementDashboard: React.FC<EnhancementDashboardProps> = ({
       </div>
 
       {/* Enhancements List */}
-      <div style={styles.listContainer}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+      <div className="enhancement-list">
+        <div className="list-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <h3 style={styles.subtitle}>Enhancement Requests</h3>
+            <h3 className="dashboard-subtitle" style={{ margin: 0 }}>Enhancement Requests</h3>
             <button
               onClick={loadEnhancements}
-              style={styles.refreshButton}
+              className="refresh-btn"
               disabled={deletingId !== null}
               aria-label="Refresh enhancements list"
             >
               🔄 Refresh
             </button>
             {lastPolled && (
-              <span style={styles.lastPolled}>
+              <span className="lastPolled">
                 Last updated: {lastPolled.toLocaleTimeString()}
               </span>
             )}
@@ -297,18 +295,8 @@ export const EnhancementDashboard: React.FC<EnhancementDashboardProps> = ({
           {enhancements.length > 0 && (
             <button
               onClick={handleDeleteAllEnhancements}
-              style={styles.deleteAllButton}
+              className="btn bg-danger"
               disabled={deletingId !== null}
-              onMouseEnter={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = '#c62828';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = '#d32f2f';
-                }
-              }}
               aria-busy={deletingId === 'all'}
             >
               {deletingId === 'all' ? 'Deleting...' : 'Delete All Enhancements'}
@@ -316,11 +304,11 @@ export const EnhancementDashboard: React.FC<EnhancementDashboardProps> = ({
           )}
         </div>
         {enhancements.length === 0 ? (
-          <p style={styles.emptyState}>
+          <p className="empty-state-card">
             No enhancement requests yet. Create one above to get started!
           </p>
         ) : (
-          <div style={styles.list}>
+          <div className="list">
             {enhancements.map((enhancement) => (
               <EnhancementCard
                 key={enhancement.id}
@@ -357,14 +345,12 @@ const EnhancementCard: React.FC<EnhancementCardProps> = ({
   const job =
     enhancement.job_id && jobs.find((j) => j.id === enhancement.job_id);
 
-  const getStatusColor = (status: string) => {
+  const getStatusClass = (status: string) => {
     switch (status) {
-      case 'completed':
-        return '#4CAF50';
-      case 'failed':
-        return '#f44336';
-      default:
-        return '#ff9800';
+      case 'completed': return 'status-completed';
+      case 'failed': return 'status-failed';
+      case 'in_progress': return 'status-in-progress';
+      default: return 'status-pending';
     }
   };
 
@@ -429,67 +415,42 @@ const EnhancementCard: React.FC<EnhancementCardProps> = ({
     }
   };
 
-  const getCoverLetterStatusColor = (status: string) => {
+  const getCoverLetterStatusClass = (status: string) => {
     switch (status) {
-      case 'completed':
-        return '#4CAF50'; // Green
-      case 'failed':
-        return '#f44336'; // Red
-      case 'in_progress':
-        return '#2196F3'; // Blue
-      case 'skipped':
-        return '#9E9E9E'; // Gray
-      default:
-        return '#ff9800'; // Orange (pending)
+      case 'completed': return 'status-completed';
+      case 'failed': return 'status-failed';
+      case 'in_progress': return 'status-in-progress';
+      case 'skipped': return 'status-skipped';
+      default: return 'status-pending';
     }
   };
 
   const getCoverLetterStatusLabel = (status: string) => {
     switch (status) {
-      case 'in_progress':
-        return 'Generating...';
-      case 'completed':
-        return 'Ready';
-      case 'failed':
-        return 'Failed';
-      case 'skipped':
-        return 'Not Available';
-      default:
-        return 'Pending';
+      case 'in_progress': return 'Generating...';
+      case 'completed': return 'Ready';
+      case 'failed': return 'Failed';
+      case 'skipped': return 'Not Available';
+      default: return 'Pending';
     }
   };
 
   return (
-    <div style={styles.card}>
-      <div style={styles.cardHeader}>
-        <h4 style={styles.cardTitle}>
+    <div className="enhancement-card">
+      <div className="card-header">
+        <h4 className="card-title">
           {enhancement.enhancement_type === 'job_tailoring'
             ? 'Job Tailoring'
             : 'Industry Revamp'}
         </h4>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span
-            style={{
-              ...styles.status,
-              backgroundColor: getStatusColor(enhancement.status),
-            }}
-          >
+          <span className={`status-badge ${getStatusClass(enhancement.status)}`}>
             {enhancement.status}
           </span>
           <button
             onClick={onDelete}
-            style={styles.cardDeleteButton}
+            className="btn btn-icon"
             disabled={isDeleting}
-            onMouseEnter={(e) => {
-              if (!e.currentTarget.disabled) {
-                e.currentTarget.style.backgroundColor = '#c62828';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!e.currentTarget.disabled) {
-                e.currentTarget.style.backgroundColor = '#d32f2f';
-              }
-            }}
             title="Delete this enhancement"
             aria-label="Delete enhancement"
             aria-busy={isDeleting}
@@ -498,31 +459,31 @@ const EnhancementCard: React.FC<EnhancementCardProps> = ({
           </button>
         </div>
       </div>
-      <div style={styles.cardBody}>
-        <p style={styles.cardText}>
+      <div className="card-content">
+        <p className="card-text">
           <strong>Resume:</strong> {resume?.filename || 'Unknown'}
         </p>
         {job && (
-          <p style={styles.cardText}>
+          <p className="card-text">
             <strong>Job:</strong> {job.title}
             {job.company && ` at ${job.company}`}
           </p>
         )}
         {enhancement.industry && (
-          <p style={styles.cardText}>
+          <p className="card-text">
             <strong>Industry:</strong> {enhancement.industry}
           </p>
         )}
-        <p style={styles.cardText}>
+        <p className="card-text">
           <strong>Created:</strong>{' '}
           {new Date(enhancement.created_at).toLocaleString()}
         </p>
         {enhancement.job_match_score !== null && (
-          <div style={styles.matchScoreContainer}>
+          <div className="match-score-container" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <strong>Job Match Score: </strong>
             <span
+              className="status-badge"
               style={{
-                ...styles.matchScoreBadge,
                 backgroundColor: getScoreColor(enhancement.job_match_score),
               }}
             >
@@ -534,36 +495,31 @@ const EnhancementCard: React.FC<EnhancementCardProps> = ({
 
       {/* Cover Letter Section - Only for job_tailoring */}
       {enhancement.enhancement_type === 'job_tailoring' && (
-        <div style={styles.coverLetterSection}>
-          <div style={styles.coverLetterHeader}>
+        <div className="cover-letter-section">
+          <div className="cover-letter-header">
             <strong>Cover Letter:</strong>
-            <span
-              style={{
-                ...styles.status,
-                backgroundColor: getCoverLetterStatusColor(enhancement.cover_letter_status),
-              }}
-            >
+            <span className={`status-badge ${getCoverLetterStatusClass(enhancement.cover_letter_status)}`}>
               {getCoverLetterStatusLabel(enhancement.cover_letter_status)}
             </span>
           </div>
 
           {enhancement.cover_letter_status === 'completed' && (
-            <div style={styles.coverLetterActions}>
+            <div className="card-actions">
               <button
                 onClick={() => handleDownloadCoverLetter('md')}
-                style={{ ...styles.actionButton, ...styles.actionButtonSecondary }}
+                className="btn btn-secondary"
               >
                 Download Markdown
               </button>
               <button
                 onClick={() => handleDownloadCoverLetter('pdf')}
-                style={styles.actionButton}
+                className="btn btn-primary"
               >
                 Download PDF
               </button>
               <button
                 onClick={() => handleDownloadCoverLetter('docx')}
-                style={{ ...styles.actionButton, ...styles.actionButtonPrimary }}
+                className="btn btn-primary"
               >
                 Download DOCX
               </button>
@@ -571,25 +527,25 @@ const EnhancementCard: React.FC<EnhancementCardProps> = ({
           )}
 
           {enhancement.cover_letter_status === 'in_progress' && (
-            <p style={styles.pendingNote}>⏳ Generating cover letter...</p>
+            <p className="pending-note">⏳ Generating cover letter...</p>
           )}
 
           {enhancement.cover_letter_status === 'pending' &&
             enhancement.status === 'completed' && (
-              <p style={styles.pendingNote}>
+              <p className="pending-note">
                 ⏳ Will generate after resume completes...
               </p>
             )}
 
           {enhancement.cover_letter_status === 'failed' &&
             enhancement.cover_letter_error && (
-              <p style={styles.errorNote}>
+              <p className="error-note">
                 ❌ {enhancement.cover_letter_error}
               </p>
             )}
 
           {enhancement.cover_letter_status === 'skipped' && (
-            <p style={styles.helpText}>
+            <p className="help-text">
               Cover letters are only generated for job-specific tailoring, not
               industry revamps.
             </p>
@@ -598,291 +554,41 @@ const EnhancementCard: React.FC<EnhancementCardProps> = ({
       )}
 
       {enhancement.status === 'completed' && (
-        <div style={styles.cardActions}>
+        <div className="card-actions">
           <button
             onClick={() => handleDownload('md')}
-            style={{ ...styles.actionButton, ...styles.actionButtonSecondary }}
+            className="btn btn-secondary"
           >
             Download Markdown
           </button>
           <button
             onClick={() => handleDownload('pdf')}
-            style={styles.actionButton}
+            className="btn btn-primary"
           >
             Download PDF
           </button>
           <button
             onClick={handleDownloadDocx}
-            style={{ ...styles.actionButton, ...styles.actionButtonPrimary }}
+            className="btn btn-primary"
           >
             Download DOCX
           </button>
           <button
             onClick={handleViewComparison}
-            style={{ ...styles.actionButton, ...styles.actionButtonInfo }}
+            className="btn btn-info"
           >
             View Comparison
           </button>
         </div>
       )}
       {enhancement.status === 'pending' && (
-        <p style={styles.pendingNote}>
+        <p className="pending-note">
           ⏳ Waiting for Claude Code to process...
         </p>
       )}
       {enhancement.status === 'failed' && enhancement.error_message && (
-        <p style={styles.errorNote}>❌ {enhancement.error_message}</p>
+        <p className="error-note">❌ {enhancement.error_message}</p>
       )}
     </div>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    marginBottom: '2rem',
-  },
-  title: {
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
-    marginBottom: '1rem',
-    color: '#333',
-  },
-  subtitle: {
-    fontSize: '1.25rem',
-    fontWeight: 'bold',
-    marginBottom: '1rem',
-    color: '#555',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1rem',
-    padding: '1.5rem',
-    backgroundColor: '#f9f9f9',
-    borderRadius: '8px',
-    marginBottom: '2rem',
-  },
-  formGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.5rem',
-  },
-  label: {
-    fontSize: '1rem',
-    fontWeight: '500',
-    color: '#555',
-  },
-  required: {
-    color: '#d32f2f',
-  },
-  select: {
-    padding: '0.75rem',
-    fontSize: '1rem',
-    border: '1px solid #ccc',
-    borderRadius: '4px',
-    backgroundColor: '#fff',
-  },
-  button: {
-    padding: '0.75rem 1.5rem',
-    fontSize: '1rem',
-    fontWeight: '500',
-    color: '#fff',
-    backgroundColor: '#2196F3',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    transition: 'background-color 0.3s ease',
-  },
-  buttonDisabled: {
-    backgroundColor: '#ccc',
-    cursor: 'not-allowed',
-  },
-  error: {
-    padding: '0.75rem',
-    backgroundColor: '#ffebee',
-    color: '#c62828',
-    borderRadius: '4px',
-    border: '1px solid #ef5350',
-  },
-  listContainer: {
-    marginTop: '2rem',
-  },
-  list: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1rem',
-  },
-  emptyState: {
-    padding: '2rem',
-    textAlign: 'center',
-    color: '#888',
-    backgroundColor: '#f5f5f5',
-    borderRadius: '8px',
-  },
-  card: {
-    border: '1px solid #e0e0e0',
-    borderRadius: '8px',
-    padding: '1.5rem',
-    backgroundColor: '#fff',
-  },
-  cardHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '1rem',
-  },
-  cardTitle: {
-    fontSize: '1.1rem',
-    fontWeight: 'bold',
-    margin: 0,
-    color: '#333',
-  },
-  status: {
-    padding: '0.25rem 0.75rem',
-    borderRadius: '12px',
-    color: '#fff',
-    fontSize: '0.875rem',
-    fontWeight: '500',
-    textTransform: 'capitalize',
-  },
-  cardBody: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.5rem',
-  },
-  cardText: {
-    margin: 0,
-    color: '#666',
-    fontSize: '0.95rem',
-  },
-  cardActions: {
-    marginTop: '1rem',
-    display: 'flex',
-    gap: '0.5rem',
-  },
-  actionButton: {
-    padding: '0.5rem 1rem',
-    fontSize: '0.9rem',
-    fontWeight: '500',
-    color: '#fff',
-    backgroundColor: '#4CAF50',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-  },
-  actionButtonSecondary: {
-    backgroundColor: '#757575',
-  },
-  actionButtonPrimary: {
-    backgroundColor: '#2196F3',
-  },
-  actionButtonInfo: {
-    backgroundColor: '#00ACC1',
-  },
-  checkboxLabel: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: '0.5rem',
-    fontSize: '1rem',
-    color: '#555',
-    cursor: 'pointer',
-  },
-  checkbox: {
-    marginTop: '0.25rem',
-    cursor: 'pointer',
-    width: '18px',
-    height: '18px',
-  },
-  helpText: {
-    margin: '0.25rem 0 0 1.75rem',
-    fontSize: '0.875rem',
-    color: '#888',
-    fontStyle: 'italic',
-    lineHeight: '1.4',
-  },
-  matchScoreContainer: {
-    marginTop: '0.5rem',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-  },
-  matchScoreBadge: {
-    padding: '0.25rem 0.75rem',
-    borderRadius: '12px',
-    color: '#fff',
-    fontSize: '0.9rem',
-    fontWeight: 'bold',
-  },
-  pendingNote: {
-    marginTop: '0.5rem',
-    color: '#ff9800',
-    fontSize: '0.9rem',
-    fontStyle: 'italic',
-  },
-  errorNote: {
-    marginTop: '0.5rem',
-    color: '#f44336',
-    fontSize: '0.9rem',
-  },
-  deleteAllButton: {
-    padding: '0.5rem 1rem',
-    fontSize: '0.875rem',
-    fontWeight: '500',
-    color: '#fff',
-    backgroundColor: '#d32f2f',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
-    transition: 'background-color 0.2s',
-  },
-  cardDeleteButton: {
-    padding: '0.25rem 0.5rem',
-    fontSize: '1rem',
-    fontWeight: 'bold',
-    color: '#fff',
-    backgroundColor: '#d32f2f',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s',
-    minWidth: '28px',
-    minHeight: '28px',
-  },
-  coverLetterSection: {
-    marginTop: '1rem',
-    padding: '1rem',
-    backgroundColor: '#f5f5f5',
-    borderRadius: '4px',
-    borderLeft: '3px solid #2196F3',
-  },
-  coverLetterHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '0.5rem',
-  },
-  coverLetterActions: {
-    marginTop: '0.5rem',
-    display: 'flex',
-    gap: '0.5rem',
-    flexWrap: 'wrap',
-  },
-  refreshButton: {
-    padding: '0.4rem 0.8rem',
-    fontSize: '0.875rem',
-    fontWeight: '500',
-    color: '#fff',
-    backgroundColor: '#2196F3',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
-    transition: 'background-color 0.2s',
-  },
-  lastPolled: {
-    fontSize: '0.8rem',
-    color: '#888',
-    fontStyle: 'italic',
-  },
 };

@@ -10,9 +10,11 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models import Enhancement, Resume, Job
+from app.models.user import User
 from app.schemas.analysis import AnalysisResponse, AchievementSuggestionsResponse
 from app.utils.ats_analyzer import ATSAnalyzer
 from app.utils.achievement_detector import AchievementDetector
+from app.api.dependencies import get_current_active_user
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +29,7 @@ achievement_detector = AchievementDetector()
 @router.get("/enhancements/{enhancement_id}/analysis", response_model=AnalysisResponse)
 async def get_analysis(
     enhancement_id: UUID,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Get ATS and job match analysis for an enhancement.
@@ -55,6 +58,13 @@ async def get_analysis(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Enhancement not found: {enhancement_id}"
+        )
+
+    # Verify ownership
+    if enhancement.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this enhancement",
         )
 
     # Return cached analysis if exists
@@ -151,6 +161,7 @@ async def get_analysis(
 @router.get("/enhancements/{enhancement_id}/achievements", response_model=AchievementSuggestionsResponse)
 async def get_achievement_suggestions(
     enhancement_id: UUID,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Get achievement quantification suggestions.
@@ -175,6 +186,13 @@ async def get_achievement_suggestions(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Enhancement not found: {enhancement_id}"
+        )
+
+    # Verify ownership
+    if enhancement.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this enhancement",
         )
 
     # Return cached suggestions if exist

@@ -14,7 +14,9 @@ from slowapi.util import get_remote_address
 
 from app.core.database import get_db
 from app.models import Resume
+from app.models.user import User
 from app.schemas import ResumeResponse, ResumeListResponse
+from app.api.dependencies import get_current_active_user
 from app.schemas.style_preview import StyleUpdateRequest, StyleUpdateResponse
 from app.utils.document_parser import DocumentParser
 from app.utils.error_sanitizer import sanitize_error_message
@@ -37,6 +39,7 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 async def upload_resume(
     request: Request,
     file: UploadFile = File(..., description="Resume file (PDF or DOCX)"),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
     workspace_service: WorkspaceService = Depends(get_workspace_service),
     document_parser: DocumentParser = Depends(get_document_parser),
@@ -148,6 +151,7 @@ async def upload_resume(
         # Save to database
         db_resume = Resume(
             id=UUID(resume_id),
+            user_id=current_user.id,
             filename=file.filename,
             original_format=metadata["original_format"],
             file_path=str(resume_dir / f"source{file_ext}"),
@@ -172,10 +176,11 @@ async def upload_resume(
 async def list_resumes(
     skip: int = 0,
     limit: int = 100,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
     """
-    List all uploaded resumes.
+    List all uploaded resumes for the current user.
 
     Query parameters:
     - skip: Number of records to skip (default: 0)
@@ -183,8 +188,14 @@ async def list_resumes(
 
     Returns a list of resumes with their metadata.
     """
-    resumes = db.query(Resume).offset(skip).limit(limit).all()
-    total = db.query(Resume).count()
+    resumes = (
+        db.query(Resume)
+        .filter(Resume.user_id == current_user.id)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+    total = db.query(Resume).filter(Resume.user_id == current_user.id).count()
 
     return ResumeListResponse(resumes=resumes, total=total)
 
@@ -192,6 +203,7 @@ async def list_resumes(
 @router.get("/resumes/{resume_id}", response_model=ResumeResponse)
 async def get_resume(
     resume_id: UUID,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -207,12 +219,20 @@ async def get_resume(
             detail=f"Resume not found: {resume_id}",
         )
 
+    # Verify ownership
+    if resume.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this resume",
+        )
+
     return resume
 
 
 @router.delete("/resumes/{resume_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_resume(
     resume_id: UUID,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
     workspace_service: WorkspaceService = Depends(get_workspace_service),
 ):
@@ -231,6 +251,13 @@ async def delete_resume(
             detail=f"Resume not found: {resume_id}",
         )
 
+    # Verify ownership
+    if resume.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to delete this resume",
+        )
+
     # Delete from database
     db.delete(resume)
     db.commit()
@@ -243,20 +270,25 @@ async def delete_resume(
 
 @router.delete("/resumes", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_all_resumes(
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
     workspace_service: WorkspaceService = Depends(get_workspace_service),
 ):
     """
-    Delete all resumes from the database and workspace.
+    Delete all resumes for the current user from the database and workspace.
 
     WARNING: This action cannot be undone!
     """
-    # Delete all from database
-    db.query(Resume).delete()
+    # Get all user's resumes to delete workspace files
+    user_resumes = db.query(Resume).filter(Resume.user_id == current_user.id).all()
+
+    # Delete from database
+    db.query(Resume).filter(Resume.user_id == current_user.id).delete()
     db.commit()
 
-    # Delete all workspace files using workspace service
-    workspace_service.delete_all_resumes()
+    # Delete workspace files for each resume
+    for resume in user_resumes:
+        workspace_service.delete_resume(str(resume.id))
 
     return None
 
@@ -265,6 +297,7 @@ async def delete_all_resumes(
 async def update_resume_style(
     resume_id: UUID,
     style_update: StyleUpdateRequest,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -291,6 +324,13 @@ async def update_resume_style(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Resume not found: {resume_id}",
+        )
+
+    # Verify ownership
+    if resume.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to update this resume",
         )
 
     # Validate style exists

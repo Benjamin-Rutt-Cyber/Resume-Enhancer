@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ResumeUpload } from './components/ResumeUpload';
 import { JobForm } from './components/JobForm';
@@ -6,20 +6,44 @@ import { EnhancementDashboard } from './components/EnhancementDashboard';
 import { ComparisonView } from './components/ComparisonView';
 import StylePreview from './components/StylePreview';
 import { DarkModeToggle } from './components/DarkModeToggle';
+import { LoginForm } from './components/LoginForm';
+import { SignupForm } from './components/SignupForm';
+import { UserMenu } from './components/UserMenu';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import { DarkModeProvider, useDarkMode } from './contexts/DarkModeContext';
+import { AuthProvider } from './contexts/AuthContext';
 import { resumeApi, jobApi } from './services/api';
 import type { Resume, Job, Enhancement } from './types';
+import './App.css';
 
 function App() {
   return (
-    <DarkModeProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<MainApp />} />
-          <Route path="/comparison/:enhancementId" element={<ComparisonView />} />
-        </Routes>
-      </BrowserRouter>
-    </DarkModeProvider>
+    <AuthProvider>
+      <DarkModeProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<LoginForm />} />
+            <Route path="/signup" element={<SignupForm />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <MainApp />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/comparison/:enhancementId"
+              element={
+                <ProtectedRoute>
+                  <ComparisonView />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </BrowserRouter>
+      </DarkModeProvider>
+    </AuthProvider>
   );
 }
 
@@ -27,15 +51,19 @@ function MainApp() {
   const { isDarkMode } = useDarkMode();
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [activeTab, setActiveTab] = useState<'upload' | 'jobs' | 'enhance'>(
-    'upload'
-  );
+  const [activeTab, setActiveTab] = useState<'upload' | 'jobs' | 'enhance'>('upload');
   const [showStyleSelection, setShowStyleSelection] = useState<boolean>(false);
   const [currentResumeForStyle, setCurrentResumeForStyle] = useState<Resume | null>(null);
 
   useEffect(() => {
     loadData();
-  }, []);
+    // Initialize dark mode class on body
+    if (isDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }, [isDarkMode]);
 
   const loadData = async () => {
     try {
@@ -60,7 +88,6 @@ function MainApp() {
     console.log('Style selected:', style);
     setShowStyleSelection(false);
     setCurrentResumeForStyle(null);
-    // Reload resumes to get updated selected_style
     await loadData();
     setActiveTab('jobs');
   };
@@ -76,7 +103,7 @@ function MainApp() {
   };
 
   const handleDeleteResume = async (resumeId: string) => {
-    if (!window.confirm('Are you sure you want to delete this resume? This action cannot be undone.')) {
+    if (!window.confirm('Are you sure you want to delete this resume?')) {
       return;
     }
 
@@ -90,7 +117,7 @@ function MainApp() {
   };
 
   const handleDeleteAllResumes = async () => {
-    if (!window.confirm('Are you sure you want to delete ALL resumes? This action cannot be undone!')) {
+    if (!window.confirm('Are you sure you want to delete ALL resumes?')) {
       return;
     }
 
@@ -112,79 +139,78 @@ function MainApp() {
     console.log('Enhancement created:', enhancement);
   };
 
-  const getStyles = () => getStylesWithTheme(isDarkMode);
-  const s = getStyles();
-
   return (
-    <div style={s.container}>
-      <header style={s.header}>
-        <div style={s.headerContent}>
-          <div>
-            <h1 style={s.appTitle}>Resume Enhancement Tool</h1>
-            <p style={s.subtitle}>
-              Upload your resume, add job descriptions, and create tailored versions
-            </p>
+    <div className={`app-container ${isDarkMode ? 'dark-mode' : ''}`}>
+      {/* Header */}
+      <header className="app-header">
+        <div className="app-header-inner">
+          <div className="app-logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M14 2V8H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M16 13H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M16 17H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M10 9H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            ResumeMagic
           </div>
-          <DarkModeToggle />
+          <div className="header-actions">
+            <UserMenu />
+            <DarkModeToggle />
+          </div>
         </div>
       </header>
 
-      {/* Tab Navigation */}
-      <div style={s.tabs}>
-        <button
-          onClick={() => setActiveTab('upload')}
-          style={{
-            ...s.tab,
-            ...(activeTab === 'upload' ? s.tabActive : {}),
-          }}
-        >
-          1. Upload Resume
-          {resumes.length > 0 && (
-            <span style={s.badge}>{resumes.length}</span>
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab('jobs')}
-          style={{
-            ...s.tab,
-            ...(activeTab === 'jobs' ? s.tabActive : {}),
-          }}
-        >
-          2. Add Jobs
-          {jobs.length > 0 && <span style={s.badge}>{jobs.length}</span>}
-        </button>
-        <button
-          onClick={() => setActiveTab('enhance')}
-          style={{
-            ...s.tab,
-            ...(activeTab === 'enhance' ? s.tabActive : {}),
-          }}
-        >
-          3. Create Enhancement
-        </button>
+      {/* Stats Bar */}
+      <div className="stats-bar">
+        <div className="stats-inner">
+          <div className="stat-item">
+            <div className="stat-value">{resumes.length}</div>
+            <div className="stat-label">Resumes</div>
+          </div>
+          <div className="stat-item">
+            <div className="stat-value">{jobs.length}</div>
+            <div className="stat-label">Jobs</div>
+          </div>
+          <div className="stat-item">
+            <div className="stat-value">Ready</div>
+            <div className="stat-label">Status</div>
+          </div>
+        </div>
       </div>
 
-      {/* Tab Content */}
-      <main style={s.main}>
-        {/* Style Selection Overlay */}
+      {/* Main Content */}
+      <main className="main-content">
+        <div className="tabs-container">
+          <div className="tabs-list">
+            <button
+              onClick={() => setActiveTab('upload')}
+              className={`tab-button ${activeTab === 'upload' ? 'active' : ''}`}
+            >
+              Upload Resume
+              {resumes.length > 0 && <span className="tab-badge">{resumes.length}</span>}
+            </button>
+            <button
+              onClick={() => setActiveTab('jobs')}
+              className={`tab-button ${activeTab === 'jobs' ? 'active' : ''}`}
+            >
+              Add Jobs
+              {jobs.length > 0 && <span className="tab-badge">{jobs.length}</span>}
+            </button>
+            <button
+              onClick={() => setActiveTab('enhance')}
+              className={`tab-button ${activeTab === 'enhance' ? 'active' : ''}`}
+            >
+              Create Enhancement
+            </button>
+          </div>
+        </div>
+
+        {/* Style Selection Modal */}
         {showStyleSelection && currentResumeForStyle && (
-          <div style={s.modalOverlay} onClick={handleCloseStyleSelection}>
-            <div style={s.modalContent} onClick={(e) => e.stopPropagation()}>
-              <button
-                onClick={handleCloseStyleSelection}
-                style={s.closeButton}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#e0e0e0';
-                  e.currentTarget.style.color = '#333';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#f5f5f5';
-                  e.currentTarget.style.color = '#666';
-                }}
-                title="Close"
-              >
-                ✕
-              </button>
+          <div className="modal-overlay" onClick={handleCloseStyleSelection}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <button onClick={handleCloseStyleSelection} className="close-button">×</button>
               <StylePreview
                 resumeId={currentResumeForStyle.id}
                 onStyleSelected={handleStyleSelected}
@@ -195,65 +221,39 @@ function MainApp() {
         )}
 
         {activeTab === 'upload' && (
-          <div style={s.section}>
+          <div className="section-card animate-fade-in">
+            <div className="section-header">
+              <h2 className="section-title">Upload Resume</h2>
+              <p className="section-subtitle">Start by uploading your current resume to let our AI analyze it for you.</p>
+            </div>
             <ResumeUpload onUploadSuccess={handleResumeUploaded} />
+
             {resumes.length > 0 && (
-              <div style={s.listSection}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                  <h3 style={s.listTitle}>Uploaded Resumes</h3>
-                  <button
-                    onClick={handleDeleteAllResumes}
-                    style={s.deleteAllButton}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#c62828';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#d32f2f';
-                    }}
-                  >
-                    Delete All Resumes
-                  </button>
+              <div className="list-container">
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center' }}>
+                  <h3 className="section-title" style={{ fontSize: '1.25rem', margin: 0 }}>Your Resumes</h3>
+                  <button onClick={handleDeleteAllResumes} className="btn btn-danger">Delete All</button>
                 </div>
-                <div style={s.list}>
+                <div className="list">
                   {resumes.map((resume) => (
-                    <div key={resume.id} style={s.listItem}>
-                      <div style={{ flex: 1 }}>
-                        <strong>{resume.filename}</strong>
-                        <div style={s.listItemMeta}>
-                          {resume.word_count} words • Uploaded{' '}
-                          {new Date(resume.upload_date).toLocaleDateString()}
+                    <div key={resume.id} className="list-item">
+                      <div className="list-item-content">
+                        <div className="list-item-title">{resume.filename}</div>
+                        <div className="list-item-meta">
+                          {resume.word_count} words · {new Date(resume.upload_date).toLocaleDateString()}
                           {resume.selected_style && (
-                            <span style={s.styleTag}>
-                              Style: {resume.selected_style}
+                            <span className="tab-badge" style={{ background: 'var(--primary-light)', color: 'var(--primary)', marginLeft: '8px' }}>
+                              {resume.selected_style}
                             </span>
                           )}
                         </div>
                       </div>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button
-                          onClick={() => handleSelectStyleForResume(resume)}
-                          style={s.selectStyleButton}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#1976d2';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#2196F3';
-                          }}
-                        >
-                          Select Resume
+                      <div className="list-item-actions" style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button onClick={() => handleSelectStyleForResume(resume)} className="btn btn-primary">
+                          Select Style
                         </button>
-                        <button
-                          onClick={() => handleDeleteResume(resume.id)}
-                          style={s.deleteButton}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#c62828';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#d32f2f';
-                          }}
-                          title="Delete this resume"
-                        >
-                          ✕
+                        <button onClick={() => handleDeleteResume(resume.id)} className="btn btn-icon">
+                          ×
                         </button>
                       </div>
                     </div>
@@ -265,21 +265,29 @@ function MainApp() {
         )}
 
         {activeTab === 'jobs' && (
-          <div style={s.section}>
+          <div className="section-card animate-fade-in">
+            <div className="section-header">
+              <h2 className="section-title">Add Job Descriptions</h2>
+              <p className="section-subtitle">Paste the job description you are applying for. We'll tailor your resume to match.</p>
+            </div>
             <JobForm onJobCreated={handleJobCreated} />
+
             {jobs.length > 0 && (
-              <div style={s.listSection}>
-                <h3 style={s.listTitle}>Added Jobs</h3>
-                <div style={s.list}>
+              <div className="list-container">
+                <h3 className="section-title" style={{ fontSize: '1.25rem' }}>Your Jobs</h3>
+                <div className="list">
                   {jobs.map((job) => (
-                    <div key={job.id} style={s.listItem}>
-                      <div>
-                        <strong>{job.title}</strong>
-                        {job.company && <> at {job.company}</>}
-                        <div style={s.listItemMeta}>
+                    <div key={job.id} className="list-item">
+                      <div className="list-item-content">
+                        <div className="list-item-title">
+                          {job.title}
+                          {job.company && <span style={{ opacity: 0.7 }}> at {job.company}</span>}
+                        </div>
+                        <div className="list-item-meta">
                           Added {new Date(job.created_at).toLocaleDateString()}
                         </div>
                       </div>
+                      <span className="tab-badge" style={{ background: 'var(--secondary)', color: 'white' }}>Active</span>
                     </div>
                   ))}
                 </div>
@@ -289,275 +297,43 @@ function MainApp() {
         )}
 
         {activeTab === 'enhance' && (
-          <div style={s.section}>
+          <div className="section-card animate-fade-in">
             {resumes.length === 0 ? (
-              <div style={s.emptyState}>
-                <h3>No Resumes Yet</h3>
-                <p>Please upload a resume first before creating enhancements.</p>
-                <button
-                  onClick={() => setActiveTab('upload')}
-                  style={s.button}
-                >
-                  Go to Upload Resume
+              <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+                <h3 className="section-title" style={{ fontSize: '1.5rem' }}>No Resumes Yet</h3>
+                <p className="section-subtitle" style={{ marginBottom: '1.5rem' }}>Upload your resume to start creating enhancements</p>
+                <button onClick={() => setActiveTab('upload')} className="btn btn-primary">
+                  Upload Resume
                 </button>
               </div>
             ) : (
-              <EnhancementDashboard
-                resumes={resumes}
-                jobs={jobs}
-                onEnhancementCreated={handleEnhancementCreated}
-              />
+              <>
+                <div className="section-header">
+                  <h2 className="section-title">Create Enhancement</h2>
+                  <p className="section-subtitle">Generate tailored versions of your resume optimized for specific job descriptions.</p>
+                </div>
+                <EnhancementDashboard
+                  resumes={resumes}
+                  jobs={jobs}
+                  onEnhancementCreated={handleEnhancementCreated}
+                />
+              </>
             )}
           </div>
         )}
       </main>
 
-      <footer style={s.footer}>
-        <p style={s.footerText}>
-          Resume Enhancement Tool • API running at{' '}
-          <a href="http://localhost:8000/docs" target="_blank" rel="noopener noreferrer" style={s.link}>
-            http://localhost:8000/docs
+      {/* Footer */}
+      <footer className="app-footer">
+        <div className="footer-inner">
+          Resume Enhancement Tool · Powered by Claude AI
+          <a href="http://localhost:8000/docs" target="_blank" rel="noopener noreferrer" className="footer-link">
+            API Documentation
           </a>
-        </p>
+        </div>
       </footer>
     </div>
   );
 }
-
-const getStylesWithTheme = (isDarkMode: boolean): Record<string, React.CSSProperties> => ({
-  container: {
-    minHeight: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    backgroundColor: isDarkMode ? '#111827' : '#f5f5f5',
-    transition: 'background-color 0.3s ease',
-  },
-  header: {
-    backgroundColor: isDarkMode ? '#1f2937' : '#2196F3',
-    color: '#fff',
-    padding: '2rem',
-    transition: 'background-color 0.3s ease',
-  },
-  headerContent: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    maxWidth: '1200px',
-    margin: '0 auto',
-  },
-  appTitle: {
-    margin: 0,
-    fontSize: '2.5rem',
-    fontWeight: 'bold',
-  },
-  subtitle: {
-    margin: '0.5rem 0 0',
-    fontSize: '1.1rem',
-    opacity: 0.9,
-  },
-  tabs: {
-    display: 'flex',
-    backgroundColor: isDarkMode ? '#1f2937' : '#fff',
-    borderBottom: isDarkMode ? '1px solid #374151' : '1px solid #e0e0e0',
-    padding: '0 2rem',
-    gap: '1rem',
-    transition: 'all 0.3s ease',
-  },
-  tab: {
-    padding: '1rem 1.5rem',
-    fontSize: '1rem',
-    fontWeight: '500',
-    backgroundColor: 'transparent',
-    border: 'none',
-    borderBottom: '3px solid transparent',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    color: isDarkMode ? '#9ca3af' : '#666',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-  },
-  tabActive: {
-    borderBottomColor: isDarkMode ? '#60a5fa' : '#2196F3',
-    color: isDarkMode ? '#60a5fa' : '#2196F3',
-  },
-  badge: {
-    backgroundColor: isDarkMode ? '#059669' : '#4CAF50',
-    color: '#fff',
-    borderRadius: '12px',
-    padding: '0.125rem 0.5rem',
-    fontSize: '0.75rem',
-    fontWeight: 'bold',
-  },
-  main: {
-    flex: 1,
-    padding: '2rem',
-    maxWidth: '1200px',
-    width: '100%',
-    margin: '0 auto',
-  },
-  section: {
-    backgroundColor: isDarkMode ? '#1f2937' : '#fff',
-    borderRadius: '8px',
-    padding: '2rem',
-    boxShadow: isDarkMode
-      ? '0 2px 4px rgba(0,0,0,0.3)'
-      : '0 2px 4px rgba(0,0,0,0.1)',
-    transition: 'all 0.3s ease',
-  },
-  listSection: {
-    marginTop: '2rem',
-    paddingTop: '2rem',
-    borderTop: isDarkMode ? '1px solid #374151' : '1px solid #e0e0e0',
-  },
-  listTitle: {
-    fontSize: '1.25rem',
-    fontWeight: 'bold',
-    marginBottom: '1rem',
-    color: isDarkMode ? '#f3f4f6' : '#333',
-  },
-  list: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.75rem',
-  },
-  listItem: {
-    padding: '1rem',
-    backgroundColor: isDarkMode ? '#374151' : '#f9f9f9',
-    borderRadius: '4px',
-    border: isDarkMode ? '1px solid #4b5563' : '1px solid #e0e0e0',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '1rem',
-    transition: 'all 0.3s ease',
-    color: isDarkMode ? '#f3f4f6' : '#000',
-  },
-  listItemMeta: {
-    fontSize: '0.875rem',
-    color: isDarkMode ? '#9ca3af' : '#888',
-    marginTop: '0.25rem',
-  },
-  styleTag: {
-    marginLeft: '0.5rem',
-    padding: '0.125rem 0.5rem',
-    backgroundColor: isDarkMode ? '#1e3a8a' : '#e3f2fd',
-    color: isDarkMode ? '#93c5fd' : '#1976d2',
-    borderRadius: '12px',
-    fontSize: '0.75rem',
-    fontWeight: 'bold',
-  },
-  selectStyleButton: {
-    padding: '0.5rem 1rem',
-    fontSize: '0.875rem',
-    fontWeight: '500',
-    color: '#fff',
-    backgroundColor: isDarkMode ? '#3b82f6' : '#2196F3',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
-    transition: 'background-color 0.2s',
-  },
-  deleteButton: {
-    padding: '0.5rem 0.75rem',
-    fontSize: '1rem',
-    fontWeight: 'bold',
-    color: '#fff',
-    backgroundColor: isDarkMode ? '#dc2626' : '#d32f2f',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s',
-    minWidth: '36px',
-  },
-  deleteAllButton: {
-    padding: '0.5rem 1rem',
-    fontSize: '0.875rem',
-    fontWeight: '500',
-    color: '#fff',
-    backgroundColor: isDarkMode ? '#dc2626' : '#d32f2f',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
-    transition: 'background-color 0.2s',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: '20px',
-    right: '20px',
-    width: '40px',
-    height: '40px',
-    backgroundColor: isDarkMode ? '#374151' : '#f5f5f5',
-    border: 'none',
-    borderRadius: '50%',
-    fontSize: '24px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: isDarkMode ? '#9ca3af' : '#666',
-    transition: 'all 0.2s',
-    zIndex: 10,
-  },
-  emptyState: {
-    textAlign: 'center',
-    padding: '3rem',
-    color: isDarkMode ? '#9ca3af' : '#666',
-  },
-  button: {
-    marginTop: '1rem',
-    padding: '0.75rem 1.5rem',
-    fontSize: '1rem',
-    fontWeight: '500',
-    color: '#fff',
-    backgroundColor: isDarkMode ? '#3b82f6' : '#2196F3',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-  },
-  footer: {
-    backgroundColor: isDarkMode ? '#1f2937' : '#fff',
-    borderTop: isDarkMode ? '1px solid #374151' : '1px solid #e0e0e0',
-    padding: '1rem 2rem',
-    textAlign: 'center',
-    transition: 'all 0.3s ease',
-  },
-  footerText: {
-    margin: 0,
-    color: isDarkMode ? '#9ca3af' : '#888',
-    fontSize: '0.9rem',
-  },
-  link: {
-    color: isDarkMode ? '#60a5fa' : '#2196F3',
-    textDecoration: 'none',
-  },
-  modalOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.7)',
-    zIndex: 1000,
-    overflowY: 'auto',
-    display: 'flex',
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    padding: '20px',
-  },
-  modalContent: {
-    backgroundColor: isDarkMode ? '#1f2937' : '#fff',
-    borderRadius: '12px',
-    boxShadow: isDarkMode
-      ? '0 8px 32px rgba(0, 0, 0, 0.5)'
-      : '0 8px 32px rgba(0, 0, 0, 0.3)',
-    maxWidth: '1400px',
-    width: '100%',
-    margin: '40px auto',
-    position: 'relative',
-    transition: 'all 0.3s ease',
-  },
-});
 
 export default App;

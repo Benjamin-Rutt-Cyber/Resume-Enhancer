@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { resumeApi } from '../services/api';
+import { useDarkMode } from '../contexts/DarkModeContext';
 import type { Resume } from '../types';
 
 interface ResumeUploadProps {
@@ -8,6 +9,7 @@ interface ResumeUploadProps {
 }
 
 export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onUploadSuccess }) => {
+  const { isDarkMode } = useDarkMode();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,63 +43,86 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onUploadSuccess }) =
         '.docx',
       ],
       'application/msword': ['.doc'],
+      'text/plain': ['.txt'],
     },
     multiple: false,
     disabled: uploading,
   });
 
+  const getStyles = () => getStylesWithTheme(isDarkMode);
+  const s = getStyles();
+
   return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>Upload Your Resume</h2>
+    <div style={s.container}>
       <div
         {...getRootProps()}
         style={{
-          ...styles.dropzone,
-          ...(isDragActive ? styles.dropzoneActive : {}),
-          ...(uploading ? styles.dropzoneDisabled : {}),
+          ...s.dropzone,
+          ...(isDragActive ? s.dropzoneActive : {}),
+          ...(uploading ? s.dropzoneDisabled : {}),
         }}
       >
         <input {...getInputProps()} />
-        {uploading ? (
-          <p>Uploading...</p>
-        ) : isDragActive ? (
-          <p>Drop the file here...</p>
-        ) : (
-          <div style={styles.dropzoneContent}>
-            <p style={styles.dropzoneText}>
-              Drag & drop your resume here, or click to select
-            </p>
-            <p style={styles.dropzoneHint}>Supports PDF and DOCX files</p>
-          </div>
-        )}
+        <div style={s.dropzoneContent}>
+          {uploading ? (
+            <>
+              <div style={s.icon}>⏳</div>
+              <div style={s.dropzoneTitle}>Uploading...</div>
+              <div style={s.dropzoneText}>Please wait</div>
+            </>
+          ) : isDragActive ? (
+            <>
+              <div style={s.icon}>📄</div>
+              <div style={s.dropzoneTitle}>Drop file here</div>
+            </>
+          ) : (
+            <>
+              <div style={s.iconWrapper}>
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#3b82f6' }}>
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+              </div>
+              <div style={s.dropzoneTitle}>Upload Resume</div>
+              <div style={s.dropzoneText}>
+                Drag and drop or <span style={s.browseText}>browse</span> to choose a file
+              </div>
+              <div style={s.formats}>PDF, DOCX, DOC, or TXT</div>
+            </>
+          )}
+        </div>
       </div>
-      {error && <div style={styles.error}>{error}</div>}
+      {error && (
+        <div style={s.error}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>{error}</span>
+        </div>
+      )}
     </div>
   );
 };
 
-const styles: Record<string, React.CSSProperties> = {
+const getStylesWithTheme = (isDarkMode: boolean): Record<string, React.CSSProperties> => ({
   container: {
     marginBottom: '2rem',
   },
-  title: {
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
-    marginBottom: '1rem',
-    color: '#333',
-  },
   dropzone: {
-    border: '2px dashed #ccc',
+    border: `2px dashed ${isDarkMode ? '#3f3f46' : '#d1d5db'}`,
     borderRadius: '8px',
     padding: '3rem 2rem',
     textAlign: 'center',
     cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    backgroundColor: '#f9f9f9',
+    transition: 'all 0.2s',
+    backgroundColor: isDarkMode ? '#18181b' : '#f9fafb',
   },
   dropzoneActive: {
-    borderColor: '#4CAF50',
-    backgroundColor: '#e8f5e9',
+    borderColor: '#3b82f6',
+    backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.05)' : 'rgba(59, 130, 246, 0.05)',
   },
   dropzoneDisabled: {
     cursor: 'not-allowed',
@@ -106,24 +131,44 @@ const styles: Record<string, React.CSSProperties> = {
   dropzoneContent: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '0.5rem',
+    alignItems: 'center',
+    gap: '0.75rem',
+  },
+  iconWrapper: {
+    marginBottom: '0.5rem',
+  },
+  icon: {
+    fontSize: '3rem',
+    marginBottom: '0.5rem',
+  },
+  dropzoneTitle: {
+    fontSize: '1rem',
+    fontWeight: '600',
+    color: isDarkMode ? '#ffffff' : '#18181b',
   },
   dropzoneText: {
-    fontSize: '1.1rem',
-    color: '#555',
-    margin: 0,
+    fontSize: '0.875rem',
+    color: isDarkMode ? '#a1a1aa' : '#71717a',
   },
-  dropzoneHint: {
-    fontSize: '0.9rem',
-    color: '#888',
-    margin: 0,
+  browseText: {
+    color: '#3b82f6',
+    fontWeight: '500',
+  },
+  formats: {
+    fontSize: '0.75rem',
+    color: isDarkMode ? '#71717a' : '#a1a1aa',
+    marginTop: '0.5rem',
   },
   error: {
     marginTop: '1rem',
-    padding: '0.75rem',
-    backgroundColor: '#ffebee',
-    color: '#c62828',
-    borderRadius: '4px',
-    border: '1px solid #ef5350',
+    padding: '0.75rem 1rem',
+    backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.1)' : '#fee2e2',
+    color: '#ef4444',
+    borderRadius: '6px',
+    border: `1px solid ${isDarkMode ? 'rgba(239, 68, 68, 0.3)' : '#fecaca'}`,
+    fontSize: '0.875rem',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
   },
-};
+});

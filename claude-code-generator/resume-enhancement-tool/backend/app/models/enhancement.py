@@ -14,6 +14,7 @@ class Enhancement(Base):
     __tablename__ = "enhancements"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     resume_id = Column(UUID(as_uuid=True), ForeignKey("resumes.id"), nullable=False)
     job_id = Column(UUID(as_uuid=True), ForeignKey("jobs.id"), nullable=True)
     enhancement_type = Column(

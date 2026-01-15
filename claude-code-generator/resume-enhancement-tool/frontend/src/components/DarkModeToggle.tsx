@@ -1,4 +1,3 @@
-import React from 'react';
 import { useDarkMode } from '../contexts/DarkModeContext';
 
 export const DarkModeToggle: React.FC = () => {
@@ -7,11 +6,7 @@ export const DarkModeToggle: React.FC = () => {
   return (
     <button
       onClick={toggleDarkMode}
-      style={{
-        ...styles.button,
-        backgroundColor: isDarkMode ? '#374151' : '#f3f4f6',
-        color: isDarkMode ? '#fbbf24' : '#f59e0b',
-      }}
+      className="theme-toggle-btn"
       title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
       aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
     >
@@ -54,19 +49,4 @@ export const DarkModeToggle: React.FC = () => {
       )}
     </button>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  button: {
-    width: '48px',
-    height: '48px',
-    borderRadius: '50%',
-    border: 'none',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.3s ease',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-  },
 };

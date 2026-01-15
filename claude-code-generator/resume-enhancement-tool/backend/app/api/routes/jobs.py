@@ -8,9 +8,10 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models import Job
+from app.models.user import User
 from app.schemas import JobCreate, JobResponse, JobListResponse
 from app.services.workspace_service import WorkspaceService
-from app.api.dependencies import get_workspace_service
+from app.api.dependencies import get_workspace_service, get_current_active_user
 
 router = APIRouter()
 
@@ -18,6 +19,7 @@ router = APIRouter()
 @router.post("/jobs", response_model=JobResponse, status_code=status.HTTP_201_CREATED)
 async def create_job(
     job: JobCreate,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
     workspace_service: WorkspaceService = Depends(get_workspace_service),
 ):
@@ -59,6 +61,7 @@ async def create_job(
     # Save to database
     db_job = Job(
         id=UUID(job_id),
+        user_id=current_user.id,
         title=job.title,
         company=job.company,
         description_text=job.description_text,
@@ -77,10 +80,11 @@ async def create_job(
 async def list_jobs(
     skip: int = 0,
     limit: int = 100,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
     """
-    List all job descriptions.
+    List all job descriptions for the current user.
 
     Query parameters:
     - skip: Number of records to skip (default: 0)
@@ -88,8 +92,14 @@ async def list_jobs(
 
     Returns a list of jobs with their metadata.
     """
-    jobs = db.query(Job).offset(skip).limit(limit).all()
-    total = db.query(Job).count()
+    jobs = (
+        db.query(Job)
+        .filter(Job.user_id == current_user.id)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+    total = db.query(Job).filter(Job.user_id == current_user.id).count()
 
     return JobListResponse(jobs=jobs, total=total)
 
@@ -97,6 +107,7 @@ async def list_jobs(
 @router.get("/jobs/{job_id}", response_model=JobResponse)
 async def get_job(
     job_id: UUID,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -110,6 +121,13 @@ async def get_job(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Job not found: {job_id}",
+        )
+
+    # Verify ownership
+    if job.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this job",
         )
 
     return job

@@ -40,12 +40,11 @@ export const JobForm: React.FC<JobFormProps> = ({ onJobCreated }) => {
   };
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>Add Job Description</h2>
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <div style={styles.formGroup}>
-          <label htmlFor="title" style={styles.label}>
-            Job Title <span style={styles.required}>*</span>
+    <div className="form-container">
+      <form onSubmit={handleSubmit} className="form">
+        <div className="form-group">
+          <label htmlFor="title" className="form-label">
+            Job Title <span className="form-required">*</span>
           </label>
           <input
             type="text"
@@ -54,13 +53,13 @@ export const JobForm: React.FC<JobFormProps> = ({ onJobCreated }) => {
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g., Senior Software Engineer"
             required
-            style={styles.input}
+            className="form-input"
             disabled={loading}
           />
         </div>
 
-        <div style={styles.formGroup}>
-          <label htmlFor="company" style={styles.label}>
+        <div className="form-group">
+          <label htmlFor="company" className="form-label">
             Company (Optional)
           </label>
           <input
@@ -69,14 +68,14 @@ export const JobForm: React.FC<JobFormProps> = ({ onJobCreated }) => {
             value={company}
             onChange={(e) => setCompany(e.target.value)}
             placeholder="e.g., Tech Corp"
-            style={styles.input}
+            className="form-input"
             disabled={loading}
           />
         </div>
 
-        <div style={styles.formGroup}>
-          <label htmlFor="description" style={styles.label}>
-            Job Description <span style={styles.required}>*</span>
+        <div className="form-group">
+          <label htmlFor="description" className="form-label">
+            Job Description <span className="form-required">*</span>
           </label>
           <textarea
             id="description"
@@ -85,87 +84,31 @@ export const JobForm: React.FC<JobFormProps> = ({ onJobCreated }) => {
             placeholder="Paste the full job description here..."
             required
             rows={10}
-            style={{ ...styles.input, ...styles.textarea }}
+            className="form-textarea"
             disabled={loading}
           />
         </div>
 
-        {error && <div style={styles.error}>{error}</div>}
+        {error && (
+          <div className="error-message">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span>{error}</span>
+          </div>
+        )}
 
         <button
           type="submit"
           disabled={loading || !title || !description}
-          style={{
-            ...styles.button,
-            ...(loading || !title || !description ? styles.buttonDisabled : {}),
-          }}
+          className="btn btn-primary"
+          style={{ width: 'fit-content' }}
         >
           {loading ? 'Creating...' : 'Add Job Description'}
         </button>
       </form>
     </div>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    marginBottom: '2rem',
-  },
-  title: {
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
-    marginBottom: '1rem',
-    color: '#333',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1rem',
-  },
-  formGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.5rem',
-  },
-  label: {
-    fontSize: '1rem',
-    fontWeight: '500',
-    color: '#555',
-  },
-  required: {
-    color: '#d32f2f',
-  },
-  input: {
-    padding: '0.75rem',
-    fontSize: '1rem',
-    border: '1px solid #ccc',
-    borderRadius: '4px',
-    fontFamily: 'inherit',
-  },
-  textarea: {
-    resize: 'vertical',
-    minHeight: '200px',
-  },
-  button: {
-    padding: '0.75rem 1.5rem',
-    fontSize: '1rem',
-    fontWeight: '500',
-    color: '#fff',
-    backgroundColor: '#4CAF50',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    transition: 'background-color 0.3s ease',
-  },
-  buttonDisabled: {
-    backgroundColor: '#ccc',
-    cursor: 'not-allowed',
-  },
-  error: {
-    padding: '0.75rem',
-    backgroundColor: '#ffebee',
-    color: '#c62828',
-    borderRadius: '4px',
-    border: '1px solid #ef5350',
-  },
 };

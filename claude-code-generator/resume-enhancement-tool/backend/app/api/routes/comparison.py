@@ -9,7 +9,9 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models import Enhancement, Resume
+from app.models.user import User
 from app.schemas.comparison import ComparisonResponse
+from app.api.dependencies import get_current_active_user
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +22,7 @@ WORKSPACE_ROOT = Path("workspace")
 @router.get("/enhancements/{enhancement_id}/comparison", response_model=ComparisonResponse)
 async def get_comparison(
     enhancement_id: UUID,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Get original and enhanced resume for side-by-side comparison.
@@ -44,6 +47,13 @@ async def get_comparison(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Enhancement not found: {enhancement_id}"
+        )
+
+    # Verify ownership
+    if enhancement.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this enhancement",
         )
 
     # Get resume

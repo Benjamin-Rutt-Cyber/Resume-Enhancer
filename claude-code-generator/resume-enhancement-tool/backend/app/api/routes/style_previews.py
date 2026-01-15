@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from ...models.resume import Resume
+from ...models.user import User
 from ...schemas.style_preview import (
     StylePreviewsResponse,
     StylePreviewItem,
@@ -15,7 +16,7 @@ from ...schemas.style_preview import (
 )
 from ...services.anthropic_service import AnthropicService
 from ...config.styles import STYLES, validate_style
-from ..dependencies import get_db, get_anthropic_service
+from ..dependencies import get_db, get_anthropic_service, get_current_active_user
 from ...core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -29,6 +30,7 @@ WORKSPACE_ROOT = Path("workspace")
 @router.post("/resumes/{resume_id}/style-previews", response_model=StylePreviewsResponse, deprecated=True)
 async def generate_style_previews(
     resume_id: UUID,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
     anthropic_service: AnthropicService = Depends(get_anthropic_service),
 ):
@@ -70,6 +72,7 @@ async def generate_style_previews(
 @router.get("/resumes/{resume_id}/style-previews", response_model=StylePreviewsResponse)
 async def get_style_previews(
     resume_id: UUID,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
     """Retrieve existing style previews for a resume.
@@ -88,6 +91,10 @@ async def get_style_previews(
     resume = db.query(Resume).filter(Resume.id == resume_id).first()
     if not resume:
         raise HTTPException(status_code=404, detail=f"Resume not found: {resume_id}")
+
+    # Verify ownership
+    if resume.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this resume")
 
     # Check if previews have been generated
     if not resume.style_previews_generated:
@@ -132,6 +139,7 @@ async def get_style_previews(
 async def select_style(
     resume_id: UUID,
     style_selection: StyleSelectionRequest,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
     """Save user's selected style for a resume.
@@ -151,6 +159,10 @@ async def select_style(
     resume = db.query(Resume).filter(Resume.id == resume_id).first()
     if not resume:
         raise HTTPException(status_code=404, detail=f"Resume not found: {resume_id}")
+
+    # Verify ownership
+    if resume.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this resume")
 
     # Validate style
     if not validate_style(style_selection.style):

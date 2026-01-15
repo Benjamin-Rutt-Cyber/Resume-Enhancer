@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models import Enhancement, Resume, Job
+from app.models.user import User
 from app.schemas import (
     EnhancementTailorCreate,
     EnhancementRevampCreate,
@@ -19,7 +20,7 @@ from app.schemas import (
 )
 from app.services.workspace_service import WorkspaceService
 from app.utils.error_sanitizer import sanitize_error_message
-from app.api.dependencies import get_workspace_service, WORKSPACE_ROOT
+from app.api.dependencies import get_workspace_service, get_current_active_user, WORKSPACE_ROOT
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +72,7 @@ except (ImportError, OSError, TypeError) as e:
 )
 async def create_tailoring_enhancement(
     enhancement: EnhancementTailorCreate,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
     workspace_service: WorkspaceService = Depends(get_workspace_service),
 ):
@@ -91,7 +93,7 @@ async def create_tailoring_enhancement(
 
     Returns the enhancement record with status "pending".
     """
-    # Verify resume exists
+    # Verify resume exists and user owns it
     resume = db.query(Resume).filter(Resume.id == enhancement.resume_id).first()
     if not resume:
         raise HTTPException(
@@ -99,12 +101,24 @@ async def create_tailoring_enhancement(
             detail=f"Resume not found: {enhancement.resume_id}",
         )
 
-    # Verify job exists
+    if resume.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this resume",
+        )
+
+    # Verify job exists and user owns it
     job = db.query(Job).filter(Job.id == enhancement.job_id).first()
     if not job:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Job not found: {enhancement.job_id}",
+        )
+
+    if job.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this job",
         )
 
     # Create enhancement workspace with user's selected style
@@ -118,6 +132,7 @@ async def create_tailoring_enhancement(
     # Save to database
     db_enhancement = Enhancement(
         id=UUID(enhancement_id),
+        user_id=current_user.id,
         resume_id=enhancement.resume_id,
         job_id=enhancement.job_id,
         enhancement_type="job_tailoring",
@@ -139,6 +154,7 @@ async def create_tailoring_enhancement(
 )
 async def create_revamp_enhancement(
     enhancement: EnhancementRevampCreate,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
     workspace_service: WorkspaceService = Depends(get_workspace_service),
 ):
@@ -159,12 +175,18 @@ async def create_revamp_enhancement(
 
     Returns the enhancement record with status "pending".
     """
-    # Verify resume exists
+    # Verify resume exists and user owns it
     resume = db.query(Resume).filter(Resume.id == enhancement.resume_id).first()
     if not resume:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Resume not found: {enhancement.resume_id}",
+        )
+
+    if resume.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this resume",
         )
 
     # Validate industry
@@ -187,6 +209,7 @@ async def create_revamp_enhancement(
     # Save to database
     db_enhancement = Enhancement(
         id=UUID(enhancement_id),
+        user_id=current_user.id,
         resume_id=enhancement.resume_id,
         job_id=None,
         enhancement_type="industry_revamp",
@@ -205,10 +228,11 @@ async def create_revamp_enhancement(
 async def list_enhancements(
     skip: int = 0,
     limit: int = 100,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
     """
-    List all enhancement requests.
+    List all enhancement requests for the current user.
 
     Query parameters:
     - skip: Number of records to skip (default: 0)
@@ -216,8 +240,14 @@ async def list_enhancements(
 
     Returns a list of enhancements with their metadata and status.
     """
-    enhancements = db.query(Enhancement).offset(skip).limit(limit).all()
-    total = db.query(Enhancement).count()
+    enhancements = (
+        db.query(Enhancement)
+        .filter(Enhancement.user_id == current_user.id)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+    total = db.query(Enhancement).filter(Enhancement.user_id == current_user.id).count()
 
     return EnhancementListResponse(enhancements=enhancements, total=total)
 
@@ -225,6 +255,7 @@ async def list_enhancements(
 @router.get("/enhancements/{enhancement_id}", response_model=EnhancementResponse)
 async def get_enhancement(
     enhancement_id: UUID,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
     workspace_service: WorkspaceService = Depends(get_workspace_service),
 ):
@@ -255,6 +286,13 @@ async def get_enhancement(
             detail=f"Enhancement not found: {enhancement_id}",
         )
 
+    # Verify ownership
+    if enhancement.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this enhancement",
+        )
+
     # Use completion detector to check status of both resume and cover letter
     from app.services.completion_detector import CompletionDetectorService
     detector = CompletionDetectorService(workspace_service)
@@ -269,6 +307,7 @@ async def get_enhancement(
 @router.post("/enhancements/{enhancement_id}/finalize")
 async def finalize_enhancement(
     enhancement_id: UUID,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -288,6 +327,13 @@ async def finalize_enhancement(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Enhancement not found: {enhancement_id}",
+        )
+
+    # Verify ownership
+    if enhancement.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this enhancement",
         )
 
     # Check if markdown file exists
@@ -363,6 +409,7 @@ async def finalize_enhancement(
 async def download_enhancement(
     enhancement_id: UUID,
     format: str = "pdf",
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -379,6 +426,13 @@ async def download_enhancement(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Enhancement not found: {enhancement_id}",
+        )
+
+    # Verify ownership
+    if enhancement.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this enhancement",
         )
 
     if format == "pdf":
@@ -435,6 +489,7 @@ async def download_enhancement(
 @router.get("/enhancements/{enhancement_id}/download/docx")
 async def download_enhancement_docx(
     enhancement_id: UUID,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -455,6 +510,13 @@ async def download_enhancement_docx(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Enhancement not found: {enhancement_id}"
+        )
+
+    # Verify ownership
+    if enhancement.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this enhancement",
         )
 
     # Check if DOCX already exists (cached)
@@ -542,6 +604,7 @@ async def download_enhancement_docx(
 @router.delete("/enhancements/{enhancement_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_enhancement(
     enhancement_id: UUID,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
     workspace_service: WorkspaceService = Depends(get_workspace_service),
 ):
@@ -560,6 +623,13 @@ async def delete_enhancement(
             detail=f"Enhancement not found: {enhancement_id}",
         )
 
+    # Verify ownership
+    if enhancement.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to delete this enhancement",
+        )
+
     # Delete from database
     db.delete(enhancement)
     db.commit()
@@ -572,20 +642,25 @@ async def delete_enhancement(
 
 @router.delete("/enhancements", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_all_enhancements(
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
     workspace_service: WorkspaceService = Depends(get_workspace_service),
 ):
     """
-    Delete all enhancements from the database and workspace.
+    Delete all enhancements for the current user from the database and workspace.
 
     WARNING: This action cannot be undone!
     """
-    # Delete all from database
-    db.query(Enhancement).delete()
+    # Get all user's enhancements to delete workspace files
+    user_enhancements = db.query(Enhancement).filter(Enhancement.user_id == current_user.id).all()
+
+    # Delete from database
+    db.query(Enhancement).filter(Enhancement.user_id == current_user.id).delete()
     db.commit()
 
-    # Delete all workspace files using workspace service
-    workspace_service.delete_all_enhancements()
+    # Delete workspace files for each enhancement
+    for enhancement in user_enhancements:
+        workspace_service.delete_enhancement(str(enhancement.id))
 
     return None
 
@@ -594,6 +669,7 @@ async def delete_all_enhancements(
 async def download_cover_letter(
     enhancement_id: UUID,
     format: str = "md",
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -613,6 +689,13 @@ async def download_cover_letter(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Enhancement not found: {enhancement_id}"
+        )
+
+    # Verify ownership
+    if enhancement.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this enhancement",
         )
 
     # Check cover letter status

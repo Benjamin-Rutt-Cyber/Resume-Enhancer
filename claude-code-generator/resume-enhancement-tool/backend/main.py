@@ -15,7 +15,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
-from app.api.routes import health, resumes, jobs, enhancements, style_previews, analysis, comparison
+from app.api.routes import health, resumes, jobs, enhancements, style_previews, analysis, comparison, auth
 from logging_config import setup_logging
 
 # Initialize structured logging
@@ -72,6 +72,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(health.router, prefix="/api", tags=["health"])
+app.include_router(auth.router, prefix="/api/auth", tags=["authentication"])
 app.include_router(resumes.router, prefix="/api", tags=["resumes"])
 app.include_router(jobs.router, prefix="/api", tags=["jobs"])
 app.include_router(enhancements.router, prefix="/api", tags=["enhancements"])

@@ -22,6 +22,38 @@ const api = axios.create({
   },
 });
 
+// Request interceptor - add JWT token to all requests
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor - handle 401 errors (unauthorized)
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token is invalid or expired
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+
+      // Only redirect if not already on login/signup page
+      if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/signup')) {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Resume API
 export const resumeApi = {
   uploadResume: async (file: File): Promise<Resume> => {
