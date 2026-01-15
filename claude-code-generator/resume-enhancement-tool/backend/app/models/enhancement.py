@@ -21,6 +21,13 @@ class Enhancement(Base):
         String(50), nullable=False
     )  # 'job_tailoring', 'industry_revamp'
     industry = Column(String(100), nullable=True)  # For industry_revamp type
+
+    # Content columns for DB-based storage (survives Render redeployments)
+    instructions_text = Column(Text, nullable=True)  # INSTRUCTIONS.md content
+    enhanced_content = Column(Text, nullable=True)  # enhanced.md content
+    cover_letter_content = Column(Text, nullable=True)  # cover_letter.md content
+
+    # File path columns (for local file caching)
     output_path = Column(Text, nullable=True)  # Path to enhanced.md
     pdf_path = Column(Text, nullable=True)  # Path to enhanced.pdf
     docx_path = Column(Text, nullable=True)  # Path to enhanced.docx

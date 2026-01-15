@@ -122,20 +122,21 @@ async def create_tailoring_enhancement(
         )
 
     # Create enhancement workspace with user's selected style
-    enhancement_id, enhancement_dir = workspace_service.create_enhancement_workspace(
+    enhancement_id, enhancement_dir, instructions_text = workspace_service.create_enhancement_workspace(
         resume_id=str(enhancement.resume_id),
         job_id=str(enhancement.job_id),
         enhancement_type="job_tailoring",
         style=resume.selected_style,  # Pass the user's selected writing style
     )
 
-    # Save to database
+    # Save to database (including instructions_text for DB-based storage)
     db_enhancement = Enhancement(
         id=UUID(enhancement_id),
         user_id=current_user.id,
         resume_id=enhancement.resume_id,
         job_id=enhancement.job_id,
         enhancement_type="job_tailoring",
+        instructions_text=instructions_text,  # Store content in DB for Render compatibility
         status="pending",
         run_analysis=enhancement.run_analysis,
     )
@@ -198,7 +199,7 @@ async def create_revamp_enhancement(
         )
 
     # Create enhancement workspace with user's selected style
-    enhancement_id, enhancement_dir = workspace_service.create_enhancement_workspace(
+    enhancement_id, enhancement_dir, instructions_text = workspace_service.create_enhancement_workspace(
         resume_id=str(enhancement.resume_id),
         job_id=None,
         enhancement_type="industry_revamp",
@@ -206,7 +207,7 @@ async def create_revamp_enhancement(
         style=resume.selected_style,  # Pass the user's selected writing style
     )
 
-    # Save to database
+    # Save to database (including instructions_text for DB-based storage)
     db_enhancement = Enhancement(
         id=UUID(enhancement_id),
         user_id=current_user.id,
@@ -214,6 +215,7 @@ async def create_revamp_enhancement(
         job_id=None,
         enhancement_type="industry_revamp",
         industry=enhancement.industry,
+        instructions_text=instructions_text,  # Store content in DB for Render compatibility
         status="pending",
     )
 
@@ -405,6 +407,43 @@ async def finalize_enhancement(
         )
 
 
+def ensure_file_from_db_content(
+    file_path: Path,
+    db_content: str,
+    enhancement_id: UUID,
+) -> bool:
+    """
+    Ensure a file exists by regenerating it from database content if needed.
+
+    This handles Render's ephemeral filesystem by recreating files from DB content.
+
+    Args:
+        file_path: Path where the file should exist
+        db_content: Content stored in database
+        enhancement_id: Enhancement ID for logging
+
+    Returns:
+        True if file exists or was regenerated, False otherwise
+    """
+    if file_path.exists():
+        return True
+
+    if not db_content:
+        return False
+
+    try:
+        # Recreate directory structure
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        # Write content from database
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(db_content)
+        logger.info(f"Regenerated {file_path.name} from database for enhancement {enhancement_id}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to regenerate {file_path.name} for enhancement {enhancement_id}: {e}")
+        return False
+
+
 @router.get("/enhancements/{enhancement_id}/download")
 async def download_enhancement(
     enhancement_id: UUID,
@@ -435,15 +474,34 @@ async def download_enhancement(
             detail="Not authorized to access this enhancement",
         )
 
+    # Define paths for regeneration
+    enhancement_dir = WORKSPACE_ROOT / "resumes" / "enhanced" / str(enhancement_id)
+    md_path = enhancement_dir / "enhanced.md"
+
     if format == "pdf":
-        if not enhancement.pdf_path or not Path(enhancement.pdf_path).exists():
+        pdf_path = enhancement_dir / "enhanced.pdf"
+
+        # Try to regenerate markdown from DB if missing (needed for PDF generation)
+        if not md_path.exists() and enhancement.enhanced_content:
+            ensure_file_from_db_content(md_path, enhancement.enhanced_content, enhancement_id)
+
+        # Try to generate PDF if markdown exists but PDF doesn't
+        if md_path.exists() and not pdf_path.exists() and PDF_AVAILABLE:
+            try:
+                pdf_generator.markdown_to_pdf(md_path, pdf_path)
+                enhancement.pdf_path = str(pdf_path)
+                db.commit()
+                logger.info(f"Regenerated PDF for enhancement {enhancement_id}")
+            except Exception as e:
+                logger.error(f"Failed to regenerate PDF for enhancement {enhancement_id}: {e}")
+
+        if not pdf_path.exists():
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="PDF file not found. Please finalize the enhancement first using POST /enhancements/{id}/finalize",
             )
 
         # Security: Validate path to prevent traversal attacks
-        pdf_path = Path(enhancement.pdf_path)
         if not validate_safe_path(pdf_path, WORKSPACE_ROOT):
             logger.error(f"Path traversal attempt detected: {pdf_path}")
             raise HTTPException(
@@ -452,20 +510,23 @@ async def download_enhancement(
             )
 
         return FileResponse(
-            path=enhancement.pdf_path,
+            path=str(pdf_path),
             media_type="application/pdf",
             filename=f"enhanced_resume_{enhancement_id}.pdf",
         )
 
     elif format == "md":
-        if not enhancement.output_path or not Path(enhancement.output_path).exists():
+        # Try to regenerate from database if file is missing
+        if not md_path.exists():
+            ensure_file_from_db_content(md_path, enhancement.enhanced_content, enhancement_id)
+
+        if not md_path.exists():
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Markdown file not found. Enhancement may not be complete yet.",
             )
 
         # Security: Validate path to prevent traversal attacks
-        md_path = Path(enhancement.output_path)
         if not validate_safe_path(md_path, WORKSPACE_ROOT):
             logger.error(f"Path traversal attempt detected: {md_path}")
             raise HTTPException(
@@ -474,7 +535,7 @@ async def download_enhancement(
             )
 
         return FileResponse(
-            path=enhancement.output_path,
+            path=str(md_path),
             media_type="text/markdown",
             filename=f"enhanced_resume_{enhancement_id}.md",
         )
@@ -538,8 +599,12 @@ async def download_enhancement_docx(
             filename=f"enhanced_resume_{enhancement_id}.docx"
         )
 
-    # Check if markdown file exists
+    # Check if markdown file exists, regenerate from DB if needed
     enhanced_md_path = WORKSPACE_ROOT / "resumes" / "enhanced" / str(enhancement_id) / "enhanced.md"
+    if not enhanced_md_path.exists():
+        # Try to regenerate from database
+        ensure_file_from_db_content(enhanced_md_path, enhancement.enhanced_content, enhancement_id)
+
     if not enhanced_md_path.exists():
         if enhancement.status == "pending":
             raise HTTPException(
@@ -716,13 +781,17 @@ async def download_cover_letter(
             detail=status_messages.get(enhancement.cover_letter_status, f"Cover letter not ready. Status: {enhancement.cover_letter_status}")
         )
 
-    # Get cover letter markdown path
+    # Get cover letter markdown path, regenerate from DB if needed
     cover_letter_md = WORKSPACE_ROOT / "resumes" / "enhanced" / str(enhancement_id) / "cover_letter.md"
+
+    if not cover_letter_md.exists():
+        # Try to regenerate from database
+        ensure_file_from_db_content(cover_letter_md, enhancement.cover_letter_content, enhancement_id)
 
     if not cover_letter_md.exists():
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Cover letter file not found on disk despite completed status. Please contact support."
+            detail="Cover letter file not found on disk or in database. Please contact support."
         )
 
     # Format-specific handling

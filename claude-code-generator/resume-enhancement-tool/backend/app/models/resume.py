@@ -19,6 +19,7 @@ class Resume(Base):
     original_format = Column(String(10), nullable=False)  # 'pdf', 'docx', 'txt'
     file_path = Column(Text, nullable=False)  # Path to original file in workspace
     extracted_text_path = Column(Text, nullable=False)  # Path to extracted.txt
+    extracted_text = Column(Text, nullable=True)  # Extracted text content (for DB-based storage)
     upload_date = Column(DateTime, default=datetime.utcnow, nullable=False)
     file_size_bytes = Column(Integer, nullable=False)
     word_count = Column(Integer, nullable=True)

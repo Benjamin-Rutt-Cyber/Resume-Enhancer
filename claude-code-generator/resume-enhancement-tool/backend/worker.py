@@ -105,26 +105,45 @@ class EnhancementWorker:
         logger.info(f"Processing enhancement {enhancement.id}")
 
         try:
-            # Build paths
+            # Build paths for file storage
             enhancement_dir = self.workspace_root / "resumes" / "enhanced" / str(enhancement.id)
-            resume_dir = self.workspace_root / "resumes" / "original" / str(enhancement.resume_id)
+            enhancement_dir.mkdir(parents=True, exist_ok=True)
 
-            # Read required files
-            instructions_path = enhancement_dir / "INSTRUCTIONS.md"
-            resume_path = resume_dir / "extracted.txt"
+            # Read from database first, fall back to files if not available
+            # This ensures compatibility with both old file-based records and new DB-based records
+            instructions = enhancement.instructions_text
+            if not instructions:
+                instructions_path = enhancement_dir / "INSTRUCTIONS.md"
+                instructions = self.read_file(instructions_path)
+                logger.info(f"Instructions loaded from file (DB column was empty)")
 
-            instructions = self.read_file(instructions_path)
-            resume_text = self.read_file(resume_path)
+            # Get resume text from database
+            resume = db.query(Resume).filter(Resume.id == enhancement.resume_id).first()
+            if not resume:
+                raise ValueError(f"Resume not found: {enhancement.resume_id}")
+
+            resume_text = resume.extracted_text
+            if not resume_text:
+                resume_dir = self.workspace_root / "resumes" / "original" / str(enhancement.resume_id)
+                resume_path = resume_dir / "extracted.txt"
+                resume_text = self.read_file(resume_path)
+                logger.info(f"Resume text loaded from file (DB column was empty)")
 
             if not instructions or not resume_text:
-                raise ValueError("Missing required files (INSTRUCTIONS.md or resume)")
+                raise ValueError("Missing required data (instructions or resume text not found in DB or files)")
 
-            # Read job description if this is job tailoring
+            # Read job description from database if this is job tailoring
             job_description = ""
             if enhancement.job_id:
-                job_dir = self.workspace_root / "jobs" / str(enhancement.job_id)
-                job_path = job_dir / "description.txt"
-                job_description = self.read_file(job_path)
+                job = db.query(Job).filter(Job.id == enhancement.job_id).first()
+                if job:
+                    job_description = job.description_text or ""
+                if not job_description:
+                    # Fall back to file
+                    job_dir = self.workspace_root / "jobs" / str(enhancement.job_id)
+                    job_path = job_dir / "description.txt"
+                    job_description = self.read_file(job_path)
+                    logger.info(f"Job description loaded from file (DB column was empty)")
 
             # Build prompt for Claude
             prompt = self._build_prompt(instructions, resume_text, job_description, enhancement)
@@ -148,7 +167,7 @@ class EnhancementWorker:
 
             logger.info(f"Claude API response received ({len(enhanced_resume)} characters)")
 
-            # Save enhanced resume
+            # Save enhanced resume to file (for local caching) and database
             output_path = enhancement_dir / "enhanced.md"
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(enhanced_resume)
@@ -170,7 +189,8 @@ class EnhancementWorker:
             else:
                 logger.error(f"PDF generation failed: {pdf_result.get('error')}")
 
-            # Update enhancement in database
+            # Update enhancement in database (store content for Render compatibility)
+            enhancement.enhanced_content = enhanced_resume  # Store in DB for persistence
             enhancement.output_path = f"workspace/resumes/enhanced/{enhancement.id}/enhanced.md"
             enhancement.pdf_path = f"workspace/resumes/enhanced/{enhancement.id}/enhanced.pdf" if pdf_result.get("success") else None
             enhancement.status = "completed"
@@ -210,15 +230,28 @@ class EnhancementWorker:
         try:
             logger.info(f"Processing cover letter for enhancement {enhancement.id}")
 
-            # Build paths
+            # Build paths for file storage
             enhancement_dir = self.workspace_root / "resumes" / "enhanced" / str(enhancement.id)
-            resume_path = enhancement_dir / "enhanced.md"
-            job_dir = self.workspace_root / "jobs" / str(enhancement.job_id)
-            job_path = job_dir / "description.txt"
+            enhancement_dir.mkdir(parents=True, exist_ok=True)
 
-            # Read files
-            enhanced_resume = self.read_file(resume_path)
-            job_description = self.read_file(job_path)
+            # Read from database first, fall back to files if not available
+            enhanced_resume = enhancement.enhanced_content
+            if not enhanced_resume:
+                resume_path = enhancement_dir / "enhanced.md"
+                enhanced_resume = self.read_file(resume_path)
+                logger.info(f"Enhanced resume loaded from file (DB column was empty)")
+
+            # Get job description from database
+            job_description = ""
+            if enhancement.job_id:
+                job = db.query(Job).filter(Job.id == enhancement.job_id).first()
+                if job:
+                    job_description = job.description_text or ""
+                if not job_description:
+                    job_dir = self.workspace_root / "jobs" / str(enhancement.job_id)
+                    job_path = job_dir / "description.txt"
+                    job_description = self.read_file(job_path)
+                    logger.info(f"Job description loaded from file (DB column was empty)")
 
             if not enhanced_resume or not job_description:
                 raise ValueError("Missing enhanced resume or job description")
@@ -244,7 +277,7 @@ class EnhancementWorker:
 
             logger.info(f"Cover letter generated ({len(cover_letter)} characters)")
 
-            # Save cover letter
+            # Save cover letter to file (for local caching) and database
             cover_letter_path = enhancement_dir / "cover_letter.md"
             with open(cover_letter_path, 'w', encoding='utf-8') as f:
                 f.write(cover_letter)
@@ -266,7 +299,8 @@ class EnhancementWorker:
             else:
                 logger.error(f"Cover letter PDF generation failed: {cover_pdf_result.get('error')}")
 
-            # Update enhancement in database
+            # Update enhancement in database (store content for Render compatibility)
+            enhancement.cover_letter_content = cover_letter  # Store in DB for persistence
             enhancement.cover_letter_path = f"workspace/resumes/enhanced/{enhancement.id}/cover_letter.md"
             enhancement.cover_letter_pdf_path = f"workspace/resumes/enhanced/{enhancement.id}/cover_letter.pdf" if cover_pdf_result.get("success") else None
             enhancement.cover_letter_status = "completed"

@@ -135,7 +135,7 @@ class WorkspaceService:
         enhancement_type: str,
         industry: Optional[str] = None,
         style: Optional[str] = None,
-    ) -> Tuple[str, Path]:
+    ) -> Tuple[str, Path, str]:
         """
         Create a workspace for a resume enhancement request.
 
@@ -149,7 +149,7 @@ class WorkspaceService:
             style: Writing style preference (optional)
 
         Returns:
-            Tuple of (enhancement_id, enhancement_directory_path)
+            Tuple of (enhancement_id, enhancement_directory_path, instructions_text)
         """
         enhancement_id = str(uuid4())
         enhancement_dir = self.workspace_root / "resumes" / "enhanced" / enhancement_id
@@ -197,7 +197,7 @@ class WorkspaceService:
 
         logger.info(f"Enhancement workspace created: {enhancement_id}")
 
-        return enhancement_id, enhancement_dir
+        return enhancement_id, enhancement_dir, instructions
 
     def _create_instructions(
         self,

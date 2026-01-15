@@ -277,7 +277,7 @@ class TestCreateEnhancementWorkspace:
         resume_id = str(uuid4())
         job_id = str(uuid4())
 
-        enhancement_id, enhancement_dir = workspace_service.create_enhancement_workspace(
+        enhancement_id, enhancement_dir, _ = workspace_service.create_enhancement_workspace(
             resume_id=resume_id,
             job_id=job_id,
             enhancement_type="job_tailoring",
@@ -300,7 +300,7 @@ class TestCreateEnhancementWorkspace:
         resume_id = str(uuid4())
         job_id = str(uuid4())
 
-        enhancement_id, enhancement_dir = workspace_service.create_enhancement_workspace(
+        enhancement_id, enhancement_dir, _ = workspace_service.create_enhancement_workspace(
             resume_id=resume_id,
             job_id=job_id,
             enhancement_type="job_tailoring",
@@ -326,7 +326,7 @@ class TestCreateEnhancementWorkspace:
         """Test creating industry revamp enhancement workspace."""
         resume_id = str(uuid4())
 
-        enhancement_id, enhancement_dir = workspace_service.create_enhancement_workspace(
+        enhancement_id, enhancement_dir, _ = workspace_service.create_enhancement_workspace(
             resume_id=resume_id,
             job_id=None,
             enhancement_type="industry_revamp",
@@ -351,7 +351,7 @@ class TestCreateEnhancementWorkspace:
         resume_id = str(uuid4())
         job_id = str(uuid4())
 
-        enhancement_id, enhancement_dir = workspace_service.create_enhancement_workspace(
+        enhancement_id, enhancement_dir, _ = workspace_service.create_enhancement_workspace(
             resume_id=resume_id,
             job_id=job_id,
             enhancement_type="job_tailoring",
@@ -427,7 +427,7 @@ class TestEnhancementCompletion:
         resume_id = str(uuid4())
         job_id = str(uuid4())
 
-        enhancement_id, enhancement_dir = workspace_service.create_enhancement_workspace(
+        enhancement_id, enhancement_dir, _ = workspace_service.create_enhancement_workspace(
             resume_id=resume_id,
             job_id=job_id,
             enhancement_type="job_tailoring",
@@ -448,7 +448,7 @@ class TestEnhancementCompletion:
         resume_id = str(uuid4())
         job_id = str(uuid4())
 
-        enhancement_id, enhancement_dir = workspace_service.create_enhancement_workspace(
+        enhancement_id, enhancement_dir, _ = workspace_service.create_enhancement_workspace(
             resume_id=resume_id,
             job_id=job_id,
             enhancement_type="job_tailoring",
@@ -475,14 +475,14 @@ class TestEnhancementCompletion:
         job_id = str(uuid4())
 
         # Create pending enhancement
-        enhancement_id_1, _ = workspace_service.create_enhancement_workspace(
+        enhancement_id_1, _, _ = workspace_service.create_enhancement_workspace(
             resume_id=resume_id,
             job_id=job_id,
             enhancement_type="job_tailoring",
         )
 
         # Create another pending enhancement
-        enhancement_id_2, _ = workspace_service.create_enhancement_workspace(
+        enhancement_id_2, _, _ = workspace_service.create_enhancement_workspace(
             resume_id=resume_id,
             job_id=None,
             enhancement_type="industry_revamp",
@@ -507,14 +507,14 @@ class TestEnhancementCompletion:
         job_id = str(uuid4())
 
         # Create pending enhancement
-        enhancement_id_1, _ = workspace_service.create_enhancement_workspace(
+        enhancement_id_1, _, _ = workspace_service.create_enhancement_workspace(
             resume_id=resume_id,
             job_id=job_id,
             enhancement_type="job_tailoring",
         )
 
         # Create completed enhancement
-        enhancement_id_2, enhancement_dir_2 = workspace_service.create_enhancement_workspace(
+        enhancement_id_2, enhancement_dir_2, _ = workspace_service.create_enhancement_workspace(
             resume_id=resume_id,
             job_id=job_id,
             enhancement_type="job_tailoring",
@@ -538,7 +538,7 @@ class TestEnhancementCompletion:
         resume_id = str(uuid4())
         job_id = str(uuid4())
 
-        enhancement_id, _ = workspace_service.create_enhancement_workspace(
+        enhancement_id, _, _ = workspace_service.create_enhancement_workspace(
             resume_id=resume_id,
             job_id=job_id,
             enhancement_type="job_tailoring",

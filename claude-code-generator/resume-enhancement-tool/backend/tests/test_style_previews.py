@@ -295,7 +295,7 @@ def test_style_passed_to_enhancement(
             style=style
         )
 
-        return "test-enhancement-id", Path("/tmp/test")
+        return "test-enhancement-id", Path("/tmp/test"), instructions_content
 
     with patch("app.api.routes.enhancements.workspace_service") as mock_ws:
         mock_ws.create_enhancement_workspace = mock_create_enhancement_workspace
@@ -331,7 +331,8 @@ def test_enhancement_without_style_works(
     with patch("app.api.routes.enhancements.workspace_service") as mock_ws:
         mock_ws.create_enhancement_workspace.return_value = (
             "test-enhancement-id",
-            Path("/tmp/test")
+            Path("/tmp/test"),
+            "mock instructions"
         )
 
         # Create enhancement

@@ -148,7 +148,7 @@ async def upload_resume(
             metadata,
         )
 
-        # Save to database
+        # Save to database (including extracted_text for DB-based storage)
         db_resume = Resume(
             id=UUID(resume_id),
             user_id=current_user.id,
@@ -156,6 +156,7 @@ async def upload_resume(
             original_format=metadata["original_format"],
             file_path=str(resume_dir / f"source{file_ext}"),
             extracted_text_path=str(resume_dir / "extracted.txt"),
+            extracted_text=extracted_text,  # Store content in DB for Render compatibility
             file_size_bytes=len(content),
             word_count=word_count,
         )
