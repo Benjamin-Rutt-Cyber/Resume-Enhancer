@@ -22,6 +22,7 @@ export const LoginForm: React.FC = () => {
       await login({ email, password });
       navigate('/');
     } catch (err: any) {
+      console.error('Login error:', err);
       setError(err.response?.data?.detail || 'Invalid email or password');
     } finally {
       setIsLoading(false);
