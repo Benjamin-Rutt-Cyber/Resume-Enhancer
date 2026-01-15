@@ -13,7 +13,21 @@ import type {
   ComparisonData,
 } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+// Construct API base URL with robust handling for missing /api suffix and trailing slashes
+const getApiBaseUrl = () => {
+  let url = import.meta.env.VITE_API_URL || '/api';
+  // Remove trailing slash if present
+  if (url.endsWith('/')) {
+    url = url.slice(0, -1);
+  }
+  // Append /api if not already present
+  if (!url.endsWith('/api')) {
+    url += '/api';
+  }
+  return url;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
