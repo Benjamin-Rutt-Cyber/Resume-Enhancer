@@ -4,6 +4,7 @@ Application configuration settings.
 
 import logging
 from typing import List
+from pathlib import Path
 from pydantic import validator
 from pydantic_settings import BaseSettings
 
@@ -30,7 +31,6 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
         "http://127.0.0.1:5173",
         "https://resume-enhancement-tool-frontend.onrender.com", # Placeholder, ideally use env var
-        "*" # Temporarily allowing all for troubleshooting
     ]
 
     # Database
@@ -44,7 +44,8 @@ class Settings(BaseSettings):
     ENABLE_STYLE_PREVIEW_API: bool = True  # Enabled for automatic enhancements
 
     # File Storage
-    WORKSPACE_ROOT: str = "workspace"  # Default to 'workspace' in current directory
+    # Default to 'workspace' in the project root (absolute path)
+    WORKSPACE_ROOT: str = str(Path(__file__).parent.parent.parent.resolve() / "workspace")
 
     @validator('ALLOWED_ORIGINS')
     def validate_cors_origins(cls, v):

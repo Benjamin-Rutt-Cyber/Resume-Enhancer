@@ -60,7 +60,7 @@ class EnhancementWorker:
         self.pdf_generator = PDFGenerator(templates_dir)
 
         logger.info("EnhancementWorker initialized successfully")
-        logger.info(f"Workspace root: {self.workspace_root}")
+        logger.info(f"Workspace root (absolute): {self.workspace_root.resolve()}")
         logger.info(f"API key configured: {api_key[:20]}...")
 
     def get_pending_enhancements(self, db: Session) -> list[Enhancement]:
@@ -81,7 +81,9 @@ class EnhancementWorker:
         """Read file contents safely."""
         try:
             if not file_path.exists():
-                logger.error(f"File not found: {file_path}")
+                logger.error(f"File not found: {file_path.resolve()}")
+                if not file_path.parent.exists():
+                    logger.error(f"Parent directory does not exist: {file_path.parent.resolve()}")
                 return ""
             with open(file_path, 'r', encoding='utf-8') as f:
                 return f.read()
