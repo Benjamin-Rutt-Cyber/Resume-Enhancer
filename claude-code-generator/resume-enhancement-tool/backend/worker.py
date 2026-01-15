@@ -21,6 +21,9 @@ from anthropic import Anthropic
 
 from app.core.database import SessionLocal, engine
 from app.models.enhancement import Enhancement
+from app.models.user import User  # Required for FK resolution
+from app.models.resume import Resume  # Required for FK resolution
+from app.models.job import Job  # Required for FK resolution
 from app.core.config import settings
 from app.utils.pdf_generator import PDFGenerator
 
