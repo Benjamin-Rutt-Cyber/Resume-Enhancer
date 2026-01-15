@@ -3,10 +3,13 @@ set -e
 
 echo "Starting Resume Enhancement Tool Services..."
 
+# Ensure workspace exists
+mkdir -p workspace
+
 # Start Background Worker in background
-# Redirect output to stdout/stderr for logging
+# Redirect output to file for debugging
 echo "Starting Background Worker..."
-python worker.py &
+python worker.py > workspace/worker.log 2>&1 &
 
 # Start API Server in foreground
 echo "Starting API Server..."

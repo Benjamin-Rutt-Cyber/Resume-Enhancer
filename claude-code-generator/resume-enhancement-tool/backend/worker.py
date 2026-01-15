@@ -465,6 +465,7 @@ def main():
         logger.critical(f"Worker failed to start: {e}", exc_info=True)
         # Write error to workspace for debugging
         try:
+            os.makedirs("workspace", exist_ok=True)
             with open("workspace/worker_crash.log", "w") as f:
                 f.write(f"Worker crashed at {datetime.now()}:\n{str(e)}")
         except:

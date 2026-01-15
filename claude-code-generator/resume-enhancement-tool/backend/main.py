@@ -107,6 +107,11 @@ async def get_worker_status():
     if crash_file.exists():
         status["crash_log"] = crash_file.read_text()
         
+    # Check stdout/stderr log
+    log_file = workspace / "worker.log"
+    if log_file.exists():
+        status["worker_log"] = log_file.read_text()
+        
     return status
 
 app.include_router(debug_router, prefix="/api", tags=["debug"])
