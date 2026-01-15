@@ -40,7 +40,8 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: str = ""  # OPTIONAL - Only needed if ENABLE_STYLE_PREVIEW_API=true
 
     # API Cost Controls
-    ENABLE_STYLE_PREVIEW_API: bool = False  # Disabled to eliminate API costs ($3/month savings)
+    # API Cost Controls
+    ENABLE_STYLE_PREVIEW_API: bool = True  # Enabled for automatic enhancements
 
     # File Storage
     WORKSPACE_ROOT: str = "workspace"  # Default to 'workspace' in current directory
