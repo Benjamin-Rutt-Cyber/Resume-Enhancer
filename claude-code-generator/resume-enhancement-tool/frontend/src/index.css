@@ -1,13 +1,18 @@
 :root {
-  /* Colors */
-  --primary: #3b82f6;
-  --primary-hover: #2563eb;
-  --primary-light: #dbeafe;
-  --secondary: #10b981;
-  --secondary-hover: #059669;
+  /* Colors - Modern Teal & Rose Theme */
+  --primary: #0d9488;
+  /* Teal-600 */
+  --primary-hover: #0f766e;
+  /* Teal-700 */
+  --primary-light: #ccfbf1;
+  /* Teal-100 */
+  --secondary: #f43f5e;
+  /* Rose-500 */
+  --secondary-hover: #e11d48;
+  /* Rose-600 */
   --danger: #ef4444;
   --danger-hover: #dc2626;
-  
+
   /* Neutral Colors (Light Mode) */
   --bg-body: #f8fafc;
   --bg-card: #ffffff;
@@ -15,21 +20,21 @@
   --text-main: #0f172a;
   --text-secondary: #64748b;
   --border: #e2e8f0;
-  
+
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  
+
   /* Typography */
   --font-sans: 'Inter', sans-serif;
   --font-heading: 'Plus Jakarta Sans', sans-serif;
-  
+
   /* Radii */
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
-  
+
   /* Transitions */
   --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -54,7 +59,12 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-heading);
   margin-top: 0;
   color: var(--text-main);
@@ -66,8 +76,15 @@ button {
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-fade-in {

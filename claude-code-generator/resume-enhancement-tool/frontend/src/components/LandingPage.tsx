@@ -79,7 +79,7 @@ export const LandingPage: React.FC = () => {
 
             <motion.div variants={fadeInUp} className="hero-stats">
               <div className="stat-pill">
-                <Star size={16} className="text-yellow-400" />
+                <Star size={16} style={{ color: '#fbbf24' }} />
                 <span>Trusted by 10,000+ Job Seekers</span>
               </div>
             </motion.div>
