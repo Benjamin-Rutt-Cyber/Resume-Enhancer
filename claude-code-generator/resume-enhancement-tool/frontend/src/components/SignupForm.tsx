@@ -37,7 +37,7 @@ export const SignupForm: React.FC = () => {
         password,
         full_name: fullName || undefined,
       });
-      navigate('/');
+      navigate('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to create account');
     } finally {

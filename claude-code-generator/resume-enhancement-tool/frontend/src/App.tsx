@@ -8,6 +8,7 @@ import StylePreview from './components/StylePreview';
 import { DarkModeToggle } from './components/DarkModeToggle';
 import { LoginForm } from './components/LoginForm';
 import { SignupForm } from './components/SignupForm';
+import { LandingPage } from './components/LandingPage';
 import { UserMenu } from './components/UserMenu';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { DarkModeProvider, useDarkMode } from './contexts/DarkModeContext';
@@ -24,8 +25,9 @@ function App() {
           <Routes>
             <Route path="/login" element={<LoginForm />} />
             <Route path="/signup" element={<SignupForm />} />
+            <Route path="/" element={<LandingPage />} />
             <Route
-              path="/"
+              path="/dashboard"
               element={
                 <ProtectedRoute>
                   <MainApp />
