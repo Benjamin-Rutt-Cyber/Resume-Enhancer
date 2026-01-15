@@ -426,13 +426,19 @@ Output the enhanced resume now:
 
             # Write heartbeat
             try:
+                # Count total enhancements to verify DB integrity
+                total_enhancements = db.query(Enhancement).count()
+                pending_count = len(pending) if 'pending' in locals() else 0
+                
                 with open(self.workspace_root / "worker_heartbeat.json", "w") as f:
                     import json
                     status = {
                         "last_beat": datetime.now().isoformat(),
                         "status": "running",
                         "api_key_configured": bool(self.client.api_key),
-                        "pending_enhancements": 0 # Will be updated in loop
+                        "pending_enhancements": pending_count,
+                        "total_db_records": total_enhancements,
+                        "db_url_masked": str(settings.DATABASE_URL).split("@")[-1] if "@" in str(settings.DATABASE_URL) else "sqlite"
                     }
                     json.dump(status, f)
             except Exception as hb_err:
