@@ -41,7 +41,7 @@ export const LandingPage: React.FC = () => {
         <div className="nav-content">
           <div className="logo-section">
             <span className="logo-icon">✨</span>
-            <span className="logo-text">ResumeAI</span>
+            <span className="logo-text">re-vsion</span>
           </div>
           <div className="nav-links">
             <Link to="/login" className="nav-link">Sign In</Link>
@@ -128,7 +128,7 @@ export const LandingPage: React.FC = () => {
           className="section-container"
         >
           <motion.div variants={fadeInUp} className="section-header">
-            <h2 className="section-title">Why Choose ResumeAI?</h2>
+            <h2 className="section-title">Why Choose re-vsion?</h2>
             <p className="section-description">
               Powerful tools designed to get you hired faster at top companies.
             </p>
@@ -242,7 +242,7 @@ export const LandingPage: React.FC = () => {
       <footer className="landing-footer">
         <div className="footer-content">
           <div className="footer-col">
-            <h4>ResumeAI</h4>
+            <h4>re-vsion</h4>
             <p>Empowering careers with technology.</p>
           </div>
           <div className="footer-col">
