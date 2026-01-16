@@ -26,7 +26,7 @@ services:
     autoDeploy: false
 
   # Frontend Static Site
-  - type: static
+  - type: static_site
     name: resume-enhancer-frontend
     rootDir: claude-code-generator/resume-enhancement-tool/frontend
     buildCommand: "npm install && npm run build"
