@@ -6,9 +6,11 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isAdmin: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   signup: (credentials: SignupCredentials) => Promise<void>;
-  logout: () => void;
+  logout: (logoutAll?: boolean) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,9 +37,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Update stored user in case of any changes
           authApi.storeAuthData(token, currentUser);
         } catch (error) {
-          // Token is invalid, clear stored data
-          authApi.logout();
-          setUser(null);
+          // Token is invalid, try to refresh
+          try {
+            const refreshResponse = await authApi.refreshToken();
+            authApi.storeAuthData(refreshResponse.access_token, storedUser);
+            // Verify the new token works
+            const currentUser = await authApi.getCurrentUser();
+            setUser(currentUser);
+            authApi.storeAuthData(refreshResponse.access_token, currentUser);
+          } catch (refreshError) {
+            // Refresh also failed, clear stored data
+            await authApi.logout();
+            setUser(null);
+          }
         }
       }
 
@@ -59,8 +71,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(user);
   };
 
-  const logout = () => {
-    authApi.logout();
+  /**
+   * Logout from current session or all sessions
+   * @param logoutAll - If true, invalidates all sessions across devices
+   */
+  const logout = async (logoutAll: boolean = false) => {
+    await authApi.logout(logoutAll);
+    setUser(null);
+    // Redirect to login page
+    window.location.href = '/login';
+  };
+
+  /**
+   * Change password - requires re-login after
+   */
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    await authApi.changePassword(currentPassword, newPassword);
     setUser(null);
     // Redirect to login page
     window.location.href = '/login';
@@ -70,9 +96,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     user,
     isAuthenticated: !!user,
     isLoading,
+    isAdmin: user?.role === 'admin',
     login,
     signup,
     logout,
+    changePassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

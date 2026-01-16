@@ -1,15 +1,25 @@
-"""Enhancement API routes."""
+"""Enhancement API routes.
+
+SECURITY IMPLEMENTATION:
+- Rate limiting: 10 enhancements/hour per user (cost control for AI operations)
+- Authorization: Returns 404 (not 403) to prevent resource enumeration
+- Path traversal protection: All file paths validated against workspace root
+- Audit logging: All enhancement operations logged with user context
+
+IMPORTANT: Rate limits MUST be enforced BEFORE any AI model call is made.
+"""
 
 import logging
 from pathlib import Path
 from uuid import UUID
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.security import limiter, AI_RATE_LIMIT
 from app.models import Enhancement, Resume, Job
 from app.models.user import User
 from app.schemas import (
@@ -25,6 +35,39 @@ from app.api.dependencies import get_workspace_service, get_current_active_user,
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+def check_resource_ownership(resource, current_user: User, resource_name: str = "Resource"):
+    """Check if user owns the resource, raise 404 if not.
+
+    SECURITY: Returns 404 instead of 403 to prevent ID enumeration attacks.
+    An attacker cannot determine if a resource exists by checking error codes.
+
+    Args:
+        resource: Database model with user_id attribute
+        current_user: Current authenticated user
+        resource_name: Name for error message (logged, not returned to client)
+
+    Raises:
+        HTTPException 404: If user doesn't own the resource
+    """
+    if resource.user_id != current_user.id:
+        # AUDIT: Log unauthorized access attempt
+        logger.warning(
+            f"Unauthorized access attempt to {resource_name}",
+            extra={
+                "event": "unauthorized_access",
+                "resource_type": resource_name,
+                "resource_id": str(resource.id),
+                "user_id": str(current_user.id),
+                "owner_id": str(resource.user_id),
+            }
+        )
+        # SECURITY: Return 404 to prevent enumeration
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"{resource_name} not found",
+        )
 
 
 def validate_safe_path(file_path: Path, base_dir: Path) -> bool:
@@ -70,7 +113,9 @@ except (ImportError, OSError, TypeError) as e:
     response_model=EnhancementResponse,
     status_code=status.HTTP_201_CREATED,
 )
+@limiter.limit(AI_RATE_LIMIT)  # SECURITY: 10/hour - cost control for AI operations
 async def create_tailoring_enhancement(
+    request: Request,  # Required for rate limiter
     enhancement: EnhancementTailorCreate,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
@@ -79,8 +124,11 @@ async def create_tailoring_enhancement(
     """
     Create a job-tailoring enhancement request.
 
+    SECURITY: Rate limited to 10/hour per user to control AI costs.
+    Rate limit is enforced BEFORE any processing begins.
+
     This endpoint:
-    1. Validates that the resume and job exist
+    1. Validates that the resume and job exist and user owns them
     2. Creates an enhancement workspace with INSTRUCTIONS.md
     3. Returns the enhancement ID for tracking
 
@@ -98,28 +146,22 @@ async def create_tailoring_enhancement(
     if not resume:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Resume not found: {enhancement.resume_id}",
+            detail="Resume not found",
         )
 
-    if resume.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this resume",
-        )
+    # SECURITY: Use 404 to prevent enumeration
+    check_resource_ownership(resume, current_user, "Resume")
 
     # Verify job exists and user owns it
     job = db.query(Job).filter(Job.id == enhancement.job_id).first()
     if not job:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Job not found: {enhancement.job_id}",
+            detail="Job not found",
         )
 
-    if job.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this job",
-        )
+    # SECURITY: Use 404 to prevent enumeration
+    check_resource_ownership(job, current_user, "Job")
 
     # Create enhancement workspace with user's selected style
     enhancement_id, enhancement_dir, instructions_text = workspace_service.create_enhancement_workspace(
@@ -153,7 +195,9 @@ async def create_tailoring_enhancement(
     response_model=EnhancementResponse,
     status_code=status.HTTP_201_CREATED,
 )
+@limiter.limit(AI_RATE_LIMIT)  # SECURITY: 10/hour - cost control for AI operations
 async def create_revamp_enhancement(
+    request: Request,  # Required for rate limiter
     enhancement: EnhancementRevampCreate,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
@@ -162,8 +206,11 @@ async def create_revamp_enhancement(
     """
     Create an industry-revamp enhancement request.
 
+    SECURITY: Rate limited to 10/hour per user to control AI costs.
+    Rate limit is enforced BEFORE any processing begins.
+
     This endpoint:
-    1. Validates that the resume exists
+    1. Validates that the resume exists and user owns it
     2. Validates the industry (IT, Cybersecurity, Finance)
     3. Creates an enhancement workspace with INSTRUCTIONS.md
     4. Returns the enhancement ID for tracking
@@ -181,14 +228,11 @@ async def create_revamp_enhancement(
     if not resume:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Resume not found: {enhancement.resume_id}",
+            detail="Resume not found",
         )
 
-    if resume.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this resume",
-        )
+    # SECURITY: Use 404 to prevent enumeration
+    check_resource_ownership(resume, current_user, "Resume")
 
     # Validate industry
     valid_industries = ["IT", "Cybersecurity", "Finance"]
@@ -288,12 +332,8 @@ async def get_enhancement(
             detail=f"Enhancement not found: {enhancement_id}",
         )
 
-    # Verify ownership
-    if enhancement.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this enhancement",
-        )
+    # SECURITY: Use 404 to prevent enumeration
+    check_resource_ownership(enhancement, current_user, "Enhancement")
 
     # Use completion detector to check status of both resume and cover letter
     from app.services.completion_detector import CompletionDetectorService
@@ -331,12 +371,8 @@ async def finalize_enhancement(
             detail=f"Enhancement not found: {enhancement_id}",
         )
 
-    # Verify ownership
-    if enhancement.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this enhancement",
-        )
+    # SECURITY: Use 404 to prevent enumeration
+    check_resource_ownership(enhancement, current_user, "Enhancement")
 
     # Check if markdown file exists
     enhanced_md_path = WORKSPACE_ROOT / "resumes" / "enhanced" / str(enhancement_id) / "enhanced.md"
@@ -467,12 +503,8 @@ async def download_enhancement(
             detail=f"Enhancement not found: {enhancement_id}",
         )
 
-    # Verify ownership
-    if enhancement.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this enhancement",
-        )
+    # SECURITY: Use 404 to prevent enumeration
+    check_resource_ownership(enhancement, current_user, "Enhancement")
 
     # Define paths for regeneration
     enhancement_dir = WORKSPACE_ROOT / "resumes" / "enhanced" / str(enhancement_id)
@@ -573,12 +605,8 @@ async def download_enhancement_docx(
             detail=f"Enhancement not found: {enhancement_id}"
         )
 
-    # Verify ownership
-    if enhancement.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this enhancement",
-        )
+    # SECURITY: Use 404 to prevent enumeration
+    check_resource_ownership(enhancement, current_user, "Enhancement")
 
     # Check if DOCX already exists (cached)
     if enhancement.docx_path and Path(enhancement.docx_path).exists():
@@ -688,12 +716,8 @@ async def delete_enhancement(
             detail=f"Enhancement not found: {enhancement_id}",
         )
 
-    # Verify ownership
-    if enhancement.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to delete this enhancement",
-        )
+    # SECURITY: Use 404 to prevent enumeration
+    check_resource_ownership(enhancement, current_user, "Enhancement")
 
     # Delete from database
     db.delete(enhancement)
@@ -756,12 +780,8 @@ async def download_cover_letter(
             detail=f"Enhancement not found: {enhancement_id}"
         )
 
-    # Verify ownership
-    if enhancement.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this enhancement",
-        )
+    # SECURITY: Use 404 to prevent enumeration
+    check_resource_ownership(enhancement, current_user, "Enhancement")
 
     # Check cover letter status
     if enhancement.cover_letter_status == "skipped":

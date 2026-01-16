@@ -1,20 +1,27 @@
 """
 Resume Enhancement Tool - FastAPI Application
 
-A single-user web application for enhancing resumes with AI assistance. Features include job-specific resume tailoring by matching resumes to job descriptions, and comprehensive industry-focused resume revamps for different sectors like IT and cybersecurity. Uses a workspace approach where files are stored locally and Claude Code reads them directly - no API calls. Supports PDF and DOCX input, outputs PDF resumes. Web UI handles organization and viewing, Claude Code performs the enhancement work.
+A web application for enhancing resumes with AI assistance. Features include job-specific
+resume tailoring by matching resumes to job descriptions, and comprehensive industry-focused
+resume revamps for different sectors like IT and cybersecurity.
+
+SECURITY FEATURES:
+- JWT authentication with refresh tokens (HttpOnly cookies)
+- Token revocation via user_version
+- Rate limiting (auth: 5/min, AI: 10/hour, global: 60/min)
+- Security headers (HSTS, CSP, X-Frame-Options, etc.)
+- RBAC with admin role support
+- Audit logging for security events
 """
 
 import logging
-import time
 from pathlib import Path
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
+from app.core.security import setup_security, limiter
 from app.api.routes import health, resumes, jobs, enhancements, style_previews, analysis, comparison, auth
 from logging_config import setup_logging
 
@@ -22,52 +29,29 @@ from logging_config import setup_logging
 setup_logging(log_level="INFO" if not settings.DEBUG else "DEBUG")
 logger = logging.getLogger(__name__)
 
-# Initialize rate limiter
-limiter = Limiter(key_func=get_remote_address)
-
 app = FastAPI(
     title="Resume Enhancement Tool",
-    description="A single-user web application for enhancing resumes with AI assistance. Features include job-specific resume tailoring by matching resumes to job descriptions, and comprehensive industry-focused resume revamps for different sectors like IT and cybersecurity. Uses a workspace approach where files are stored locally and Claude Code reads them directly - no API calls. Supports PDF and DOCX input, outputs PDF resumes. Web UI handles organization and viewing, Claude Code performs the enhancement work.",
+    description=(
+        "A web application for enhancing resumes with AI assistance. "
+        "Features include job-specific resume tailoring and industry-focused resume revamps."
+    ),
     version="0.1.0",
+    # SECURITY: Disable docs in production if needed
+    # docs_url=None if not settings.DEBUG else "/docs",
+    # redoc_url=None if not settings.DEBUG else "/redoc",
 )
 
-# Add rate limiter to app state
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+# SECURITY: Setup rate limiting, security headers, and audit logging
+setup_security(app)
 
-# Request logging middleware
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    """Log all HTTP requests with timing information."""
-    start_time = time.time()
-
-    # Process the request
-    response = await call_next(request)
-
-    # Calculate duration
-    duration_ms = (time.time() - start_time) * 1000
-
-    # Log request details with structured fields
-    logger.info(
-        f"{request.method} {request.url.path} - Status: {response.status_code}",
-        extra={
-            'method': request.method,
-            'path': request.url.path,
-            'status_code': response.status_code,
-            'duration_ms': round(duration_ms, 2),
-            'client_ip': request.client.host if request.client else None,
-        }
-    )
-
-    return response
-
-# CORS middleware
+# CORS middleware - SECURITY: Credentials enabled for HttpOnly cookie support
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_credentials=True,  # SECURITY: Required for HttpOnly refresh token cookies
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Requested-With"],
+    expose_headers=["X-Correlation-ID"],  # Allow frontend to access correlation ID
 )
 
 # Include routers

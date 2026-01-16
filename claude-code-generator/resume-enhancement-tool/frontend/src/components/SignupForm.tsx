@@ -3,11 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useDarkMode } from '../contexts/DarkModeContext';
 
+// SECURITY: Minimum password length per spec (allows passphrases)
+const MIN_PASSWORD_LENGTH = 12;
+
 export const SignupForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [acceptTerms, setAcceptTerms] = useState(false);  // COMPLIANCE: Terms acceptance
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -19,13 +23,20 @@ export const SignupForm: React.FC = () => {
     e.preventDefault();
     setError('');
 
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters long');
+    // SECURITY: Validate password length (12 characters minimum)
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters long`);
       return;
     }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match');
+      return;
+    }
+
+    // COMPLIANCE: Require terms acceptance
+    if (!acceptTerms) {
+      setError('You must accept the terms of service to create an account');
       return;
     }
 
@@ -36,6 +47,7 @@ export const SignupForm: React.FC = () => {
         email,
         password,
         full_name: fullName || undefined,
+        accept_terms: acceptTerms,  // COMPLIANCE: Send terms acceptance
       });
       navigate('/dashboard');
     } catch (err: any) {
@@ -114,13 +126,14 @@ export const SignupForm: React.FC = () => {
               type="password"
               autoComplete="new-password"
               required
+              minLength={MIN_PASSWORD_LENGTH}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="auth-input"
-              placeholder="••••••••"
+              placeholder="••••••••••••"
             />
             <p className="auth-hint">
-              Must be at least 8 characters
+              Must be at least {MIN_PASSWORD_LENGTH} characters (passphrases recommended)
             </p>
           </div>
 
@@ -137,8 +150,33 @@ export const SignupForm: React.FC = () => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="auth-input"
-              placeholder="••••••••"
+              placeholder="••••••••••••"
             />
+          </div>
+
+          {/* COMPLIANCE: Terms of Service acceptance */}
+          <div className="auth-field">
+            <label className="auth-checkbox-label">
+              <input
+                type="checkbox"
+                checked={acceptTerms}
+                onChange={(e) => setAcceptTerms(e.target.checked)}
+                className="auth-checkbox"
+                required
+              />
+              <span className="auth-checkbox-text">
+                I accept the{' '}
+                <a
+                  href="/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="auth-link"
+                >
+                  Terms of Service
+                </a>
+                {' '}and acknowledge that my data will be processed by Anthropic AI
+              </span>
+            </label>
           </div>
 
           <button

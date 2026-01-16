@@ -1,4 +1,11 @@
-"""Resume API routes."""
+"""Resume API routes.
+
+SECURITY IMPLEMENTATION:
+- Rate limiting: 10/minute for uploads
+- Authorization: Returns 404 (not 403) to prevent resource enumeration
+- File validation: Size limits, format validation
+- Audit logging: All operations logged with user context
+"""
 
 import os
 import tempfile
@@ -9,10 +16,9 @@ from typing import List
 
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 
 from app.core.database import get_db
+from app.core.security import limiter, UPLOAD_RATE_LIMIT
 from app.models import Resume
 from app.models.user import User
 from app.schemas import ResumeResponse, ResumeListResponse
@@ -28,14 +34,34 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-limiter = Limiter(key_func=get_remote_address)
+
+
+def check_resume_ownership(resume, current_user: User):
+    """Check if user owns the resume, raise 404 if not.
+
+    SECURITY: Returns 404 instead of 403 to prevent ID enumeration attacks.
+    """
+    if resume.user_id != current_user.id:
+        logger.warning(
+            f"Unauthorized access attempt to resume",
+            extra={
+                "event": "unauthorized_access",
+                "resource_type": "Resume",
+                "resource_id": str(resume.id),
+                "user_id": str(current_user.id),
+            }
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Resume not found",
+        )
 
 # Constants
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 
 
 @router.post("/resumes/upload", response_model=ResumeResponse, status_code=status.HTTP_201_CREATED)
-@limiter.limit("10/minute")
+@limiter.limit(UPLOAD_RATE_LIMIT)  # SECURITY: 10/minute to prevent abuse
 async def upload_resume(
     request: Request,
     file: UploadFile = File(..., description="Resume file (PDF or DOCX)"),
@@ -217,15 +243,11 @@ async def get_resume(
     if not resume:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Resume not found: {resume_id}",
+            detail="Resume not found",
         )
 
-    # Verify ownership
-    if resume.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this resume",
-        )
+    # SECURITY: Use 404 to prevent enumeration
+    check_resume_ownership(resume, current_user)
 
     return resume
 
@@ -249,15 +271,11 @@ async def delete_resume(
     if not resume:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Resume not found: {resume_id}",
+            detail="Resume not found",
         )
 
-    # Verify ownership
-    if resume.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to delete this resume",
-        )
+    # SECURITY: Use 404 to prevent enumeration
+    check_resume_ownership(resume, current_user)
 
     # Delete from database
     db.delete(resume)
@@ -324,15 +342,11 @@ async def update_resume_style(
     if not resume:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Resume not found: {resume_id}",
+            detail="Resume not found",
         )
 
-    # Verify ownership
-    if resume.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to update this resume",
-        )
+    # SECURITY: Use 404 to prevent enumeration
+    check_resume_ownership(resume, current_user)
 
     # Validate style exists
     if style_update.new_style not in STYLES:

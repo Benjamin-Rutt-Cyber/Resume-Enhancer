@@ -29,11 +29,34 @@ const getApiBaseUrl = () => {
 
 const API_BASE_URL = getApiBaseUrl();
 
+/**
+ * SECURITY: Track if we're currently refreshing the token to prevent race conditions
+ */
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+/**
+ * Subscribe to token refresh completion
+ */
+const subscribeTokenRefresh = (callback: (token: string) => void) => {
+  refreshSubscribers.push(callback);
+};
+
+/**
+ * Notify all subscribers that token has been refreshed
+ */
+const onTokenRefreshed = (token: string) => {
+  refreshSubscribers.forEach(callback => callback(token));
+  refreshSubscribers = [];
+};
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  // SECURITY: Include credentials to send/receive HttpOnly cookies
+  withCredentials: true,
 });
 
 // Request interceptor - add JWT token to all requests
@@ -50,20 +73,70 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor - handle 401 errors (unauthorized)
+// Response interceptor - handle 401 errors with token refresh
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Token is invalid or expired
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
+  async (error) => {
+    const originalRequest = error.config;
 
-      // Only redirect if not already on login/signup page
-      if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/signup')) {
-        window.location.href = '/login';
+    // If 401 and not already retried, try to refresh the token
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      // Don't retry for auth endpoints (login, signup, refresh)
+      if (originalRequest.url?.includes('/auth/')) {
+        // Clear auth data and redirect
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+        if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/signup')) {
+          window.location.href = '/login';
+        }
+        return Promise.reject(error);
+      }
+
+      originalRequest._retry = true;
+
+      // If already refreshing, wait for it to complete
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          subscribeTokenRefresh((token: string) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            resolve(api(originalRequest));
+          });
+        });
+      }
+
+      isRefreshing = true;
+
+      try {
+        // SECURITY: Refresh token is in HttpOnly cookie, automatically sent
+        const response = await api.post('/auth/refresh');
+        const { access_token } = response.data;
+
+        // Store new access token
+        localStorage.setItem('authToken', access_token);
+
+        // Update authorization header
+        api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+        originalRequest.headers.Authorization = `Bearer ${access_token}`;
+
+        // Notify subscribers
+        onTokenRefreshed(access_token);
+        isRefreshing = false;
+
+        // Retry original request
+        return api(originalRequest);
+      } catch (refreshError) {
+        // Refresh failed - clear auth and redirect to login
+        isRefreshing = false;
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+
+        if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/signup')) {
+          window.location.href = '/login';
+        }
+        return Promise.reject(refreshError);
       }
     }
+
     return Promise.reject(error);
   }
 );

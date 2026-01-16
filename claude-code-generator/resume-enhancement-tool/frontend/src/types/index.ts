@@ -154,13 +154,21 @@ export interface User {
   email: string;
   full_name?: string;
   is_active: boolean;
+  role: string;  // SECURITY: For frontend authorization checks
   created_at: string;
 }
 
 export interface AuthResponse {
   access_token: string;
   token_type: string;
+  expires_in: number;  // Token expiration in seconds
   user: User;
+}
+
+export interface RefreshResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
 }
 
 export interface LoginCredentials {
@@ -172,4 +180,5 @@ export interface SignupCredentials {
   email: string;
   password: string;
   full_name?: string;
+  accept_terms: boolean;  // COMPLIANCE: Required for registration
 }

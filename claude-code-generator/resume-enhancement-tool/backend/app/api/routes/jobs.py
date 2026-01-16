@@ -1,5 +1,12 @@
-"""Job API routes."""
+"""Job API routes.
 
+SECURITY IMPLEMENTATION:
+- Authorization: Returns 404 (not 403) to prevent resource enumeration
+- Input validation: Minimum description length
+- Audit logging: All operations logged with user context
+"""
+
+import logging
 from pathlib import Path
 from uuid import UUID
 
@@ -13,7 +20,30 @@ from app.schemas import JobCreate, JobResponse, JobListResponse
 from app.services.workspace_service import WorkspaceService
 from app.api.dependencies import get_workspace_service, get_current_active_user
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
+
+
+def check_job_ownership(job, current_user: User):
+    """Check if user owns the job, raise 404 if not.
+
+    SECURITY: Returns 404 instead of 403 to prevent ID enumeration attacks.
+    """
+    if job.user_id != current_user.id:
+        logger.warning(
+            f"Unauthorized access attempt to job",
+            extra={
+                "event": "unauthorized_access",
+                "resource_type": "Job",
+                "resource_id": str(job.id),
+                "user_id": str(current_user.id),
+            }
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found",
+        )
 
 
 @router.post("/jobs", response_model=JobResponse, status_code=status.HTTP_201_CREATED)
@@ -120,14 +150,10 @@ async def get_job(
     if not job:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Job not found: {job_id}",
+            detail="Job not found",
         )
 
-    # Verify ownership
-    if job.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this job",
-        )
+    # SECURITY: Use 404 to prevent enumeration
+    check_job_ownership(job, current_user)
 
     return job
