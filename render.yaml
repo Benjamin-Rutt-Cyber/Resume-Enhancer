@@ -4,7 +4,7 @@ services:
     name: resume-enhancer-backend
     env: python
     region: oregon
-    rootDir: backend
+    rootDir: claude-code-generator/resume-enhancement-tool/backend
     buildCommand: "chmod +x start.sh && pip install -r requirements.txt"
     startCommand: "./start.sh"
     envVars:
@@ -30,7 +30,7 @@ services:
     name: resume-enhancer-frontend
     env: static
     region: oregon
-    rootDir: frontend
+    rootDir: claude-code-generator/resume-enhancement-tool/frontend
     buildCommand: "npm install && npm run build"
     staticPublishPath: "./dist"
     routes:
