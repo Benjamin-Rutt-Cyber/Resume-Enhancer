@@ -26,10 +26,8 @@ services:
     autoDeploy: false
 
   # Frontend Static Site
-  - type: web
+  - type: static
     name: resume-enhancer-frontend
-    env: static
-    region: oregon
     rootDir: claude-code-generator/resume-enhancement-tool/frontend
     buildCommand: "npm install && npm run build"
     staticPublishPath: "./dist"
@@ -42,7 +40,7 @@ services:
         fromService:
           type: web
           name: resume-enhancer-backend
-          property: url
+          property: host
 
   # Redis Service (Rate Limiting)
   - type: redis
