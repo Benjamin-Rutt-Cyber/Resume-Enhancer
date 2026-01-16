@@ -18,4 +18,4 @@ python worker.py > workspace/worker.log 2>&1 &
 # Start API Server in foreground
 echo "Starting API Server..."
 # exec replaces the shell process, handling signals correctly
-exec uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2
+exec uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 2
