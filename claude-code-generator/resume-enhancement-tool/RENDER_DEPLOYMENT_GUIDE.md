@@ -30,20 +30,35 @@ During the Blueprint setup, Render may prompt for sensitive variables that are N
 
 ## 4. Verify Services
 
-You should see 4 resources created:
-1.  **resume-enhancer-db:** PostgreSQL Database.
-2.  **resume-enhancer-redis:** Redis instance (For Rate Limiting).
-3.  **resume-enhancer-backend:** Python Web Service.
-4.  **resume-enhancer-frontend:** Static Site.
+You should see 3 resources created (Redis has been removed for Free Tier):
+1.  **resume-enhancer-db:** PostgreSQL Database (Free Tier).
+2.  **resume-enhancer-backend:** Python Web Service.
+3.  **resume-enhancer-frontend:** Static Site.
 
-## 5. First Run & Database Migration
+> [!WARNING]
+> **Render Free Database Limitation:**
+> Render's Free PostgreSQL databases are deleted after **90 days** unless upgraded.
+
+## 5. Alternative: Permanent Free Database (Supabase)
+
+If you want a database that doesn't expire after 90 days, use **Supabase**:
+
+1.  Create a free project at [supabase.com](https://supabase.com).
+2.  Go to **Project Settings** -> **Database**.
+3.  Copy the **Connection String** (URI).
+4.  In the Render Dashboard for **resume-enhancer-backend**:
+    *   Delete the `DATABASE_URL` linked to Render's DB.
+    *   Add a new `DATABASE_URL` variable with your Supabase string.
+    *   You can then delete the `resume-enhancer-db` from Render.
+
+## 6. First Run & Database Migration
 
 The backend `startCommand` is configured to run `./start.sh`.
 *   This script automatically runs `alembic upgrade head` on every deploy.
 *   **Action:** Check the Logs of the `resume-enhancer-backend` service.
 *   **Look for:** `INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.` -> `Running upgrade -> ...`
 
-## 6. Access the Application
+## 7. Access the Application
 
 1.  Go to **resume-enhancer-frontend** service.
 2.  Click the URL (e.g., `https://resume-enhancer-frontend-xxxx.onrender.com`).

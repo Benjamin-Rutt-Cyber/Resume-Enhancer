@@ -6,6 +6,9 @@
 
 This document defines the mandatory security implementation for the Resume Enhancer application. Implementation must follow these specifications strictly using the defined technology stack (FastAPI, React/Vite, PostgreSQL/SQLAlchemy).
 
+> [!NOTE]
+> This plan is designed for **Free Tier** production readiness using Render Free and Supabase alternatives. Redis is optional.
+
 ## 1. Security Architecture Overview
 
 ### Threat Model
@@ -68,7 +71,7 @@ This document defines the mandatory security implementation for the Resume Enhan
 
 ### Implementation Requirements
 1.  **Encryption at Rest:**
-    *   **Database:** Use volume-level encryption (e.g., AWS EBS encryption or PG data encryption) if cloud-managed.
+    *   **Database:** Use volume-level encryption if available in the selected tier.
     *   **Sensitive Columns:** If storing API Keys or OAuth tokens, use `fernet` (cryptography lib) to encrypt specific columns.
 2.  **Encryption in Transit:**
     *   Enforce TLS 1.2+ for all connections.
@@ -76,7 +79,7 @@ This document defines the mandatory security implementation for the Resume Enhan
 3.  **Resume File Handling:**
     *   Process resumes in memory where possible.
     *   If using disk buffers, clean up immediately after processing via `tempfile` module patterns.
-    *   For permanent storage (S3/Blob), ensure buckets are **private**. Generate **Presigned URLs** for frontend access (never proxy file content through API if possible).
+    *   **Free Tier Warning:** Render free tiers have ephemeral storage. Ensure any "extracted" data is stored in the Database, not just the filesystem.
 4.  **Data Retention:**
     *   Implement a "Hard Delete" endpoint that cascades deletions to all resumes, extracted text, and generated files.
 
@@ -105,6 +108,7 @@ This document defines the mandatory security implementation for the Resume Enhan
 
 ### Implementation Requirements
 1.  **Rate Limiting (`slowapi`):**
+    *   **Implementation:** Use `memory://` storage for single-instance free tier deployments.
     *   **Auth Routes:** Strict limit (e.g., 5/minute) on login/register to prevent brute force.
     *   **AI Routes:** Cost-based limit (e.g., 10 enhancements/hour/user).
     *   **Global:** Fallback limit (e.g., 60/minute) for general API.
