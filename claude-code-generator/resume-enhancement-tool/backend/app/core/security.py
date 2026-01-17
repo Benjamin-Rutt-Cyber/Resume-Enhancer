@@ -66,12 +66,13 @@ def get_real_ip(request: Request) -> str:
 
 
 # Initialize rate limiter with custom key function
+# NOTE: Using in-memory storage for Render Free Tier (single instance).
+# This is appropriate for single-instance deployments. For multi-instance
+# horizontal scaling, consider an external Redis or database-backed limiter.
 limiter = Limiter(
     key_func=get_user_identifier,
     default_limits=["60/minute"],  # Global fallback limit
-    storage_uri="memory://",  # Use Redis in production for horizontal scaling
-    # SECURITY: For production with multiple instances, use Redis:
-    # storage_uri="redis://localhost:6379"
+    storage_uri="memory://",  # In-memory storage for single instance deployment
 )
 
 

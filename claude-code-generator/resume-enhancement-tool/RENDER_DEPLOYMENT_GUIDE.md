@@ -78,4 +78,5 @@ If the build fails, check logs. Ensure `requirements.txt` is in the `backend/` d
 *   Common cause: `ANTHROPIC_API_KEY` missing.
 
 ### "Rate Limit Exceeded"
-*   If redis fails to connect, the application might fallback or fail depending on `slowapi` config. Check `REDIS_URL` env var is present in backend.
+*   Rate limiting uses in-memory storage (appropriate for single-instance Render Free Tier).
+*   If you see excessive rate limit errors, check the backend logs for details.
