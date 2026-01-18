@@ -1,7 +1,9 @@
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { motion, AnimatePresence } from 'framer-motion';
 import { resumeApi } from '../services/api';
 import { useDarkMode } from '../contexts/DarkModeContext';
+import { fadeIn, staggerContainer, hoverScale, pulse, reveal } from '../lib/motion';
 import type { Resume } from '../types';
 
 interface ResumeUploadProps {
@@ -53,57 +55,102 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onUploadSuccess }) =
   const s = getStyles();
 
   return (
-    <div style={s.container}>
-      <div
-        {...getRootProps()}
-        style={{
-          ...s.dropzone,
-          ...(isDragActive ? s.dropzoneActive : {}),
-          ...(uploading ? s.dropzoneDisabled : {}),
-        }}
-      >
-        <input {...getInputProps()} />
-        <div style={s.dropzoneContent}>
-          {uploading ? (
-            <>
-              <div style={s.icon}>⏳</div>
-              <div style={s.dropzoneTitle}>Uploading...</div>
-              <div style={s.dropzoneText}>Please wait</div>
-            </>
-          ) : isDragActive ? (
-            <>
-              <div style={s.icon}>📄</div>
-              <div style={s.dropzoneTitle}>Drop file here</div>
-            </>
-          ) : (
-            <>
-              <div style={s.iconWrapper}>
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#3b82f6' }}>
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="17 8 12 3 7 8"></polyline>
-                  <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-              </div>
-              <div style={s.dropzoneTitle}>Upload Resume</div>
-              <div style={s.dropzoneText}>
-                Drag and drop or <span style={s.browseText}>browse</span> to choose a file
-              </div>
-              <div style={s.formats}>PDF, DOCX, DOC, or TXT</div>
-            </>
-          )}
-        </div>
+    <motion.div
+      style={s.container}
+      variants={fadeIn}
+      initial="initial"
+      animate="animate"
+    >
+      <div {...getRootProps()} style={{ cursor: 'pointer' }}>
+        <motion.div
+          variants={hoverScale}
+          whileHover="hover"
+          whileTap="tap"
+          style={{
+            ...s.dropzone,
+            ...(isDragActive ? s.dropzoneActive : {}),
+            ...(uploading ? s.dropzoneDisabled : {}),
+          }}
+        >
+          <input {...getInputProps()} />
+          <motion.div
+            style={s.dropzoneContent}
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
+            <AnimatePresence mode="wait">
+              {uploading ? (
+                <motion.div
+                  key="uploading"
+                  variants={pulse}
+                  initial={{ opacity: 0 }}
+                  animate="animate"
+                  exit={{ opacity: 0 }}
+                  style={s.dropzoneContent}
+                >
+                  <div style={s.icon}>⏳</div>
+                  <div style={s.dropzoneTitle}>Uploading...</div>
+                  <div style={s.dropzoneText}>Please wait</div>
+                </motion.div>
+              ) : isDragActive ? (
+                <motion.div
+                  key="active"
+                  variants={fadeIn}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  style={s.dropzoneContent}
+                >
+                  <div style={s.icon}>📄</div>
+                  <div style={s.dropzoneTitle}>Drop file here</div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="idle"
+                  variants={staggerContainer}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  style={s.dropzoneContent}
+                >
+                  <motion.div variants={fadeIn} style={s.iconWrapper}>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#3b82f6' }}>
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="17 8 12 3 7 8"></polyline>
+                      <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                  </motion.div>
+                  <motion.div variants={fadeIn} style={s.dropzoneTitle}>Upload Resume</motion.div>
+                  <motion.div variants={fadeIn} style={s.dropzoneText}>
+                    Drag and drop or <span style={s.browseText}>browse</span> to choose a file
+                  </motion.div>
+                  <motion.div variants={fadeIn} style={s.formats}>PDF, DOCX, DOC, or TXT</motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </motion.div>
       </div>
-      {error && (
-        <div style={s.error}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
-          <span>{error}</span>
-        </div>
-      )}
-    </div>
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            variants={reveal}
+            initial="initial"
+            animate="animate"
+            exit={{ opacity: 0, scale: 0.95 }}
+            style={s.error}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span>{error}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 
