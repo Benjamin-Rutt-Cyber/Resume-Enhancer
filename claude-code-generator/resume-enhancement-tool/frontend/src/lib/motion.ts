@@ -7,7 +7,7 @@ import { Variants } from 'framer-motion';
  * Philosophy: Subtle, bottom-up entries, and high-quality deceleration.
  */
 
-const SIGNATURE_EASE = [0.23, 1, 0.32, 1];
+const SIGNATURE_EASE = [0.23, 1, 0.32, 1] as const;
 const STANDARD_DURATION = 0.4;
 const FAST_DURATION = 0.2;
 
@@ -33,7 +33,7 @@ export const fadeIn: Variants = {
         y: -8,
         transition: {
             duration: FAST_DURATION,
-            ease: [0.4, 0, 1, 1]
+            ease: [0.4, 0, 1, 1] as const
         }
     }
 };
