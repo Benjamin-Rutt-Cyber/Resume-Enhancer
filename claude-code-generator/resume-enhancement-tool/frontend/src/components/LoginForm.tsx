@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useDarkMode } from '../contexts/DarkModeContext';
+import { fadeIn, staggerContainer, hoverScale, pulse, reveal } from '../lib/motion';
 
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -30,10 +32,18 @@ export const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className={`auth-container ${isDarkMode ? 'auth-container-dark' : 'auth-container-light'}`}>
-      <div className={`auth-card ${isDarkMode ? 'auth-card-dark' : 'auth-card-light'}`}>
+    <motion.div
+      variants={fadeIn}
+      initial="initial"
+      animate="animate"
+      className={`auth-container ${isDarkMode ? 'auth-container-dark' : 'auth-container-light'}`}
+    >
+      <motion.div
+        variants={staggerContainer}
+        className={`auth-card ${isDarkMode ? 'auth-card-dark' : 'auth-card-light'}`}
+      >
         {/* Logo/Icon */}
-        <div className="auth-header">
+        <motion.div variants={fadeIn} className="auth-header">
           <div className="auth-logo">
             📄
           </div>
@@ -43,16 +53,25 @@ export const LoginForm: React.FC = () => {
           <p className="auth-subtitle">
             Sign in to continue to Resume Enhancement Tool
           </p>
-        </div>
+        </motion.div>
 
         <form onSubmit={handleSubmit} className="auth-form">
-          {error && (
-            <div className="auth-error">
-              {error}
-            </div>
-          )}
+          <AnimatePresence mode="wait">
+            {error && (
+              <motion.div
+                key="error"
+                variants={reveal}
+                initial="initial"
+                animate="animate"
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="auth-error"
+              >
+                {error}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          <div className="auth-field">
+          <motion.div variants={fadeIn} className="auth-field">
             <label htmlFor="email" className="auth-label">
               Email Address
             </label>
@@ -67,9 +86,9 @@ export const LoginForm: React.FC = () => {
               className="auth-input"
               placeholder="you@example.com"
             />
-          </div>
+          </motion.div>
 
-          <div className="auth-field">
+          <motion.div variants={fadeIn} className="auth-field">
             <label htmlFor="password" className="auth-label">
               Password
             </label>
@@ -84,29 +103,56 @@ export const LoginForm: React.FC = () => {
               className="auth-input"
               placeholder="••••••••"
             />
-          </div>
+          </motion.div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="auth-button"
-          >
-            {isLoading ? 'Signing in...' : 'Sign In'}
-          </button>
+          <motion.div variants={fadeIn}>
+            <motion.button
+              variants={hoverScale}
+              whileHover="hover"
+              whileTap="tap"
+              type="submit"
+              disabled={isLoading}
+              className="auth-button"
+              style={{ position: 'relative', overflow: 'hidden' }}
+            >
+              <AnimatePresence mode="wait">
+                {isLoading ? (
+                  <motion.div
+                    key="loading"
+                    variants={pulse}
+                    initial="initial"
+                    animate="animate"
+                    exit={{ opacity: 0 }}
+                  >
+                    Signing in...
+                  </motion.div>
+                ) : (
+                  <motion.span key="idle">Sign In</motion.span>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          </motion.div>
         </form>
 
-        <div className="auth-footer">
+        <motion.div variants={fadeIn} className="auth-footer">
           <p className="auth-footer-text">
             Don't have an account?{' '}
-            <Link
-              to="/signup"
-              className="auth-link"
+            <motion.span
+              style={{ display: 'inline-block' }}
+              variants={hoverScale}
+              whileHover="hover"
+              whileTap="tap"
             >
-              Sign up
-            </Link>
+              <Link
+                to="/signup"
+                className="auth-link"
+              >
+                Sign up
+              </Link>
+            </motion.span>
           </p>
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
 };
