@@ -20,6 +20,8 @@ services:
         sync: false
       - key: DEBUG
         value: "False"
+      - key: ALLOWED_ORIGINS
+        value: "https://resume-enhancer-frontend.onrender.com"
     autoDeploy: false
 
   # Frontend Static Site
@@ -35,10 +37,7 @@ services:
         destination: "/index.html"
     envVars:
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: resume-enhancer-backend
-          property: host
+        value: "https://resume-enhancer-backend.onrender.com"
 
 databases:
   # Managed PostgreSQL (Free tier - expires in 90 days)
