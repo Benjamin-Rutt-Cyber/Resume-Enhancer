@@ -1625,8 +1625,11 @@
     position: relative;
     padding-top: 80px;
     overflow: hidden;
-    background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.1), transparent 40%),
-        radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.1), transparent 40%);
+    background: linear-gradient(180deg, var(--bg-body) 0%, var(--bg-card) 100%);
+}
+
+.dark-mode .hero-section {
+    background: linear-gradient(180deg, #0a0f1a 0%, #111827 50%, #0f172a 100%);
 }
 
 .hero-content {
@@ -1719,6 +1722,27 @@
     position: relative;
     display: flex;
     justify-content: center;
+    align-items: center;
+}
+
+/* Hero Animation Styles */
+.hero-animation-container {
+    position: relative;
+}
+
+.hero-animation-container img {
+    filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.15));
+}
+
+.dark-mode .hero-animation-container img {
+    filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.4));
+}
+
+@media (max-width: 968px) {
+    .hero-animation-container {
+        max-width: 100% !important;
+        padding: 0 1rem;
+    }
 }
 
 .visual-card-stack {

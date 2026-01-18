@@ -12,6 +12,7 @@ import {
   Briefcase
 } from 'lucide-react';
 import { DarkModeToggle } from './DarkModeToggle';
+import { HeroAnimation } from './HeroAnimation';
 import { fadeIn, staggerContainer, hoverScale, reveal } from '../lib/motion';
 
 
@@ -78,27 +79,7 @@ export const LandingPage: React.FC = () => {
             animate="animate"
             className="hero-visual"
           >
-            <div className="visual-card-stack">
-              <div className="card-back"></div>
-              <div className="card-middle"></div>
-              <div className="card-front">
-                <div className="resume-preview-header">
-                  <div className="skeleton-avatar"></div>
-                  <div className="skeleton-lines">
-                    <div className="line title"></div>
-                    <div className="line subtitle"></div>
-                  </div>
-                </div>
-                <div className="resume-preview-body">
-                  <div className="skeleton-block"></div>
-                  <div className="skeleton-block"></div>
-                  <div className="skeleton-block"></div>
-                </div>
-                <div className="ai-badge">
-                  <Zap size={16} /> AI Enhanced
-                </div>
-              </div>
-            </div>
+            <HeroAnimation />
           </motion.div>
         </div>
 
