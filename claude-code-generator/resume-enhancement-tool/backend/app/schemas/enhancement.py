@@ -1,22 +1,36 @@
-"""Enhancement schemas for API requests and responses."""
+"""Enhancement schemas for API requests and responses.
+
+SECURITY: Input validation with strict field constraints.
+"""
 
 from datetime import datetime
 from uuid import UUID
+from typing import Literal
 from pydantic import BaseModel, Field
+
+# Valid enhancement types and industries
+VALID_ENHANCEMENT_TYPES = ("job_tailoring", "industry_revamp")
+VALID_INDUSTRIES = ("IT", "Cybersecurity", "Finance")
 
 
 class EnhancementBase(BaseModel):
     """Base enhancement schema."""
 
     resume_id: UUID = Field(..., description="Resume ID to enhance")
-    enhancement_type: str = Field(..., description="Type: job_tailoring or industry_revamp")
+    enhancement_type: Literal["job_tailoring", "industry_revamp"] = Field(
+        ...,
+        description="Type: job_tailoring or industry_revamp"
+    )
 
 
 class EnhancementTailorCreate(EnhancementBase):
     """Schema for creating a job tailoring enhancement."""
 
     job_id: UUID = Field(..., description="Job ID to tailor resume for")
-    run_analysis: bool = Field(default=False, description="Whether to run ATS keyword analysis and job match scoring")
+    run_analysis: bool = Field(
+        default=False,
+        description="Whether to run ATS keyword analysis and job match scoring"
+    )
 
     class Config:
         extra = "forbid"
@@ -26,7 +40,10 @@ class EnhancementRevampCreate(BaseModel):
     """Schema for creating an industry revamp enhancement."""
 
     resume_id: UUID = Field(..., description="Resume ID to enhance")
-    industry: str = Field(..., description="Target industry (IT, Cybersecurity, Finance)")
+    industry: Literal["IT", "Cybersecurity", "Finance"] = Field(
+        ...,
+        description="Target industry (IT, Cybersecurity, Finance)"
+    )
 
     class Config:
         extra = "forbid"

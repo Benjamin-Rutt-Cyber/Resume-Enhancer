@@ -1,15 +1,32 @@
-"""Resume schemas for API requests and responses."""
+"""Resume schemas for API requests and responses.
+
+SECURITY: Input validation with max_length constraints.
+"""
 
 from datetime import datetime
 from uuid import UUID
 from pydantic import BaseModel, Field
 
+# SECURITY: Maximum lengths for input validation
+MAX_FILENAME_LENGTH = 255
+MAX_FORMAT_LENGTH = 10
+MAX_RESUME_TEXT_LENGTH = 50000  # 50k chars as per spec
+
 
 class ResumeBase(BaseModel):
     """Base resume schema."""
 
-    filename: str = Field(..., description="Original filename")
-    original_format: str = Field(..., description="File format (pdf, docx)")
+    filename: str = Field(
+        ...,
+        description="Original filename",
+        min_length=1,
+        max_length=MAX_FILENAME_LENGTH
+    )
+    original_format: str = Field(
+        ...,
+        description="File format (pdf, docx)",
+        max_length=MAX_FORMAT_LENGTH
+    )
 
 
 class ResumeCreate(ResumeBase):

@@ -1,14 +1,25 @@
 """
 Application configuration settings.
+
+SECURITY: All sensitive configuration loaded from environment variables.
 """
 
 import logging
-from typing import List
+import os
+from typing import List, Optional
 from pathlib import Path
 from pydantic import validator
 from pydantic_settings import BaseSettings
 
 logger = logging.getLogger(__name__)
+
+# Default CORS origins for development
+DEFAULT_CORS_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+]
 
 
 class Settings(BaseSettings):
@@ -23,17 +34,29 @@ class Settings(BaseSettings):
     # API
     API_PREFIX: str = "/api"
 
-    # CORS
-    # CORS
-    ALLOWED_ORIGINS: List[str] = [
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:5173",
-        "https://resume-enhancement-tool-frontend.onrender.com", # Placeholder, ideally use env var
-        "https://www.re-vsion.com",
-        "https://re-vsion.com",
-    ]
+    # CORS - configurable via ALLOWED_ORIGINS env var (comma-separated)
+    # Example: ALLOWED_ORIGINS=https://www.example.com,https://app.example.com
+    ALLOWED_ORIGINS: List[str] = DEFAULT_CORS_ORIGINS
+
+    @validator('ALLOWED_ORIGINS', pre=True)
+    def parse_cors_origins(cls, v):
+        """Parse CORS origins from comma-separated string or list.
+
+        Supports both:
+        - List format (from Python/JSON): ["https://a.com", "https://b.com"]
+        - String format (from env var): "https://a.com,https://b.com"
+        """
+        if isinstance(v, str):
+            # Parse comma-separated string from environment variable
+            origins = [origin.strip() for origin in v.split(',') if origin.strip()]
+            if origins:
+                logger.info(f"CORS origins loaded from env: {len(origins)} origins")
+                return origins
+            # Fall back to defaults if empty string
+            return DEFAULT_CORS_ORIGINS
+        elif isinstance(v, list):
+            return v
+        return DEFAULT_CORS_ORIGINS
 
     # Database
     DATABASE_URL: str = "postgresql://user:password@localhost/dbname"
@@ -41,7 +64,6 @@ class Settings(BaseSettings):
     # Anthropic Claude API
     ANTHROPIC_API_KEY: str = ""  # OPTIONAL - Only needed if ENABLE_STYLE_PREVIEW_API=true
 
-    # API Cost Controls
     # API Cost Controls
     ENABLE_STYLE_PREVIEW_API: bool = True  # Enabled for automatic enhancements
 
@@ -51,13 +73,15 @@ class Settings(BaseSettings):
 
     @validator('ALLOWED_ORIGINS')
     def validate_cors_origins(cls, v):
-        """Warn if wildcard CORS is enabled."""
+        """Validate CORS origins and warn about security issues."""
         if '*' in v:
             logger.warning(
-                "Wildcard CORS origin detected! "
+                "SECURITY WARNING: Wildcard CORS origin detected! "
                 "This is insecure for production. "
                 "Use specific origins instead."
             )
+        # Log the configured origins for debugging
+        logger.info(f"CORS configured with {len(v)} origins")
         return v
 
     @validator('WORKSPACE_ROOT')
