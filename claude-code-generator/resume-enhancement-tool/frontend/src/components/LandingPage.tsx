@@ -12,30 +12,17 @@ import {
   Briefcase
 } from 'lucide-react';
 import { DarkModeToggle } from './DarkModeToggle';
+import { fadeIn, staggerContainer, hoverScale, reveal } from '../lib/motion';
 
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 }
-};
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
 
 export const LandingPage: React.FC = () => {
   return (
     <div className="landing-container">
       {/* Navigation */}
       <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 100 }}
+        variants={fadeIn}
+        initial="initial"
+        animate="animate"
         className="landing-nav"
       >
         <div className="nav-content">
@@ -55,20 +42,20 @@ export const LandingPage: React.FC = () => {
       <section className="hero-section">
         <div className="hero-content">
           <motion.div
-            initial="hidden"
-            animate="visible"
             variants={staggerContainer}
+            initial="initial"
+            animate="animate"
             className="hero-text-container"
           >
-            <motion.h1 variants={fadeInUp} className="hero-title">
+            <motion.h1 variants={fadeIn} className="hero-title">
               Craft Your Perfect <br />
               <span className="gradient-text">Resume with AI</span>
             </motion.h1>
-            <motion.p variants={fadeInUp} className="hero-subtitle">
+            <motion.p variants={fadeIn} className="hero-subtitle">
               Transform your career prospects with our AI-powered resume builder.
               Tailor your CV to any job description and beat the ATS systems instantly.
             </motion.p>
-            <motion.div variants={fadeInUp} className="hero-cta-group">
+            <motion.div variants={fadeIn} className="hero-cta-group">
               <Link to="/signup" className="cta-primary">
                 Create Free Resume <ArrowRight size={20} />
               </Link>
@@ -77,7 +64,7 @@ export const LandingPage: React.FC = () => {
               </Link>
             </motion.div>
 
-            <motion.div variants={fadeInUp} className="hero-stats">
+            <motion.div variants={fadeIn} className="hero-stats">
               <div className="stat-pill">
                 <Star size={16} style={{ color: '#fbbf24' }} />
                 <span>Trusted by 10,000+ Job Seekers</span>
@@ -86,9 +73,9 @@ export const LandingPage: React.FC = () => {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
+            variants={reveal}
+            initial="initial"
+            animate="animate"
             className="hero-visual"
           >
             <div className="visual-card-stack">
@@ -121,13 +108,13 @@ export const LandingPage: React.FC = () => {
       {/* Features Grid */}
       <section className="features-section">
         <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
           variants={staggerContainer}
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true, margin: "-100px" }}
           className="section-container"
         >
-          <motion.div variants={fadeInUp} className="section-header">
+          <motion.div variants={fadeIn} className="section-header">
             <h2 className="section-title">Why Choose re-vsion?</h2>
             <p className="section-description">
               Powerful tools designed to get you hired faster at top companies.
@@ -169,11 +156,11 @@ export const LandingPage: React.FC = () => {
             ].map((feature, idx) => (
               <motion.div
                 key={idx}
-                variants={fadeInUp}
-                whileHover={{ y: -5 }}
+                variants={fadeIn}
+                whileHover="hover"
                 className="feature-card"
               >
-                <div className="feature-icon-wrapper">{feature.icon}</div>
+                <motion.div variants={hoverScale} className="feature-icon-wrapper">{feature.icon}</motion.div>
                 <h3 className="feature-title">{feature.title}</h3>
                 <p className="feature-desc">{feature.desc}</p>
               </motion.div>
@@ -202,7 +189,9 @@ export const LandingPage: React.FC = () => {
             </div>
             <div className="proof-cards">
               <motion.div
-                whileHover={{ scale: 1.02 }}
+                variants={hoverScale}
+                whileHover="hover"
+                whileTap="tap"
                 className="testimonial-card"
               >
                 <div className="stars">★★★★★</div>
@@ -223,9 +212,9 @@ export const LandingPage: React.FC = () => {
       {/* CTA Section */}
       <section className="cta-section-wrapper">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
+          variants={reveal}
+          initial="initial"
+          whileInView="animate"
           viewport={{ once: true }}
           className="cta-card-large"
         >
